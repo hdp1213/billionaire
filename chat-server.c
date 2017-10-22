@@ -46,9 +46,7 @@
 #include <errno.h>
 #include <err.h>
 
-/* On some systems (OpenBSD/NetBSD/FreeBSD) you could include
- * <sys/queue.h>, but for portability we'll include the local copy. */
-#include "queue.h"
+#include <sys/queue.h>
 
 /* Libevent. */
 #include <event2/event.h>
