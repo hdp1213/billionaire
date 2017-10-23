@@ -50,7 +50,7 @@ setnonblock(int fd)
 void
 buffered_on_read(struct bufferevent *bev, void *arg)
 {
-  struct client *this_client = arg;
+  struct client *this_client = (struct client *)arg;
   struct client *client;
   uint8_t data[8192];
   size_t n;
@@ -67,11 +67,10 @@ buffered_on_read(struct bufferevent *bev, void *arg)
      * client that sent the data. */
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       if (client != this_client) {
-        bufferevent_write(client->buf_ev, data,  n);
+        bufferevent_write(client->buf_ev, data, n);
       }
     }
   }
-
 }
 
 void
@@ -122,7 +121,7 @@ on_accept(int fd, short ev, void *arg)
 
   client->buf_ev = bufferevent_socket_new(evbase, client_fd, 0);
   bufferevent_setcb(client->buf_ev, buffered_on_read, NULL,
-      buffered_on_error, client);
+                    buffered_on_error, client);
 
   /* We have to enable it before our callbacks will be
    * called. */
@@ -131,8 +130,8 @@ on_accept(int fd, short ev, void *arg)
   /* Add the new client to the tailq. */
   TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
 
-  printf("Accepted connection from %s\n", 
-      inet_ntoa(client_addr.sin_addr));
+  printf("Accepted connection from %s\n",
+         inet_ntoa(client_addr.sin_addr));
 }
 
 int
@@ -143,8 +142,10 @@ main(int argc, char **argv)
   struct event ev_accept;
   int reuseaddr_on;
 
+  // event_enable_debug_logging(EVENT_DBG_ALL);
+
   /* Initialize libevent. */
-        evbase = event_base_new();
+  evbase = event_base_new();
 
   /* Initialize the tailq. */
   TAILQ_INIT(&client_tailq_head);
@@ -163,8 +164,8 @@ main(int argc, char **argv)
   if (listen(listen_fd, 5) < 0)
     err(1, "listen failed");
   reuseaddr_on = 1;
-  setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on, 
-      sizeof(reuseaddr_on));
+  setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on,
+             sizeof(reuseaddr_on));
 
   /* Set the socket to non-blocking, this is essential in event
    * based programming with libevent. */
@@ -173,8 +174,8 @@ main(int argc, char **argv)
 
   /* We now have a listening socket, we create a read event to
    * be notified when a client connects. */
-        event_assign(&ev_accept, evbase, listen_fd, EV_READ|EV_PERSIST, 
-      on_accept, NULL);
+  event_assign(&ev_accept, evbase, listen_fd, EV_READ|EV_PERSIST,
+               on_accept, NULL);
   event_add(&ev_accept, NULL);
 
   /* Start the event loop. */

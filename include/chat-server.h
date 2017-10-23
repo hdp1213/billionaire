@@ -66,6 +66,8 @@ int setnonblock(int fd);
 
 /**
  * Called by libevent when there is data to read.
+ *
+ * This is where all of the server logic should go.
  */
 void buffered_on_read(struct bufferevent *bev, void *arg);
 
@@ -80,8 +82,5 @@ void buffered_on_error(struct bufferevent *bev, short what, void *arg);
  * ready to be accepted.
  */
 void on_accept(int fd, short ev, void *arg);
-
-
-
 
 #endif
