@@ -1,5 +1,5 @@
-#ifndef _CHAT_SERVER_H_
-#define _CHAT_SERVER_H_
+#ifndef _BILLIONAIRE_SERVER_H_
+#define _BILLIONAIRE_SERVER_H_
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -25,6 +25,9 @@
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 
+/* JSON */
+#include <json-c/json.h>
+
 /* Port to listen on. */
 #define SERVER_PORT 5555
 
@@ -44,7 +47,7 @@ struct client {
   int fd;
 
   /* The bufferedevent for this client. */
-  struct bufferevent *buf_ev;
+  struct bufferevent* buf_ev;
 
   /*
    * This holds the pointers to the next and previous entries in
@@ -69,18 +72,23 @@ int setnonblock(int fd);
  *
  * This is where all of the server logic should go.
  */
-void buffered_on_read(struct bufferevent *bev, void *arg);
+void buffered_on_read(struct bufferevent* bev, void* arg);
 
 /**
  * Called by libevent when there is an error on the underlying socket
  * descriptor.
  */
-void buffered_on_error(struct bufferevent *bev, short what, void *arg);
+void buffered_on_error(struct bufferevent* bev, short what, void* arg);
 
 /**
  * This function will be called by libevent when there is a connection
  * ready to be accepted.
  */
-void on_accept(int fd, short ev, void *arg);
+void on_accept(int fd, short ev, void* arg);
+
+/**
+ * Send a Billionaire command to a bufferevent.
+ */
+void send_command(struct bufferevent* bev, struct json_object* cmd);
 
 #endif

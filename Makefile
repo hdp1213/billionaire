@@ -20,9 +20,9 @@ CCFLAGS = -fPIC $(OPTFLAGS) $(DBUG)
 LDFLAGS = -fPIC $(DBUG) $(OPTFLAG)
 
 INCLUDES = -Iinclude
-LIBS = -levent -lrt -lm
+LIBS = -levent -lrt -lm -ljson-c
 
-SOURCE = billionaire-server.o
+SOURCE = billionaire.o billionaire-server.o
 # MAIN = main.o
 
 %.o: %.c .base

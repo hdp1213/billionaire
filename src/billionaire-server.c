@@ -31,6 +31,7 @@
  */
 
 #include "billionaire-server.h"
+#include "billionaire.h"
 
 int
 setnonblock(int fd)
@@ -48,10 +49,10 @@ setnonblock(int fd)
 }
 
 void
-buffered_on_read(struct bufferevent *bev, void *arg)
+buffered_on_read(struct bufferevent* bev, void* arg)
 {
-  struct client *this_client = (struct client *)arg;
-  struct client *client;
+  struct client* this_client = (struct client*) arg;
+  struct client* client;
   uint8_t data[8192];
   size_t n;
 
@@ -74,9 +75,9 @@ buffered_on_read(struct bufferevent *bev, void *arg)
 }
 
 void
-buffered_on_error(struct bufferevent *bev, short what, void *arg)
+buffered_on_error(struct bufferevent* bev, short what, void* arg)
 {
-  struct client *client = (struct client *)arg;
+  struct client* client = (struct client*) arg;
 
   if (what & BEV_EVENT_EOF) {
     /* Client disconnected, remove the read event and the
@@ -96,14 +97,16 @@ buffered_on_error(struct bufferevent *bev, short what, void *arg)
 }
 
 void
-on_accept(int fd, short ev, void *arg)
+on_accept(int fd, short ev, void* arg)
 {
   int client_fd;
   struct sockaddr_in client_addr;
   socklen_t client_len = sizeof(client_addr);
-  struct client *client;
+  struct client* client;
 
-  client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_len);
+  struct json_object* join;
+
+  client_fd = accept(fd, (struct sockaddr*) &client_addr, &client_len);
   if (client_fd < 0) {
     warn("accept failed");
     return;
@@ -130,12 +133,34 @@ on_accept(int fd, short ev, void *arg)
   /* Add the new client to the tailq. */
   TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
 
-  printf("Accepted connection from %s\n",
-         inet_ntoa(client_addr.sin_addr));
+  printf("Accepted connection from %s:%d\n",
+         inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+
+  /* Send a JOIN command to the client. */
+  join = billn_join();
+  send_command(client->buf_ev, join);
+
+  printf("Sent JOIN to %s:%d\n",
+         inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+
+  /* Free JOIN command */
+  free(join);
+
+  /* Check if max number of players has joined */
+}
+
+void
+send_command(struct bufferevent* bev, struct json_object* cmd)
+{
+  size_t cmd_len = 0;
+  const char* cmd_str = stringify_command(cmd, &cmd_len);
+  bufferevent_write(bev, cmd_str, cmd_len);
+
+  free((void*) cmd_str);
 }
 
 int
-main(int argc, char **argv)
+main(int argc, char** argv)
 {
   int listen_fd;
   struct sockaddr_in listen_addr;
@@ -143,11 +168,12 @@ main(int argc, char **argv)
   int reuseaddr_on;
 
   // event_enable_debug_logging(EVENT_DBG_ALL);
+  printf("Initialising server... ");
 
-  /* Initialize libevent. */
+  /* Initialise libevent. */
   evbase = event_base_new();
 
-  /* Initialize the tailq. */
+  /* Initialise the tailq. */
   TAILQ_INIT(&client_tailq_head);
 
   /* Create our listening socket. */
@@ -158,8 +184,8 @@ main(int argc, char **argv)
   listen_addr.sin_family = AF_INET;
   listen_addr.sin_addr.s_addr = INADDR_ANY;
   listen_addr.sin_port = htons(SERVER_PORT);
-  if (bind(listen_fd, (struct sockaddr *)&listen_addr,
-    sizeof(listen_addr)) < 0)
+  if (bind(listen_fd, (struct sockaddr*) &listen_addr,
+           sizeof(listen_addr)) < 0)
     err(1, "bind failed");
   if (listen(listen_fd, 5) < 0)
     err(1, "listen failed");
@@ -171,6 +197,8 @@ main(int argc, char **argv)
    * based programming with libevent. */
   if (setnonblock(listen_fd) < 0)
     err(1, "failed to set server socket to non-blocking");
+
+  printf("done\n");
 
   /* We now have a listening socket, we create a read event to
    * be notified when a client connects. */
