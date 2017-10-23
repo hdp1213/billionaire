@@ -1,6 +1,6 @@
 BUILDDIR := build
 
-all: .base chat-server
+all: .base billionaire-server
 
 .base:
 	if ! [ -e $(BUILDDIR) ]; then mkdir $(BUILDDIR) ; mkdir $(BUILDDIR)/lib; fi;
@@ -22,15 +22,15 @@ LDFLAGS = -fPIC $(DBUG) $(OPTFLAG)
 INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm
 
-SOURCE = chat-server.o
+SOURCE = billionaire-server.o
 # MAIN = main.o
 
 %.o: %.c .base
 	$(CC) $(CCFLAGS) $(INCLUDES) -c $< -o $(BUILDDIR)/$*.o
 
-chat-server: $(SOURCE)
+billionaire-server: $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
 clean:
-	rm -f chat-server *~
+	rm -f billionaire-server *~
 	rm -rf $(BUILDDIR)/*

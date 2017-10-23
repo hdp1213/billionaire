@@ -30,7 +30,7 @@
  * @todo IPv6 support - using libevent socket helpers, if any.
  */
 
-#include "chat-server.h"
+#include "billionaire-server.h"
 
 int
 setnonblock(int fd)
