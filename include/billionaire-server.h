@@ -31,6 +31,9 @@
 /* Port to listen on. */
 #define SERVER_PORT 5555
 
+/* Maximum size of address string used for hashing */
+#define ADDR_STR_SIZE 23
+
 /* The libevent event base.  In libevent 1 you didn't need to worry
  * about this for simple programs, but its used more in the libevent 2
  * API. */
@@ -45,6 +48,9 @@ static struct event_base *evbase;
 struct client {
   /* The clients socket. */
   int fd;
+
+  /* The client ID. */
+  char* id;
 
   /* The bufferedevent for this client. */
   struct bufferevent* buf_ev;
@@ -61,6 +67,11 @@ struct client {
  * be iterated to send a received message to all connected clients.
  */
 TAILQ_HEAD(, client) client_tailq_head;
+
+/**
+ * Number of clients currently commected to the server.
+ */
+static int NUM_CLIENTS = 0;
 
 /**
  * Set a socket to non-blocking mode.

@@ -82,17 +82,19 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   if (what & BEV_EVENT_EOF) {
     /* Client disconnected, remove the read event and the
      * free the client structure. */
-    printf("Client disconnected.\n");
+    printf("Client '%s' disconnected.\n", client->id);
   }
   else {
-    warn("Client socket error, disconnecting.\n");
+    warn("Client '%s' socket error, disconnecting.\n", client->id);
   }
 
   /* Remove the client from the tailq. */
   TAILQ_REMOVE(&client_tailq_head, client, entries);
+  NUM_CLIENTS--;
 
   bufferevent_free(client->buf_ev);
   close(client->fd);
+  free(client->id);
   free(client);
 }
 
@@ -104,6 +106,7 @@ on_accept(int fd, short ev, void* arg)
   socklen_t client_len = sizeof(client_addr);
   struct client* client;
 
+  char client_addr_str[ADDR_STR_SIZE];
   struct json_object* join;
 
   client_fd = accept(fd, (struct sockaddr*) &client_addr, &client_len);
@@ -132,16 +135,19 @@ on_accept(int fd, short ev, void* arg)
 
   /* Add the new client to the tailq. */
   TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
+  NUM_CLIENTS++;
 
-  printf("Accepted connection from %s:%d\n",
-         inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+  /* Get client address:port as a string */
+  snprintf(client_addr_str, ADDR_STR_SIZE, "%s:%d",
+           inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+
+  printf("Accepted connection from %s\n", client_addr_str);
 
   /* Send a JOIN command to the client. */
-  join = billn_join();
+  join = billionaire_join(client_addr_str, ADDR_STR_SIZE, &client->id);
   send_command(client->buf_ev, join);
 
-  printf("Sent JOIN to %s:%d\n",
-         inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
+  printf("Sent JOIN to %s\n", client_addr_str);
 
   /* Free JOIN command */
   free(join);
@@ -185,10 +191,14 @@ main(int argc, char** argv)
   listen_addr.sin_addr.s_addr = INADDR_ANY;
   listen_addr.sin_port = htons(SERVER_PORT);
   if (bind(listen_fd, (struct sockaddr*) &listen_addr,
-           sizeof(listen_addr)) < 0)
+           sizeof(listen_addr)) < 0) {
+    printf("\n");
     err(1, "bind failed");
-  if (listen(listen_fd, 5) < 0)
+  }
+  if (listen(listen_fd, 5) < 0) {
+    printf("\n");
     err(1, "listen failed");
+  }
   reuseaddr_on = 1;
   setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on,
              sizeof(reuseaddr_on));

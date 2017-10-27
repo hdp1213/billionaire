@@ -2,6 +2,11 @@
 #include <stdio.h>
 
 #include "billionaire.h"
+#include "utils.h"
+
+const struct commands Command = {
+  "JOIN", "START", "RECEIVE", "CHECK", "FINISH", "ASK", "CANCEL", "BILLIONAIRE"
+};
 
 json_object*
 make_command(const char* cmd)
@@ -14,14 +19,14 @@ make_command(const char* cmd)
 }
 
 json_object*
-billn_join()
+billionaire_join(const char* addr, size_t length, char** id)
 {
-  json_object* cmd = make_command("JOIN");
+  json_object* cmd = make_command(Command.JOIN);
 
-  json_object* bot_id = json_object_new_int(BOT_ID);
+  *id = hash_addr(addr, length);
+
+  json_object* bot_id = json_object_new_string(*id);
   json_object_object_add(cmd, "bot_id", bot_id);
-
-  BOT_ID++;
 
   return cmd;
 }

@@ -22,7 +22,7 @@ LDFLAGS = -fPIC $(DBUG) $(OPTFLAG)
 INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm -ljson-c
 
-SOURCE = billionaire.o billionaire-server.o
+SOURCE = billionaire.o billionaire-server.o utils.o
 # MAIN = main.o
 
 %.o: %.c .base
