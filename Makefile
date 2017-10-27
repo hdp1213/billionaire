@@ -16,8 +16,8 @@ CC = gcc
 OPTFLAGS = -O2 -pipe -march=armv6zk -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
 DBUG = -g -Wall -Wextra -Wcast-align
 
-CCFLAGS = -fPIC $(OPTFLAGS) $(DBUG)
-LDFLAGS = -fPIC $(DBUG) $(OPTFLAG)
+CCFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
+LDFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
 
 INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm -ljson-c
