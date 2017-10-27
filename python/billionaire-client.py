@@ -15,6 +15,7 @@ class JSONProtocol(asyncio.Protocol):
         # asynchronous queue
         self.queue = asyncio.Queue()
         asyncio.ensure_future(self._send_from_queue())
+        asyncio.ensure_future(self.join_game())
 
         # asynchronous events
         self._on_join = asyncio.Event()
@@ -40,7 +41,7 @@ class JSONProtocol(asyncio.Protocol):
         while True:
             data = await self.queue.get()
             self.transport.write(str(data).encode('utf-8'))
-            print('Sent: {!r}'.format(data))
+            print(f'Sent: {data!r}')
 
     def connection_made(self, transport):
         """Send the command to the server upon connection"""
@@ -52,12 +53,13 @@ class JSONProtocol(asyncio.Protocol):
         await self._on_start.wait()
         await self.queue.put(data)
 
-    async def join_game(self, data):
+    async def join_game(self):
         await self._on_join.wait()
 
-        self.bot_id = data['bot_id']
-        self.cards = data['cards']
-        print('Joining game with ID {!r}'.format(self.bot_id))
+        self.bot_id = self.received.bot_id
+        self.cards = self.received.cards
+        print(f'Joining game with ID {self.bot_id!r}')
+        print(f'Have following hand: {self.cards!r}')
 
     def data_received(self, data):
         """Receive commands from the server
@@ -68,7 +70,7 @@ class JSONProtocol(asyncio.Protocol):
             cards:          the cards received
         """
         try:
-            self.received = json.loads(data.decode())
+            self.received = Command(data)
         except UnicodeDecodeError as e:
             print('Received invalid unicode')
             return
@@ -76,12 +78,12 @@ class JSONProtocol(asyncio.Protocol):
             print('Received invalid JSON')
             return
 
-        print('Received: {!r}'.format(self.received))
+        print(f'Received: {self.received!r}')
 
-        if self.received['command'] == 'JOIN':
+        if self.received == Command.JOIN:
             self._on_join.set()
 
-        elif self.received['command'] == 'START':
+        elif self.received == Command.START:
             print('Starting game...')
             self._on_start.set()
 
@@ -96,6 +98,40 @@ class JSONProtocol(asyncio.Protocol):
         command = json.dumps({'command': 'ASK', 'cards': [1,2,3]},
                              separators=(',', ':'))
         return command
+
+
+class Command():
+    """docstring for Command"""
+    JOIN        = 'JOIN'
+    START       = 'START'
+    RECEIVE     = 'RECEIVE'
+    CHECK       = 'CHECK'
+    FINISH      = 'FINISH'
+    ASK         = 'ASK'
+    CANCEL      = 'CANCEL'
+    BILLIONAIRE = 'BILLIONAIRE'
+
+    valid_commands = {JOIN,
+                      START,
+                      RECEIVE,
+                      CHECK,
+                      FINISH,
+                      ASK,
+                      CANCEL,
+                      BILLIONAIRE}
+
+    def __init__(self, data):
+        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
+        self._data = json.loads(data.decode())
+
+    def __eq__(self, other):
+        return self.command == other
+
+    def __repr__(self):
+        return repr(self._data)
+
+    def __getattr__(self, name):
+        return self._data.get(name)
 
 
 class BotDriver():
