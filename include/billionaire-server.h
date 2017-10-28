@@ -31,6 +31,7 @@
 #include <json-c/json.h>
 
 #include "billionaire.h"
+#include "game_state.h"
 
 /* Port to listen on. */
 #define SERVER_PORT 5555
