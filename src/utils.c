@@ -19,3 +19,11 @@ hash_addr(const char* addr, size_t length)
 
   return hash_str;
 }
+
+const char*
+JSON_to_str(json_object* json_obj, size_t* str_len)
+{
+  return json_object_to_json_string_length(json_obj,
+                                           JSON_C_TO_STRING_PLAIN,
+                                           str_len);
+}

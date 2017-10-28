@@ -18,10 +18,10 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
   new_game_state->player_limit = player_limit;
 
   /* Initialise deck */
-  new_game_state->deck = generate_cards(player_limit,
-                                        has_billionaire,
-                                        has_taxman,
-                                        &new_game_state->deck_size);
+  new_game_state->deck = generate_deck(player_limit,
+                                       has_billionaire,
+                                       has_taxman,
+                                       &new_game_state->deck_size);
 
   /* Shuffle the deck */
   shuffle_cards(new_game_state->deck,

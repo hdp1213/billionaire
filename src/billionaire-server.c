@@ -45,6 +45,7 @@
 #include <getopt.h>
 
 #include "billionaire-server.h"
+#include "utils.h"
 
 int
 setnonblock(int fd)
@@ -191,7 +192,7 @@ void
 send_command(struct bufferevent* bev, struct json_object* cmd)
 {
   size_t cmd_len = 0;
-  const char* cmd_str = stringify_command(cmd, &cmd_len);
+  const char* cmd_str = JSON_to_str(cmd, &cmd_len);
   bufferevent_write(bev, cmd_str, cmd_len);
 
   free((void*) cmd_str);

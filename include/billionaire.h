@@ -37,10 +37,4 @@ json_object* billionaire_join(const char* addr, size_t length, char** id);
 
 json_object* billionaire_start(card** player_cards, size_t num_cards);
 
-/**
- * Turn a json_object into a string and return both the string and its
- * length.
- */
-const char* stringify_command(json_object* json_obj, size_t* str_len);
-
 #endif

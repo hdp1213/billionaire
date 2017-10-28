@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include <json-c/json.h>
+
 #define HASH_LENGTH 9
 
 /**
@@ -12,5 +14,12 @@
  * Used to uniquely identify clients based on their address.
  */
 char* hash_addr(const char* addr, size_t length);
+
+/**
+ * Convert a JSON object to a C string.
+ *
+ * Also return the length of the resulting C string to str_len.
+ */
+const char* JSON_to_str(json_object* json_obj, size_t* str_len);
 
 #endif
