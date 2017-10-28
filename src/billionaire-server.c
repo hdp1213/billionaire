@@ -31,7 +31,6 @@
  */
 
 #include "billionaire-server.h"
-#include "billionaire.h"
 
 int
 setnonblock(int fd)
@@ -90,7 +89,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
 
   /* Remove the client from the tailq. */
   TAILQ_REMOVE(&client_tailq_head, client, entries);
-  NUM_CLIENTS--;
+  billionaire_game->num_players--;
 
   bufferevent_free(client->buf_ev);
   close(client->fd);
@@ -108,6 +107,13 @@ on_accept(int fd, short ev, void* arg)
 
   char client_addr_str[ADDR_STR_SIZE];
   struct json_object* join;
+  struct json_object* start;
+
+  /* If game is running, deny connection (TODO)
+  if (billionaire_game->running) {
+    return;
+  }
+  */
 
   client_fd = accept(fd, (struct sockaddr*) &client_addr, &client_len);
   if (client_fd < 0) {
@@ -135,7 +141,7 @@ on_accept(int fd, short ev, void* arg)
 
   /* Add the new client to the tailq. */
   TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
-  NUM_CLIENTS++;
+  billionaire_game->num_players++;
 
   /* Get client address:port as a string */
   snprintf(client_addr_str, ADDR_STR_SIZE, "%s:%d",
@@ -147,12 +153,24 @@ on_accept(int fd, short ev, void* arg)
   join = billionaire_join(client_addr_str, ADDR_STR_SIZE, &client->id);
   send_command(client->buf_ev, join);
 
-  printf("Sent JOIN to %s\n", client_addr_str);
+  printf("Sent JOIN to %s (%s)\n", client_addr_str, client->id);
 
   /* Free JOIN command */
   free(join);
 
-  /* Check if max number of players has joined */
+  /* Start game if max number of players has joined */
+  if (billionaire_game->num_players >= billionaire_game->player_limit) {
+    printf("Starting game...\n");
+    // billionaire_game->running = true;
+
+    TAILQ_FOREACH(client, &client_tailq_head, entries) {
+      // 1) split up the deck between all players
+      // 2) send each player their hand through the start command
+      // start = billionaire_start();
+
+      printf("Sent START to %s\n", client->id);
+    }
+  }
 }
 
 void
@@ -165,19 +183,95 @@ send_command(struct bufferevent* bev, struct json_object* cmd)
   free((void*) cmd_str);
 }
 
+void
+parse_command_line_options(int argc, char** argv, int* player_limit,
+                           bool* has_billionaire, bool* has_taxman) {
+  int c;
+
+  while (true) {
+    static struct option long_options[] = {
+      {"players",        required_argument, 0, 'p'},
+      {"no-billionaire", no_argument,       0, 'b'},
+      {"no-taxman",      no_argument,       0, 't'},
+      {"help",           no_argument,       0, 'h'}
+    };
+
+    int option_index = 0;
+
+    c = getopt_long(argc, argv, "p:bth", long_options, &option_index);
+
+    /* End of options has been reached */
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        /* If this option set a flag, do nothing else now. */
+        if (long_options[option_index].flag != 0)
+          break;
+        printf ("option %s", long_options[option_index].name);
+        if (optarg)
+          printf (" with arg %s", optarg);
+        printf ("\n");
+        break;
+
+      case 'p':
+        *player_limit = (int) strtol(optarg, NULL, 10);
+        if (*player_limit > MAX_PLAYERS) {
+          err(1, "player limit greater than %d", MAX_PLAYERS);
+        }
+        break;
+
+      case 'b':
+        *has_billionaire = false;
+        break;
+
+      case 't':
+        *has_taxman = false;
+        break;
+
+      case 'h':
+        printf("billionaire-server: a low-level TCP server for the Billionaire game\n");
+        printf("\n");
+        printf("  -p,--players N\tSet number of players (default: 4)\n");
+        printf("  -b,--no-billionaire\tRemove billionaire from play\n");
+        printf("  -t,--no-taxman\tRemove taxman from play\n");
+        printf("  -h,--help\t\tDisplay this help and quit\n");
+        exit(1);
+
+      default:
+        exit(1);
+    }
+  }
+}
+
 int
 main(int argc, char** argv)
 {
+  /* Default parameters */
+  int player_limit = 4;
+  bool has_billionaire = true, has_taxman = true;
+
   int listen_fd;
   struct sockaddr_in listen_addr;
   struct event ev_accept;
   int reuseaddr_on;
+
+  /* Parse external options */
+  parse_command_line_options(argc, argv,
+                             &player_limit,
+                             &has_billionaire, &has_taxman);
 
   // event_enable_debug_logging(EVENT_DBG_ALL);
   printf("Initialising server... ");
 
   /* Initialise libevent. */
   evbase = event_base_new();
+
+  /* Initialise Billionaire game state */
+  billionaire_game = game_state_new(player_limit,
+                                    has_billionaire, has_taxman);
+  // billionaire_game->running = false;
 
   /* Initialise the tailq. */
   TAILQ_INIT(&client_tailq_head);
@@ -218,6 +312,9 @@ main(int argc, char** argv)
 
   /* Start the event loop. */
   event_base_dispatch(evbase);
+
+  /* Hopefully this is called, but probably not haha */
+  // game_state_free(billionaire_game);
 
   return 0;
 }

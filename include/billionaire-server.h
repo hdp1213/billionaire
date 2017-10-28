@@ -17,6 +17,8 @@
 #include <errno.h>
 #include <err.h>
 
+#include <getopt.h>
+
 #include <sys/queue.h>
 
 /* Libevent. */
@@ -28,6 +30,8 @@
 /* JSON */
 #include <json-c/json.h>
 
+#include "billionaire.h"
+
 /* Port to listen on. */
 #define SERVER_PORT 5555
 
@@ -37,7 +41,12 @@
 /* The libevent event base.  In libevent 1 you didn't need to worry
  * about this for simple programs, but its used more in the libevent 2
  * API. */
-static struct event_base *evbase;
+static struct event_base* evbase;
+
+/**
+ * Global game state structure.
+ */
+static game_state* billionaire_game;
 
 /**
  * A struct for client specific data.
@@ -69,11 +78,6 @@ struct client {
 TAILQ_HEAD(, client) client_tailq_head;
 
 /**
- * Number of clients currently commected to the server.
- */
-static int NUM_CLIENTS = 0;
-
-/**
  * Set a socket to non-blocking mode.
  */
 int setnonblock(int fd);
@@ -101,5 +105,13 @@ void on_accept(int fd, short ev, void* arg);
  * Send a Billionaire command to a bufferevent.
  */
 void send_command(struct bufferevent* bev, struct json_object* cmd);
+
+/**
+ * Handle command line options using getopt_long.
+ */
+void parse_command_line_options(int argc, char** argv,
+                                int* player_limit,
+                                bool* has_billionaire,
+                                bool* has_taxman);
 
 #endif
