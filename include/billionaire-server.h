@@ -1,23 +1,10 @@
 #ifndef _BILLIONAIRE_SERVER_H_
 #define _BILLIONAIRE_SERVER_H_
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 /* Required by event.h. */
 #include <sys/time.h>
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <err.h>
-
-#include <getopt.h>
 
 #include <sys/queue.h>
 

@@ -30,6 +30,20 @@
  * @todo IPv6 support - using libevent socket helpers, if any.
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <err.h>
+
+#include <getopt.h>
+
 #include "billionaire-server.h"
 
 int
