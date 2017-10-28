@@ -40,7 +40,12 @@ struct card {
  * Convert a card structure to a json_object in preparation for sending
  * to client.
  */
-json_object* card_to_json(card* card_obj);
+json_object* card_to_JSON(card* card_obj);
+
+/**
+ * Create a new card object
+ */
+card* card_new(card_type type, commodity_type commodity);
 
 /**
  * Generate a set of cards to be used in a game with a set number of
@@ -48,8 +53,8 @@ json_object* card_to_json(card* card_obj);
  *
  * Also return the number of cards generated.
  */
-card** generate_cards(int num_players, bool has_billionaire,
-                      bool has_taxman, size_t* num_cards);
+card** generate_deck(int num_players, bool has_billionaire,
+                     bool has_taxman, size_t* num_cards);
 
 /**
  * Free memory allocated to a set of cards.

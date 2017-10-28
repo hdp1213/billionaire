@@ -9,22 +9,38 @@ const commodity_type ALL_COMMODITIES[] = {
 };
 
 json_object*
-card_to_json(card* card_obj)
+card_to_JSON(card* card_obj)
 {
   json_object* card_json = json_object_new_object();
 
   json_object* commodity = json_object_new_int((int) card_obj->commodity);
   json_object* type = json_object_new_int((int) card_obj->type);
 
-  json_object_object_add(card_json, "commodity", commodity);
   json_object_object_add(card_json, "type", type);
+  json_object_object_add(card_json, "commodity", commodity);
 
   return card_json;
 }
 
+card*
+card_new(card_type type, commodity_type commodity)
+{
+  card* new_card = malloc(sizeof(card*));
+
+  if (new_card == NULL) {
+    err(1, "malloc failed");
+  }
+
+  new_card->type = type;
+  new_card->commodity = commodity;
+
+  return new_card;
+}
+
 card**
-generate_cards(int num_players, bool has_billionaire,
-               bool has_taxman, size_t* num_cards) {
+generate_deck(int num_players, bool has_billionaire,
+              bool has_taxman, size_t* num_cards)
+{
   size_t i = 0;
 
   /* Get total number of cards to play with */
@@ -45,15 +61,7 @@ generate_cards(int num_players, bool has_billionaire,
 
     for (int icard = 0; icard < COMMODITY_AMOUNT; ++icard) {
       /* Each new card should have a different memory address */
-      card* new_commodity_card = malloc(sizeof(card*));
-
-      if (new_commodity_card == NULL) {
-        err(1, "malloc failed");
-      }
-
-      new_commodity_card->type = COMMODITY;
-      new_commodity_card->commodity = current_commodity;
-
+      card* new_commodity_card = card_new(COMMODITY, current_commodity);
       new_cards[i] = new_commodity_card;
       i++;
     }
@@ -61,29 +69,13 @@ generate_cards(int num_players, bool has_billionaire,
 
   /* Generate special cards, if any are needed */
   if (has_billionaire) {
-    card* new_billionaire_card = malloc(sizeof(card*));
-
-    if (new_billionaire_card == NULL) {
-      err(1, "malloc failed");
-    }
-
-    new_billionaire_card->type = BILLIONAIRE;
-    new_billionaire_card->commodity = NONE;
-
+    card* new_billionaire_card = card_new(BILLIONAIRE, NONE);
     new_cards[i] = new_billionaire_card;
     i++;
   }
 
   if (has_taxman) {
-    card* new_taxman_card = malloc(sizeof(card*));
-
-    if (new_taxman_card == NULL) {
-      err(1, "malloc failed");
-    }
-
-    new_taxman_card->type = TAXMAN;
-    new_taxman_card->commodity = NONE;
-
+    card* new_taxman_card = card_new(TAXMAN, NONE);
     new_cards[i] = new_taxman_card;
     i++;
   }
@@ -96,7 +88,8 @@ generate_cards(int num_players, bool has_billionaire,
 }
 
 void
-free_cards(card** cards, size_t num_cards) {
+free_cards(card** cards, size_t num_cards)
+{
   /* Free each card */
   for (size_t i = 0; i < num_cards; ++i) {
     free(cards[i]);
