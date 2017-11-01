@@ -22,4 +22,9 @@ char* hash_addr(const char* addr, size_t length);
  */
 const char* JSON_to_str(json_object* json_obj, size_t* str_len);
 
+/**
+ * Extract a value from a JSON object given its key
+ */
+json_object* get_JSON_value(json_object* json_obj, const char* key);
+
 #endif
