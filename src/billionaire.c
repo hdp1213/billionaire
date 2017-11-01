@@ -40,7 +40,7 @@ billionaire_start(card** player_cards, size_t num_cards)
   json_object* hand = json_object_new_array();
 
   for (size_t i = 0; i < num_cards; ++i) {
-    json_object* card = card_to_JSON(player_cards[i]);
+    json_object* card = JSON_from_card(player_cards[i]);
     json_object_array_add(hand, card);
   }
 

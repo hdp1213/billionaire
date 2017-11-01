@@ -40,6 +40,9 @@ billionaire-server: $(MAIN) $(SOURCE)
 test_card: $(TEST_CARD) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
+tests: test_card
+	$(addsuffix ;, $(addprefix ./, $^))
+
 clean:
 	rm -f billionaire-server
 	rm -rf $(BUILDDIR)/*

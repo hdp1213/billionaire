@@ -1,25 +1,41 @@
-#include <stdio.h>
 #include <errno.h>
 #include <err.h>
+#include <stdio.h>
 
 #include "card.h"
+#include "utils.h"
 
 const commodity_type ALL_COMMODITIES[] = {
   DIAMONDS, GOLD, OIL, PROPERTY, MINING, SHIPPING, BANKING, SPORT
 };
 
 json_object*
-card_to_JSON(card* card_obj)
+JSON_from_card(card* card_obj)
 {
   json_object* card_json = json_object_new_object();
 
-  json_object* commodity = json_object_new_int((int) card_obj->commodity);
   json_object* type = json_object_new_int((int) card_obj->type);
+  json_object* commodity = json_object_new_int((int) card_obj->commodity);
 
   json_object_object_add(card_json, "type", type);
   json_object_object_add(card_json, "commodity", commodity);
 
   return card_json;
+}
+
+card*
+card_from_JSON(json_object* json_card_obj)
+{
+  card_type type;
+  commodity_type commodity;
+
+  json_object* json_type = get_JSON_value(json_card_obj, "type");
+  json_object* json_commodity = get_JSON_value(json_card_obj, "commodity");
+
+  type = (card_type) json_object_get_int(json_type);
+  commodity = (commodity_type) json_object_get_int(json_commodity);
+
+  return card_new(type, commodity);
 }
 
 card*

@@ -37,13 +37,19 @@ struct card {
 };
 
 /**
- * Convert a card structure to a json_object in preparation for sending
+ * Convert a card structure to a JSON object in preparation for sending
  * to client.
  */
-json_object* card_to_JSON(card* card_obj);
+json_object* JSON_from_card(card* card_obj);
 
 /**
- * Create a new card object
+ * Convert a JSON object to a card structure after receiving from
+ * clients.
+ */
+card* card_from_JSON(json_object* json_card_obj);
+
+/**
+ * Create a new card object.
  */
 card* card_new(card_type type, commodity_type commodity);
 
@@ -72,7 +78,7 @@ void shuffle_cards(card** cards, size_t num_cards);
 void display_cards(card** cards, size_t num_cards);
 
 /**
- * Deal cards to players
+ * Deal cards to players. TODO.
  */
 void deal_cards(size_t num_players,
                 card**** player_hands, size_t** player_hand_sizes);
