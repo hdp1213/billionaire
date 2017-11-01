@@ -25,8 +25,8 @@ INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm -ljson-c
 
 # Object files to compile
-SOURCE = billionaire.o card.o game_state.o utils.o
 MAIN = billionaire-server.o
+SOURCE = billionaire.o card.o game_state.o utils.o
 
 TEST_CARD = tests/test_card.o
 
@@ -34,12 +34,12 @@ TEST_CARD = tests/test_card.o
 %.o: %.c .base
 	$(CC) $(CCFLAGS) $(INCLUDES) -c $< -o $(addprefix $(BUILDDIR)/, $(notdir $*.o))
 
-billionaire-server: $(SOURCE) $(MAIN)
+billionaire-server: $(MAIN) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-test_card: $(SOURCE) $(TEST_CARD)
+test_card: $(TEST_CARD) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
 clean:
-	rm -f billionaire-server *~
+	rm -f billionaire-server
 	rm -rf $(BUILDDIR)/*
