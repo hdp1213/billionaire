@@ -14,11 +14,13 @@ test_card_to_JSON(card_type type, commodity_type commodity)
   const char* card_json_str;
   size_t card_json_str_len;
 
-  char test_str[100];
+  char test_str[30];
 
   card* test_card = card_new(type, commodity);
 
   json_object* card_json = card_to_JSON(test_card);
+
+  free(test_card);
 
   card_json_str = JSON_to_str(card_json, &card_json_str_len);
 
@@ -27,6 +29,9 @@ test_card_to_JSON(card_type type, commodity_type commodity)
   printf("%s == %s ? ", card_json_str, test_str);
   assert(strcmp(card_json_str, test_str) == 0);
   printf("y\n");
+
+  free(card_json_str);
+  free(card_json);
 }
 
 int
