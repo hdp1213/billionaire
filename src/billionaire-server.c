@@ -124,11 +124,10 @@ on_accept(int fd, short ev, void* arg)
   struct json_object* join;
   struct json_object* start;
 
-  /* If game is running, deny connection (TODO)
+  /* If game is running, deny connection (TODO) */
   if (billionaire_game->running) {
     return;
   }
-  */
 
   client_fd = accept(fd, (struct sockaddr*) &client_addr, &client_len);
   if (client_fd < 0) {
@@ -176,7 +175,7 @@ on_accept(int fd, short ev, void* arg)
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
     printf("Starting game...\n");
-    // billionaire_game->running = true;
+    billionaire_game->running = true;
 
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       // 1) split up the deck between all players
@@ -286,7 +285,6 @@ main(int argc, char** argv)
   /* Initialise Billionaire game state */
   billionaire_game = game_state_new(player_limit,
                                     has_billionaire, has_taxman);
-  // billionaire_game->running = false;
 
   /* Initialise the tailq. */
   TAILQ_INIT(&client_tailq_head);

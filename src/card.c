@@ -25,7 +25,7 @@ card_to_JSON(card* card_obj)
 card*
 card_new(card_type type, commodity_type commodity)
 {
-  card* new_card = malloc(sizeof(card*));
+  card* new_card = malloc(sizeof(card));
 
   if (new_card == NULL) {
     err(1, "malloc failed");
@@ -49,7 +49,7 @@ generate_deck(int num_players, bool has_billionaire,
   *num_cards += has_taxman ? 1 : 0;
 
   /* Allocate array of new cards */
-  card** new_cards = calloc(*num_cards, sizeof(card**));
+  card** new_cards = calloc(*num_cards, sizeof(card*));
 
   if (new_cards == NULL) {
     err(1, "malloc failed");

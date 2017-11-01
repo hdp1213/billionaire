@@ -7,7 +7,7 @@
 game_state*
 game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
 {
-  game_state* new_game_state = malloc(sizeof(game_state*));
+  game_state* new_game_state = malloc(sizeof(game_state));
 
   if (new_game_state == NULL) {
     err(1, "malloc failed");
@@ -16,6 +16,7 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
   /* Initialise parameter values */
   new_game_state->num_players = 0;
   new_game_state->player_limit = player_limit;
+  new_game_state->running = false;
 
   /* Initialise deck */
   new_game_state->deck = generate_deck(player_limit,
@@ -36,4 +37,3 @@ game_state_free(game_state* gs_obj)
   free_cards(gs_obj->deck, gs_obj->deck_size);
   free(gs_obj);
 }
-

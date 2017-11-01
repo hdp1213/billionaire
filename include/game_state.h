@@ -16,7 +16,7 @@ struct game_state {
   int player_limit;
 
   /* Whether the game is currently running */
-  // bool running;
+  bool running;
 
   /* Size of deck */
   size_t deck_size;
