@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
+import abc
 import asyncio
-import json
+from json.decoder import JSONDecodeError
+import signal
+
+from command import Command, CommandList
+from card import Card
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5555
 ADDR = (TCP_IP, TCP_PORT)
 
 
-class JSONProtocol(asyncio.Protocol):
+class BaseBillionaireProtocol(asyncio.Protocol, metaclass=abc.ABCMeta):
     def __init__(self, loop=None):
         self.transport = None
         self.loop = loop if loop else asyncio.get_event_loop()
@@ -69,7 +74,7 @@ class JSONProtocol(asyncio.Protocol):
         await self._on_start.wait()
 
         start_cmd = self.received_cmds[Command.START]
-        self.cards = start_cmd.hand
+        self.cards = [Card.from_dict(c) for c in start_cmd.hand]
         print(f'Received following hand: {self.cards!r}')
 
     def data_received(self, data):
@@ -85,7 +90,7 @@ class JSONProtocol(asyncio.Protocol):
         except UnicodeDecodeError as e:
             print('Received invalid unicode')
             return
-        except json.decoder.JSONDecodeError as e:
+        except JSONDecodeError as e:
             print('Received invalid JSON')
             return
 
@@ -105,112 +110,58 @@ class JSONProtocol(asyncio.Protocol):
     def connection_lost(self, exc):
         """Handle lost connections"""
         print('The server closed the connection')
-        print('Stop the event loop')
+
+        # Cancel all current tasks
+        for event in asyncio.Task.all_tasks(self.loop):
+            event.cancel()
+
+        # Stop the current loop
         self.loop.stop()
 
+    @abc.abstractmethod
     async def issue_command(self):
         """Decide on a command to run"""
+        return NotImplemented
+
+
+class DumbBot(BaseBillionaireProtocol):
+    async def issue_command(self):
         return Command(Command.ASK, cards=[1, 2, 3])
-
-
-class Command():
-    """docstring for Command"""
-    JOIN = 'JOIN'
-    START = 'START'
-    RECEIVE = 'RECEIVE'
-    CHECK = 'CHECK'
-    FINISH = 'FINISH'
-    ASK = 'ASK'
-    CANCEL = 'CANCEL'
-    BILLIONAIRE = 'BILLIONAIRE'
-
-    valid_commands = {JOIN,
-                      START,
-                      RECEIVE,
-                      CHECK,
-                      FINISH,
-                      ASK,
-                      CANCEL,
-                      BILLIONAIRE}
-
-    def __init__(self, command, **attrs):
-        if command not in self.valid_commands:
-            raise ValueError(f'{command} not a valid command')
-
-        self.command = command
-        self._attrs = attrs
-
-    def __eq__(self, other):
-        return self.command == other
-
-    def __repr__(self):
-        return f'<Command.{self.command}, attrs={self._attrs!r}>'
-
-    def __getattr__(self, name):
-        return self._attrs.get(name)
-
-    @classmethod
-    def from_dict(cls, data):
-        command = data['command']
-        attrs = {key: val for key, val in data.items()
-                 if key != 'command'}
-        return cls(command, **attrs)
-
-    def to_dict(self):
-        return {'command': self.command, **self._attrs}
-
-    def to_json(self):
-        return json.dumps(self.to_dict(), separators=(',', ':'))
-
-
-class CommandList():
-    """docstring for CommandList"""
-    def __init__(self, *command_objs):
-        self._cmds = {cmd_obj.command: cmd_obj for cmd_obj in command_objs}
-
-    def __contains__(self, cmd_str):
-        return cmd_str in self._cmds
-
-    def __getitem__(self, cmd_str):
-        return self._cmds.get(cmd_str)
-
-    def __repr__(self):
-        return f'<CommandList {list(self._cmds.values())!r}>'
-
-    @classmethod
-    def from_data(cls, data):
-        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
-        commands = json.loads(data.decode())
-        command_objs = [Command.from_dict(cmd)
-                        for cmd in commands['commands']]
-        return cls(*command_objs)
-
-    def to_dict(self):
-        return {'commands': [cmd.to_dict() for cmd in self._cmds.values()]}
-
-    def to_json(self):
-        return json.dumps(self.to_dict(), separators=(',', ':'))
 
 
 class BotDriver():
     """docstring for BotDriver"""
-    def __init__(self, address, loop=None):
+    def __init__(self, address, protocol_cls, loop=None):
         self.address = address
         self.loop = loop if loop else asyncio.get_event_loop()
-        self.protocol = JSONProtocol(loop)
+        self.protocol = protocol_cls(loop)
 
         asyncio.ensure_future(self.command_loop())
 
     def run(self):
+        self.loop.add_signal_handler(signal.SIGTERM, self.sig_handle)
+        self.loop.add_signal_handler(signal.SIGINT, self.sig_handle)
+
         coro = self.loop.create_connection(lambda: self.protocol,
                                            *self.address)
-        self.loop.run_until_complete(coro)
-
         try:
+            self.loop.run_until_complete(coro)
             self.loop.run_forever()
-        except KeyboardInterrupt:
-            print('Closing connection')
-            self.loop.stop()
+
+        except ConnectionRefusedError:
+            print('Connection to {}:{} failed'.format(*self.address))
+
+        self.end_gracefully()
+
+    def end_gracefully(self):
+        for event in asyncio.Task.all_tasks(self.loop):
+            event.cancel()
+
+        self.loop.stop()
+
+    def sig_handle(self):
+        print('Closing connection')
+        self.end_gracefully()
 
     async def command_loop(self):
         while True:
@@ -220,5 +171,5 @@ class BotDriver():
 
 
 if __name__ == '__main__':
-    driver = BotDriver(ADDR)
+    driver = BotDriver(ADDR, DumbBot)
     driver.run()
