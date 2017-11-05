@@ -37,6 +37,15 @@ static struct event_base* evbase;
 static game_state* billionaire_game;
 
 /**
+ * Command structure used as a queue entry.
+ */
+struct command {
+  json_object* cmd_json;
+
+  STAILQ_ENTRY(command) cmds;
+};
+
+/**
  * A struct for client specific data.
  *
  * This also includes the tailq entry item so this struct can become a
@@ -57,13 +66,16 @@ struct client {
    * the tail queue.
    */
   TAILQ_ENTRY(client) entries;
+
+  /* The head of the single tail queue for commands */
+  STAILQ_HEAD(, command) command_stailq_head;
 };
 
 /**
  * The head of our tailq of all connected clients.  This is what will
  * be iterated to send a received message to all connected clients.
  */
-TAILQ_HEAD(, client) client_tailq_head;
+TAILQ_HEAD(client_head, client) client_tailq_head;
 
 /**
  * Set a socket to non-blocking mode.
@@ -90,9 +102,20 @@ void buffered_on_error(struct bufferevent* bev, short what, void* arg);
 void on_accept(int fd, short ev, void* arg);
 
 /**
- * Send a Billionaire command to a bufferevent.
+ * Add a Billionaire command to the client's command queue.
  */
-void send_command(struct bufferevent* bev, struct json_object* cmd);
+void enqueue_command(struct client* client, json_object* cmd);
+
+/**
+ * Send a series of Billionaire commands to each client.
+ *
+ * Runs through the command STAILQ head, popping command structures off
+ * and creating a json_object that is then sent to the corresponding
+ * client.
+ *
+ * Memory allocated to the JSON objects is (hopefully) freed here.
+ */
+void send_commands_to_clients(struct client_head* client_head);
 
 /**
  * Handle command line options using getopt_long.

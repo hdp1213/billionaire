@@ -20,13 +20,11 @@ make_command(const char* cmd_name)
 }
 
 json_object*
-billionaire_join(const char* addr, size_t length, char** id)
+billionaire_join(char* id)
 {
   json_object* cmd = make_command(Command.JOIN);
 
-  *id = hash_addr(addr, length);
-
-  json_object* bot_id = json_object_new_string(*id);
+  json_object* bot_id = json_object_new_string(id);
   json_object_object_add(cmd, "bot_id", bot_id);
 
   return cmd;

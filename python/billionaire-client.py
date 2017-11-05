@@ -14,15 +14,18 @@ class JSONProtocol(asyncio.Protocol):
 
         # asynchronous queue
         self.queue = asyncio.Queue()
+
+        # asynchronous methods
         asyncio.ensure_future(self._send_from_queue())
         asyncio.ensure_future(self.join_game())
+        asyncio.ensure_future(self.start_game())
 
         # asynchronous events
         self._on_join = asyncio.Event()
         self._on_start = asyncio.Event()
 
         # Billionaire bot variables
-        self.received = None
+        self.received_cmds = None
         self.id = None
         self._state = None
         self.cards = []
@@ -56,10 +59,17 @@ class JSONProtocol(asyncio.Protocol):
     async def join_game(self):
         await self._on_join.wait()
 
-        self.bot_id = self.received.bot_id
-        self.cards = self.received.cards
+        join_cmd = self.received_cmds[Command.JOIN]
+
+        self.bot_id = join_cmd.bot_id
         print(f'Joining game with ID {self.bot_id!r}')
-        print(f'Have following hand: {self.cards!r}')
+
+    async def start_game(self):
+        await self._on_start.wait()
+
+        start_cmd = self.received_cmds[Command.START]
+        self.cards = start_cmd.hand
+        print(f'Received following hand: {self.cards!r}')
 
     def data_received(self, data):
         """Receive commands from the server
@@ -70,7 +80,7 @@ class JSONProtocol(asyncio.Protocol):
             cards:          the cards received
         """
         try:
-            self.received = Command(data)
+            self.received_cmds = CommandList(data)
         except UnicodeDecodeError as e:
             print('Received invalid unicode')
             return
@@ -78,12 +88,12 @@ class JSONProtocol(asyncio.Protocol):
             print('Received invalid JSON')
             return
 
-        print(f'Received: {self.received!r}')
+        print(f'Received: {self.received_cmds!r}')
 
-        if self.received == Command.JOIN:
+        if Command.JOIN in self.received_cmds:
             self._on_join.set()
 
-        elif self.received == Command.START:
+        if Command.START in self.received_cmds:
             print('Starting game...')
             self._on_start.set()
 
@@ -121,17 +131,36 @@ class Command():
                       BILLIONAIRE}
 
     def __init__(self, data):
-        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
-        self._data = json.loads(data.decode())
+        self.command = data['command']
+        self._attrs = {key: val for key, val in data.items()
+                       if key != 'command'}
 
     def __eq__(self, other):
         return self.command == other
 
     def __repr__(self):
-        return repr(self._data)
+        return '<Command.{}, attrs={}>'.format(self.command, repr(self._attrs))
 
     def __getattr__(self, name):
-        return self._data.get(name)
+        return self._attrs.get(name)
+
+
+class CommandList():
+    """docstring for CommandList"""
+    def __init__(self, data):
+        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
+        commands = json.loads(data.decode())
+        command_objs = [Command(entry) for entry in commands['commands']]
+        self._cmds = {entry.command: entry for entry in command_objs}
+
+    def __contains__(self, cmd_str):
+        return cmd_str in self._cmds
+
+    def __getitem__(self, cmd_str):
+        return self._cmds.get(cmd_str)
+
+    def __repr__(self):
+        return repr(list(self._cmds.values()))
 
 
 class BotDriver():

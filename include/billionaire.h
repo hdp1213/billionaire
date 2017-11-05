@@ -28,13 +28,14 @@ struct commands {
 json_object* make_command(const char* cmd);
 
 /**
- * Create a JOIN command (JSON object), and generate a unique client id
- * based on its address.
- *
- * The id is written to the input variable id.
+ * Create a JOIN command (JSON object) containing an id to identify the
+ * client with.
  */
-json_object* billionaire_join(const char* addr, size_t length, char** id);
+json_object* billionaire_join(char* id);
 
+/**
+ * Create a START command containing the client's cards.
+ */
 json_object* billionaire_start(card** player_cards, size_t num_cards);
 
 #endif

@@ -129,8 +129,8 @@ on_accept(int fd, short ev, void* arg)
   struct client* client;
 
   char client_addr_str[ADDR_STR_SIZE];
-  struct json_object* join;
-  struct json_object* start;
+  json_object* join;
+  json_object* start;
 
   /* If game is running, deny connection (TODO) */
   if (billionaire_game->running) {
@@ -161,6 +161,9 @@ on_accept(int fd, short ev, void* arg)
    * called. */
   bufferevent_enable(client->buf_ev, EV_READ);
 
+  /* Also initialise the command queue */
+  STAILQ_INIT(&client->command_stailq_head);
+
   /* Add the new client to the tailq. */
   TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
   billionaire_game->num_players++;
@@ -169,25 +172,27 @@ on_accept(int fd, short ev, void* arg)
   snprintf(client_addr_str, ADDR_STR_SIZE, "%s:%d",
            inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
 
-  printf("Accepted connection from %s\n", client_addr_str);
+  /* Create unique id from address:port */
+  client->id = hash_addr(client_addr_str, ADDR_STR_SIZE);
 
-  /* Send a JOIN command to the client. */
-  join = billionaire_join(client_addr_str, ADDR_STR_SIZE, &client->id);
-  send_command(client->buf_ev, join);
+  printf("Accepted connection from %s (%s)\n", client_addr_str, client->id);
 
-  printf("Sent JOIN to %s (%s)\n", client_addr_str, client->id);
+  /* Queue a JOIN command for the client. */
+  join = billionaire_join(client->id);
+  enqueue_command(client, join);
 
-  /* Free JOIN command */
-  free(join);
+  printf("Queued JOIN for %s\n", client->id);
 
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
-    printf("Starting game...\n");
+    printf("Player limit %d reached. Game starting...\n",
+           billionaire_game->player_limit);
     billionaire_game->running = true;
 
     card*** player_hands;
     size_t* player_hand_sizes;
 
+    printf("Dealing cards...\n");
     deal_cards(billionaire_game->num_players, billionaire_game->deck,
                billionaire_game->deck_size, &player_hands,
                &player_hand_sizes);
@@ -200,26 +205,72 @@ on_accept(int fd, short ev, void* arg)
       start = billionaire_start(player_hands[iplayer],
                                 player_hand_sizes[iplayer]);
 
-      printf("Sent START to %s\n", client->id);
+      printf("Queued START for %s\n", client->id);
 
-      send_command(client->buf_ev, start);
-      free(start);
+      enqueue_command(client, start);
       iplayer++;
     }
 
     free(player_hand_sizes);
     free_player_hands(player_hands, billionaire_game->num_players);
   }
+
+  /* Flush all client command queues to the corresponding client */
+  send_commands_to_clients(&client_tailq_head);
 }
 
 void
-send_command(struct bufferevent* bev, struct json_object* cmd)
+enqueue_command(struct client* client, json_object* cmd)
 {
-  size_t cmd_len = 0;
-  const char* cmd_str = JSON_to_str(cmd, &cmd_len);
-  bufferevent_write(bev, cmd_str, cmd_len);
+  struct command* cmd_struct = calloc(1, sizeof(struct command));
 
-  free((void*) cmd_str);
+  cmd_struct->cmd_json = cmd;
+  STAILQ_INSERT_TAIL(&client->command_stailq_head, cmd_struct, cmds);
+}
+
+void
+send_commands_to_clients(struct client_head* client_head)
+{
+  struct client* client;
+
+  /* For each joined client, flush their command queue */
+  TAILQ_FOREACH(client, client_head, entries) {
+    struct command* cmd_struct;
+    struct command* next_cmd_struct;
+
+    json_object* command_wrapper = json_object_new_object();
+    json_object* json_commands = json_object_new_array();
+
+    /* This loop does not free memory allocated to the JSON object
+       representing the actual command */
+    cmd_struct = STAILQ_FIRST(&client->command_stailq_head);
+
+    while (cmd_struct != NULL) {
+      next_cmd_struct = STAILQ_NEXT(cmd_struct, cmds);
+      json_object_array_add(json_commands, cmd_struct->cmd_json);
+
+      // free(cmd_struct->cmd_json);
+      free(cmd_struct);
+      cmd_struct = next_cmd_struct;
+    }
+
+    /* Re-initialise the queue after it has been cleared */
+    STAILQ_INIT(&client->command_stailq_head);
+
+    /* Add JSON array to the wrapper object */
+    json_object_object_add(command_wrapper, "commands", json_commands);
+
+    /* Write resulting object to client's bufferevent */
+    size_t cmd_len = 0;
+    const char* cmd_str = JSON_to_str(command_wrapper, &cmd_len);
+    bufferevent_write(client->buf_ev, cmd_str, cmd_len);
+
+    printf("Sent queued command(s) to %s\n", client->id);
+
+    free((void*) cmd_str);
+    free(json_commands);
+    free(command_wrapper);
+  }
 }
 
 void
