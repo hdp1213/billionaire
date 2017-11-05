@@ -39,12 +39,12 @@ class JSONProtocol(asyncio.Protocol):
             cards:      the cards put forth to trade
         """
         await self._on_join.wait()
-        print("Ready to send from queue")
+        print("Ready to send from command queue")
 
         while True:
             data = await self.queue.get()
             self.transport.write(str(data).encode('utf-8'))
-            print(f'Sent: {data!r}')
+            print(f'SENT {data!r}')
 
     def connection_made(self, transport):
         """Send the command to the server upon connection"""
@@ -75,7 +75,7 @@ class JSONProtocol(asyncio.Protocol):
         """Receive commands from the server
 
         The return command consists of two fields:
-            type:           JOIN/START/GET
+            type:           JOIN/START/RECEIVE/CHECK/FINISH
             bot_id:         the unique identifier given by the server
             cards:          the cards received
         """
@@ -88,7 +88,7 @@ class JSONProtocol(asyncio.Protocol):
             print('Received invalid JSON')
             return
 
-        print(f'Received: {self.received_cmds!r}')
+        print(f'RECEIVED {self.received_cmds!r}')
 
         if Command.JOIN in self.received_cmds:
             self._on_join.set()
@@ -96,6 +96,10 @@ class JSONProtocol(asyncio.Protocol):
         if Command.START in self.received_cmds:
             print('Starting game...')
             self._on_start.set()
+
+        if Command.FINISH in self.received_cmds:
+            print('Stopping game...')
+            self._on_start.clear()
 
     def connection_lost(self, exc):
         """Handle lost connections"""

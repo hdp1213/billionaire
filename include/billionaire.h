@@ -38,4 +38,9 @@ json_object* billionaire_join(char* id);
  */
 json_object* billionaire_start(card** player_cards, size_t num_cards);
 
+/**
+ * Create a FINISH command.
+ */
+json_object* billionaire_finish();
+
 #endif

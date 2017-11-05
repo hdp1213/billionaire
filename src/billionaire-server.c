@@ -70,7 +70,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   uint8_t data[8192];
   size_t n;
 
-  printf("Received: ");
+  printf("Received from %s: ", this_client->id);
 
   /* Read 8k at a time and send it to all connected clients. */
   for (;;) {
@@ -104,7 +104,6 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     /* Client disconnected, remove the read event and the
      * free the client structure. */
     printf("Client '%s' disconnected.\n", client->id);
-    billionaire_game->running = false;
   }
   else {
     warn("Client '%s' socket error, disconnecting.\n", client->id);
@@ -118,6 +117,22 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   close(client->fd);
   free(client->id);
   free(client);
+
+  if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
+    printf("Player limit of %d no longer satisfied. Game stopping...\n",
+           billionaire_game->player_limit);
+    billionaire_game->running = false;
+
+    /* Send a FINISH command to each remaining client */
+    json_object* finish = billionaire_finish();
+
+    TAILQ_FOREACH(client, &client_tailq_head, entries) {
+      printf("Queued FINISH for %s\n", client->id);
+      enqueue_command(client, finish);
+    }
+  }
+
+  send_commands_to_clients(&client_tailq_head);
 }
 
 void
@@ -185,7 +200,7 @@ on_accept(int fd, short ev, void* arg)
 
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
-    printf("Player limit %d reached. Game starting...\n",
+    printf("Player limit of %d reached. Game starting...\n",
            billionaire_game->player_limit);
     billionaire_game->running = true;
 
@@ -240,6 +255,11 @@ send_commands_to_clients(struct client_head* client_head)
 
     json_object* command_wrapper = json_object_new_object();
     json_object* json_commands = json_object_new_array();
+
+    /* If a client does not have any commands to flush, skip it */
+    if (STAILQ_EMPTY(&client->command_stailq_head)) {
+      continue;
+    }
 
     /* This loop does not free memory allocated to the JSON object
        representing the actual command */

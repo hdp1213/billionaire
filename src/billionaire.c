@@ -46,3 +46,9 @@ billionaire_start(card** player_cards, size_t num_cards)
 
   return cmd;
 }
+
+json_object*
+billionaire_finish()
+{
+  return make_command(Command.FINISH);
+}
