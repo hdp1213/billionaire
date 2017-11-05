@@ -29,6 +29,7 @@ MAIN = billionaire-server.o
 SOURCE = billionaire.o card.o game_state.o utils.o
 
 CHECK_CARD = tests/check_card.o
+MEM_TEST = tests/mem_test.o
 
 # Rules
 %.o: %.c .base
@@ -39,6 +40,9 @@ billionaire-server: $(MAIN) $(SOURCE)
 
 check_card: $(CHECK_CARD) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS) -lcheck
+
+mem_test: $(MEM_TEST) $(SOURCE)
+	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
 check: check_card
 	$(addsuffix ;, $(addprefix ./, $^))
