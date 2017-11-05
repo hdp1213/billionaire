@@ -7,6 +7,8 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
+PEP8_IGNORE=""
+
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
 	against=HEAD
@@ -47,6 +49,7 @@ then
 fi
 
 # If there are whitespace errors, print the offending file names and fail.
+echo "Checking whitespace on committed files..."
 git diff-index --check --cached $against -- || exit $?
 
 toplevel_dir=$(git rev-parse --show-toplevel)
@@ -75,9 +78,34 @@ for file in $all_staged_files; do
 	fi
 done
 
-# Run cppcheck on source files
+# Run pytest suite if any .py files are in tests/
+if [ -f ${toplevel_dir}/tests/*.py ]; then
+	echo "Running pytest..."
+	/usr/bin/env pytest || exit $?
+else
+	echo "No .py files found in ${toplevel_dir}/tests. Skipping pytest..."
+fi
+
+# Run pep8 on source .py files
+staged_py_files=$(git diff $against --cached --name-only | grep \.py$)
+
+if [ -n "$staged_py_files" ]; then
+	echo "Running pep8 on committed python files..."
+	for py_file in $staged_py_files; do
+		if [ -e $py_file ]; then
+			/usr/bin/env pep8 --exclude="$PEP8_IGNORE" $py_file || exit $?
+		fi
+	done
+else
+	echo "No .py files committed. Skipping pep8..."
+fi
+
+# Run cppcheck on C/C++ source files
 staged_source_files=$(git diff $against --cached --name-only | grep -Ee '\.(c|cpp|cc|cxx)$')
 
 if [ -n "$staged_source_files" ]; then
+	echo "Running cppcheck on committed C/C++ source files..."
 	cppcheck --enable=all --error-exitcode=1 $staged_source_files -I include/ || exit $?
+else
+	echo "No C/C++ source files committed. Skipping cppcheck..."
 fi
