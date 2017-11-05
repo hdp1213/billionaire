@@ -33,7 +33,7 @@ test_JSON_from_card(card_type type, commodity_type commodity)
 
   assert(strcmp(card_json_str, test_str) == 0);
 
-  free(card_json_str);
+  free((void*) card_json_str);
 }
 
 void
