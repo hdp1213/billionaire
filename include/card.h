@@ -91,12 +91,4 @@ void deal_cards(size_t num_players, card** deck, size_t deck_size,
  */
 void free_player_hands(card*** player_hands, size_t num_players);
 
-/**
- * Assert that two cards are equal.
- *
- * If they are not equal, an assertion error is thrown and the program
- * stops. Really only convenient for unit testing.
- */
-void assert_card_equality(card* card1, card* card2);
-
 #endif

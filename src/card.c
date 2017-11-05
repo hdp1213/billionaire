@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <errno.h>
 #include <err.h>
 #include <stdio.h>
@@ -94,11 +93,10 @@ generate_deck(int num_players, bool has_billionaire,
   if (has_taxman) {
     card* new_taxman_card = card_new(TAXMAN, NONE);
     new_cards[i] = new_taxman_card;
-    i++;
   }
 
 #ifdef DBUG
-  printf("Generated %d/%d new cards\n", i, *num_cards);
+  printf("Generated %zu/%zu new cards\n", i, *num_cards);
 #endif
 
   return new_cards;
@@ -135,7 +133,7 @@ void
 display_cards(card** cards, size_t num_cards)
 {
   for (size_t i = 0; i < num_cards; ++i) {
-    printf("Card %d:\n", i);
+    printf("Card %zu:\n", i);
     printf("\tType: %d\n", (int) cards[i]->type);
     printf("\tCommodity: %d\n", (int) cards[i]->commodity);
   }
@@ -174,7 +172,7 @@ deal_cards(size_t num_players, card** deck, size_t deck_size,
     /* Get the current player */
     size_t iplayer = i % num_players;
 #ifdef DBUG
-    printf("Player %d, card %d\n", iplayer, i);
+    printf("Player %zu, card %zu\n", iplayer, i);
 #endif
 
     /* Give a card to a player, using player_hand_sizes to track the
@@ -199,11 +197,4 @@ free_player_hands(card*** player_hands, size_t num_players)
   }
 
   free(player_hands);
-}
-
-void
-assert_card_equality(card* card1, card* card2)
-{
-  assert(card1->type == card2->type);
-  assert(card1->commodity == card2->commodity);
 }
