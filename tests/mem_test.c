@@ -1,6 +1,8 @@
 #include <mcheck.h>
+#include <stdio.h>
 
 #include "card.h"
+#include "utils.h"
 
 void
 mem_check_card_JSON()
@@ -23,6 +25,9 @@ mem_check_deck_JSON()
   bool has_taxman = true;
   size_t deck_size = 0;
 
+  const char* total_str;
+  size_t total_str_len;
+
   card** deck = generate_deck(num_players, has_billionaire, has_taxman,
                               &deck_size);
 
@@ -35,6 +40,10 @@ mem_check_deck_JSON()
   }
 
   json_object_object_add(total, "hand", hand);
+
+  total_str = JSON_to_str(total, &total_str_len);
+
+  printf("%s\n", total_str);
 
   free_cards(deck, deck_size);
   json_object_put(total);
