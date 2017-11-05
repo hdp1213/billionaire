@@ -1,10 +1,9 @@
-#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <json-c/json.h>
+#include <check.h>
 
 #include "card.h"
 #include "utils.h"
@@ -13,7 +12,14 @@ extern const commodity_type ALL_COMMODITIES[];
 const int TOTAL_COMMODITIES = 8;
 
 void
-test_JSON_from_card(card_type type, commodity_type commodity)
+ck_assert_card_eq(card* card1, card* card2)
+{
+  ck_assert_int_eq(card1->type, card2->type);
+  ck_assert_int_eq(card1->commodity, card2->commodity);
+}
+
+void
+ck_assert_JSON_from_card(card_type type, commodity_type commodity)
 {
   card* test_card;
   json_object* card_json;
@@ -29,15 +35,14 @@ test_JSON_from_card(card_type type, commodity_type commodity)
   card_json_str = JSON_to_str(card_json, &card_json_str_len);
   sprintf(test_str, "{\"type\":%d,\"commodity\":%d}", type, commodity);
 
-  free(card_json);
+  ck_assert_str_eq(card_json_str, test_str);
 
-  assert(strcmp(card_json_str, test_str) == 0);
-
+  json_object_put(card_json);
   free((void*) card_json_str);
 }
 
 void
-test_card_round_trip(card_type type, commodity_type commodity)
+ck_assert_card_round_trip(card_type type, commodity_type commodity)
 {
   card* start_card;
   json_object* card_json;
@@ -47,23 +52,66 @@ test_card_round_trip(card_type type, commodity_type commodity)
   card_json = JSON_from_card(start_card);
   end_card = card_from_JSON(card_json);
 
-  free(card_json);
+  json_object_put(card_json);
 
-  assert_card_equality(start_card, end_card);
+  ck_assert_card_eq(start_card, end_card);
 
   free(start_card);
   free(end_card);
 }
 
-void
-test_card(card_type type, commodity_type commodity)
+START_TEST(test_card_commodities)
 {
-  test_JSON_from_card(type, commodity);
-  test_card_round_trip(type, commodity);
+  ck_assert_JSON_from_card(COMMODITY, ALL_COMMODITIES[_i]);
+  ck_assert_card_round_trip(COMMODITY, ALL_COMMODITIES[_i]);
 }
+END_TEST
 
-void
-test_card_dealing()
+START_TEST(test_card_billionaire)
+{
+  ck_assert_JSON_from_card(BILLIONAIRE, NONE);
+  ck_assert_card_round_trip(BILLIONAIRE, NONE);
+}
+END_TEST
+
+START_TEST(test_card_taxman)
+{
+  ck_assert_JSON_from_card(TAXMAN, NONE);
+  ck_assert_card_round_trip(TAXMAN, NONE);
+}
+END_TEST
+
+START_TEST(test_card_deck)
+{
+  size_t num_players = 8;
+  bool has_billionaire = true;
+  bool has_taxman = true;
+  size_t deck_size = 0;
+
+  card** deck = generate_deck(num_players, has_billionaire, has_taxman,
+                              &deck_size);
+
+  size_t* commodity_amt = calloc(TOTAL_COMMODITIES, sizeof(size_t));
+
+  for (size_t i = 0; i < deck_size; ++i) {
+    card* current_card = deck[i];
+    if (current_card->commodity != NONE) {
+      commodity_amt[current_card->commodity]++;
+    }
+  }
+
+  /* Check that each commodity appears COMMODITY_AMOUNT times in the
+     deck */
+  for (int cmdty = 0; cmdty < TOTAL_COMMODITIES; ++cmdty) {
+    ck_assert_int_eq(commodity_amt[cmdty], COMMODITY_AMOUNT);
+  }
+
+  free(commodity_amt);
+  free_cards(deck, deck_size);
+}
+END_TEST
+
+START_TEST(test_card_dealing)
 {
   const size_t real_hand_sizes[] = { 10, 10, 9, 9 };
   card* real_player1_hand[] = {
@@ -94,36 +142,59 @@ test_card_dealing()
              &player_hands, &player_hand_sizes);
 
   for (size_t i = 0; i < num_players; ++i) {
-    assert(player_hand_sizes[i] == real_hand_sizes[i]);
+    ck_assert_int_eq(player_hand_sizes[i], real_hand_sizes[i]);
   }
 
   /* Check player one's hand: */
   for (size_t i = 0; i < player_hand_sizes[0]; ++i) {
-    assert_card_equality(player_hands[0][i], real_player1_hand[i]);
+    ck_assert_card_eq(player_hands[0][i], real_player1_hand[i]);
   }
 
   free(player_hand_sizes);
   free_player_hands(player_hands, num_players);
   free_cards(deck, deck_size);
 }
+END_TEST
+
+Suite*
+card_suite(void)
+{
+  Suite* s;
+  TCase* tc_core;
+  TCase* tc_manip;
+
+  s = suite_create("Card");
+
+  tc_core = tcase_create("Core");
+
+  tcase_add_loop_test(tc_core, test_card_commodities, 0, TOTAL_COMMODITIES);
+  tcase_add_test(tc_core, test_card_billionaire);
+  tcase_add_test(tc_core, test_card_taxman);
+
+  tc_manip = tcase_create("Manipulation");
+
+  tcase_add_test(tc_manip, test_card_deck);
+  tcase_add_test(tc_manip, test_card_dealing);
+
+  suite_add_tcase(s, tc_core);
+  suite_add_tcase(s, tc_manip);
+
+  return s;
+}
 
 int
 main()
 {
-  printf("Running test_card\n");
+  int num_failed;
+  Suite* s;
+  SRunner* sr;
 
-  printf("Testing card conversions...\n");
-  for (int i = 0; i < TOTAL_COMMODITIES; ++i) {
-    test_card(COMMODITY, ALL_COMMODITIES[i]);
-  }
+  s = card_suite();
+  sr = srunner_create(s);
 
-  test_card(BILLIONAIRE, NONE);
-  test_card(TAXMAN, NONE);
+  srunner_run_all(sr, CK_NORMAL);
+  num_failed = srunner_ntests_failed(sr);
+  srunner_free(sr);
 
-  printf("Testing card dealing...\n");
-  test_card_dealing();
-
-  printf("Testing complete\n");
-
-  return 0;
+  return (num_failed == 0) ? 0 : EXIT_FAILURE;
 }
