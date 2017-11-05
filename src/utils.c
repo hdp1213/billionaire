@@ -21,7 +21,7 @@ hash_addr(const char* addr, size_t length)
     err(1, "malloc failed");
   }
 
-  snprintf(hash_str, HASH_LENGTH, "%x", hash);
+  snprintf(hash_str, HASH_LENGTH, "%08x", hash);
 
   return hash_str;
 }
