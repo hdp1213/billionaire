@@ -156,9 +156,11 @@ class Command():
                  if key != 'command'}
         return cls(command, **attrs)
 
+    def to_dict(self):
+        return {'command': self.command, **self._attrs}
+
     def to_json(self):
-        return json.dumps({'command': self.command, **self._attrs},
-                          separators=(',', ':'))
+        return json.dumps(self.to_dict(), separators=(',', ':'))
 
 
 class CommandList():
@@ -183,11 +185,11 @@ class CommandList():
                         for cmd in commands['commands']]
         return cls(*command_objs)
 
+    def to_dict(self):
+        return {'commands': [cmd.to_dict() for cmd in self._cmds.values()]}
+
     def to_json(self):
-        return json.dumps({'commands':
-                           [{'command': cmd.command, **cmd._attrs}
-                            for cmd in self._cmds.values()]},
-                          separators=(',', ':'))
+        return json.dumps(self.to_dict(), separators=(',', ':'))
 
 
 class BotDriver():
