@@ -68,14 +68,13 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   struct client* this_client = (struct client*) arg;
   struct client* client;
   uint8_t data[8192];
-  size_t n;
 
   printf("Received from %s: ", this_client->id);
 
   /* Read 8k at a time and send it to all connected clients. */
   for (;;) {
-    n = bufferevent_read(bev, data, sizeof(data));
-    if (n <= 0) {
+    size_t n = bufferevent_read(bev, data, sizeof(data));
+    if (n == 0) {
       /* Done. */
       break;
     }
@@ -145,7 +144,6 @@ on_accept(int fd, short ev, void* arg)
 
   char client_addr_str[ADDR_STR_SIZE];
   json_object* join;
-  json_object* start;
 
   /* If game is running, deny connection (TODO) */
   if (billionaire_game->running) {
@@ -217,7 +215,7 @@ on_accept(int fd, short ev, void* arg)
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
-      start = billionaire_start(player_hands[iplayer],
+      json_object* start = billionaire_start(player_hands[iplayer],
                                 player_hand_sizes[iplayer]);
 
       printf("Queued START for %s\n", client->id);
@@ -246,7 +244,7 @@ enqueue_command(struct client* client, json_object* cmd)
 void
 send_commands_to_clients(struct client_head* client_head)
 {
-  struct client* client;
+  struct client* client = NULL;
 
   /* For each joined client, flush their command queue */
   TAILQ_FOREACH(client, client_head, entries) {
@@ -269,7 +267,6 @@ send_commands_to_clients(struct client_head* client_head)
       next_cmd_struct = STAILQ_NEXT(cmd_struct, cmds);
       json_object_array_add(json_commands, cmd_struct->cmd_json);
 
-      // free(cmd_struct->cmd_json);
       free(cmd_struct);
       cmd_struct = next_cmd_struct;
     }
@@ -287,17 +284,14 @@ send_commands_to_clients(struct client_head* client_head)
 
     printf("Sent queued command(s) to %s\n", client->id);
 
-    free((void*) cmd_str);
-    free(json_commands);
-    free(command_wrapper);
+    /* Free the command wrapper and its constituent objects */
+    json_object_put(command_wrapper);
   }
 }
 
 void
 parse_command_line_options(int argc, char** argv, int* player_limit,
                            bool* has_billionaire, bool* has_taxman) {
-  int c;
-
   while (true) {
     static struct option long_options[] = {
       {"players",        required_argument, 0, 'p'},
@@ -308,7 +302,7 @@ parse_command_line_options(int argc, char** argv, int* player_limit,
 
     int option_index = 0;
 
-    c = getopt_long(argc, argv, "p:bth", long_options, &option_index);
+    int c = getopt_long(argc, argv, "p:bth", long_options, &option_index);
 
     /* End of options has been reached */
     if (c == -1)

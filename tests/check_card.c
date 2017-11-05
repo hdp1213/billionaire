@@ -38,7 +38,6 @@ ck_assert_JSON_from_card(card_type type, commodity_type commodity)
   ck_assert_str_eq(card_json_str, test_str);
 
   json_object_put(card_json);
-  free((void*) card_json_str);
 }
 
 void
