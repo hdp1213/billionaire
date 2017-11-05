@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,8 +49,7 @@ test_card_round_trip(card_type type, commodity_type commodity)
 
   free(card_json);
 
-  assert(start_card->type == end_card->type);
-  assert(start_card->commodity == end_card->commodity);
+  assert_card_equality(start_card, end_card);
 
   free(start_card);
   free(end_card);
@@ -59,9 +59,52 @@ void
 test_card(card_type type, commodity_type commodity)
 {
   test_JSON_from_card(type, commodity);
-  printf(". ");
   test_card_round_trip(type, commodity);
-  printf(". ");
+}
+
+void
+test_card_dealing()
+{
+  const size_t real_hand_sizes[] = { 10, 10, 9, 9 };
+  card* real_player1_hand[] = {
+    card_new(COMMODITY, DIAMONDS),
+    card_new(COMMODITY, DIAMONDS),
+    card_new(COMMODITY, DIAMONDS),
+    card_new(COMMODITY, GOLD),
+    card_new(COMMODITY, GOLD),
+    card_new(COMMODITY, OIL),
+    card_new(COMMODITY, OIL),
+    card_new(COMMODITY, PROPERTY),
+    card_new(COMMODITY, PROPERTY),
+    card_new(BILLIONAIRE, NONE)
+  };
+
+  size_t num_players = 4;
+  bool has_billionaire = true;
+  bool has_taxman = true;
+  size_t deck_size = 0;
+
+  card** deck = generate_deck(num_players, has_billionaire, has_taxman,
+                              &deck_size);
+
+  card*** player_hands;
+  size_t* player_hand_sizes;
+
+  deal_cards(num_players, deck, deck_size,
+             &player_hands, &player_hand_sizes);
+
+  for (size_t i = 0; i < num_players; ++i) {
+    assert(player_hand_sizes[i] == real_hand_sizes[i]);
+  }
+
+  /* Check player one's hand: */
+  for (size_t i = 0; i < player_hand_sizes[0]; ++i) {
+    assert_card_equality(player_hands[0][i], real_player1_hand[i]);
+  }
+
+  free(player_hand_sizes);
+  free_player_hands(player_hands, num_players);
+  free_cards(deck, deck_size);
 }
 
 int
@@ -69,6 +112,7 @@ main()
 {
   printf("Running test_card\n");
 
+  printf("Testing card conversions...\n");
   for (int i = 0; i < TOTAL_COMMODITIES; ++i) {
     test_card(COMMODITY, ALL_COMMODITIES[i]);
   }
@@ -76,7 +120,10 @@ main()
   test_card(BILLIONAIRE, NONE);
   test_card(TAXMAN, NONE);
 
-  printf("\n");
+  printf("Testing card dealing...\n");
+  test_card_dealing();
+
+  printf("Testing complete\n");
 
   return 0;
 }

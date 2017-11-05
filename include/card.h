@@ -78,9 +78,25 @@ void shuffle_cards(card** cards, size_t num_cards);
 void display_cards(card** cards, size_t num_cards);
 
 /**
- * Deal cards to players. TODO.
+ * Deal cards to players.
  */
-void deal_cards(size_t num_players,
+void deal_cards(size_t num_players, card** deck, size_t deck_size,
                 card**** player_hands, size_t** player_hand_sizes);
+
+/**
+ * Free memory associated with the hand array.
+ *
+ * DOES NOT free individual cards, as these must be removed upon final
+ * cleanup when the deck is freed.
+ */
+void free_player_hands(card*** player_hands, size_t num_players);
+
+/**
+ * Assert that two cards are equal.
+ *
+ * If they are not equal, an assertion error is thrown and the program
+ * stops. Really only convenient for unit testing.
+ */
+void assert_card_equality(card* card1, card* card2);
 
 #endif

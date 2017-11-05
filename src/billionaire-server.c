@@ -70,6 +70,8 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   uint8_t data[8192];
   size_t n;
 
+  printf("Received: ");
+
   /* Read 8k at a time and send it to all connected clients. */
   for (;;) {
     n = bufferevent_read(bev, data, sizeof(data));
@@ -80,12 +82,17 @@ buffered_on_read(struct bufferevent* bev, void* arg)
     
     /* Send data to all connected clients except for the
      * client that sent the data. */
+    /*
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       if (client != this_client) {
         bufferevent_write(client->buf_ev, data, n);
       }
     }
+    */
+
+    printf("%s", data);
   }
+  printf("\n");
 }
 
 void
@@ -97,6 +104,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     /* Client disconnected, remove the read event and the
      * free the client structure. */
     printf("Client '%s' disconnected.\n", client->id);
+    billionaire_game->running = false;
   }
   else {
     warn("Client '%s' socket error, disconnecting.\n", client->id);
@@ -177,13 +185,30 @@ on_accept(int fd, short ev, void* arg)
     printf("Starting game...\n");
     billionaire_game->running = true;
 
+    card*** player_hands;
+    size_t* player_hand_sizes;
+
+    deal_cards(billionaire_game->num_players, billionaire_game->deck,
+               billionaire_game->deck_size, &player_hands,
+               &player_hand_sizes);
+
+    size_t iplayer = 0;
+
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
-      // start = billionaire_start();
+      start = billionaire_start(player_hands[iplayer],
+                                player_hand_sizes[iplayer]);
 
       printf("Sent START to %s\n", client->id);
+
+      send_command(client->buf_ev, start);
+      free(start);
+      iplayer++;
     }
+
+    free(player_hand_sizes);
+    free_player_hands(player_hands, billionaire_game->num_players);
   }
 }
 

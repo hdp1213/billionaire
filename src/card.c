@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <err.h>
 #include <stdio.h>
@@ -44,7 +45,7 @@ card_new(card_type type, commodity_type commodity)
   card* new_card = malloc(sizeof(card));
 
   if (new_card == NULL) {
-    err(1, "malloc failed");
+    err(1, "new_card malloc failed");
   }
 
   new_card->type = type;
@@ -68,7 +69,7 @@ generate_deck(int num_players, bool has_billionaire,
   card** new_cards = calloc(*num_cards, sizeof(card*));
 
   if (new_cards == NULL) {
-    err(1, "malloc failed");
+    err(1, "new_cards malloc failed");
   }
 
   /* Generate commodity cards */
@@ -138,4 +139,71 @@ display_cards(card** cards, size_t num_cards)
     printf("\tType: %d\n", (int) cards[i]->type);
     printf("\tCommodity: %d\n", (int) cards[i]->commodity);
   }
+}
+
+void
+deal_cards(size_t num_players, card** deck, size_t deck_size,
+           card**** player_hands, size_t** player_hand_sizes)
+{
+  /* Allocate a "hand" for each player */
+  *player_hands = calloc(num_players, sizeof(card**));
+
+  if (*player_hands == NULL) {
+    err(1, "*player_hands malloc failed");
+  }
+
+  /* Also allocate the array going to hold the size of each player's
+     hand. Do a zero initialisation */
+  *player_hand_sizes = calloc(num_players, sizeof(size_t));
+
+  if (*player_hand_sizes == NULL) {
+    err(1, "*player_hand_sizes malloc failed");
+  }
+
+  /* Each hand has a maximum size of MAX_HAND_SIZE */
+  for (size_t i = 0; i < num_players; ++i) {
+    (*player_hands)[i] = calloc(MAX_HAND_SIZE, sizeof(card*));
+
+    if ((*player_hands)[i] == NULL) {
+      err(1, "(*player_hands)[%d] malloc failed", i);
+    }
+  }
+
+  /* Now, deal the cards out */
+  for (size_t i = 0; i < deck_size; ++i) {
+    /* Get the current player */
+    size_t iplayer = i % num_players;
+#ifdef DBUG
+    printf("Player %d, card %d\n", iplayer, i);
+#endif
+
+    /* Give a card to a player, using player_hand_sizes to track the
+       position of each new card in the hand. */
+    (*player_hands)[iplayer][(*player_hand_sizes)[iplayer]] = deck[i];
+
+    /* Increment the player's hand's size by one */
+    (*player_hand_sizes)[iplayer]++;
+  }
+}
+
+void
+free_player_hands(card*** player_hands, size_t num_players)
+{
+  /* Freeing player_hands[iplayer][i] for
+   * i < player_hand_sizes[iplayer] would free memory associated with
+   * cards. This action is reserved for a free_cards() call on the
+   * original deck array instead.
+   */
+  for (size_t iplayer = 0; iplayer < num_players; ++iplayer) {
+    free(player_hands[iplayer]);
+  }
+
+  free(player_hands);
+}
+
+void
+assert_card_equality(card* card1, card* card2)
+{
+  assert(card1->type == card2->type);
+  assert(card1->commodity == card2->commodity);
 }

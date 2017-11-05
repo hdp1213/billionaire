@@ -18,7 +18,7 @@ hash_addr(const char* addr, size_t length)
   hash_str = calloc(HASH_LENGTH, sizeof(char));
 
   if (hash_str == NULL) {
-    err(1, "malloc failed")
+    err(1, "malloc failed");
   }
 
   snprintf(hash_str, HASH_LENGTH, "%x", hash);
