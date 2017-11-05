@@ -15,7 +15,7 @@ CC = gcc
 
 # Flags
 OPTFLAGS = -O2 -pipe -march=armv6zk -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
-DBUG = -g -Wall -Wextra -Wcast-align
+DBUG = -g -Wall -Wextra -Wcast-align# -fprofile-arcs -ftest-coverage -pg
 
 CCFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
 LDFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
@@ -28,7 +28,7 @@ LIBS = -levent -lrt -lm -ljson-c
 MAIN = billionaire-server.o
 SOURCE = billionaire.o card.o game_state.o utils.o
 
-TEST_CARD = tests/test_card.o
+TEST_CARD = tests/check_card.o
 
 # Rules
 %.o: %.c .base
@@ -37,10 +37,10 @@ TEST_CARD = tests/test_card.o
 billionaire-server: $(MAIN) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-test_card: $(TEST_CARD) $(SOURCE)
+check_card: $(TEST_CARD) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-tests: test_card
+check: check_card
 	$(addsuffix ;, $(addprefix ./, $^))
 
 clean:
