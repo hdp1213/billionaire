@@ -7,6 +7,7 @@ TCP_IP = '127.0.0.1'
 TCP_PORT = 5555
 ADDR = (TCP_IP, TCP_PORT)
 
+
 class JSONProtocol(asyncio.Protocol):
     def __init__(self, loop=None):
         self.transport = None
@@ -27,7 +28,6 @@ class JSONProtocol(asyncio.Protocol):
         # Billionaire bot variables
         self.received_cmds = None
         self.id = None
-        self._state = None
         self.cards = []
 
     async def _send_from_queue(self):
@@ -42,19 +42,20 @@ class JSONProtocol(asyncio.Protocol):
         print("Ready to send from command queue")
 
         while True:
-            data = await self.queue.get()
-            self.transport.write(str(data).encode('utf-8'))
-            print(f'SENT {data!r}')
+            command = await self.queue.get()
+            data = command.to_json()
+            self.transport.write(data.encode('utf-8'))
+            print(f'SENT {command!r}')
 
     def connection_made(self, transport):
         """Send the command to the server upon connection"""
         self.transport = transport
         print("Connected to server")
 
-    async def send_command(self, data):
+    async def send_command(self, command):
         """Feed a command to the sender coroutine"""
         await self._on_start.wait()
-        await self.queue.put(data)
+        await self.queue.put(command)
 
     async def join_game(self):
         await self._on_join.wait()
@@ -80,7 +81,7 @@ class JSONProtocol(asyncio.Protocol):
             cards:          the cards received
         """
         try:
-            self.received_cmds = CommandList(data)
+            self.received_cmds = CommandList.from_data(data)
         except UnicodeDecodeError as e:
             print('Received invalid unicode')
             return
@@ -109,20 +110,18 @@ class JSONProtocol(asyncio.Protocol):
 
     async def issue_command(self):
         """Decide on a command to run"""
-        command = json.dumps({'command': 'ASK', 'cards': [1,2,3]},
-                             separators=(',', ':'))
-        return command
+        return Command(Command.ASK, cards=[1, 2, 3])
 
 
 class Command():
     """docstring for Command"""
-    JOIN        = 'JOIN'
-    START       = 'START'
-    RECEIVE     = 'RECEIVE'
-    CHECK       = 'CHECK'
-    FINISH      = 'FINISH'
-    ASK         = 'ASK'
-    CANCEL      = 'CANCEL'
+    JOIN = 'JOIN'
+    START = 'START'
+    RECEIVE = 'RECEIVE'
+    CHECK = 'CHECK'
+    FINISH = 'FINISH'
+    ASK = 'ASK'
+    CANCEL = 'CANCEL'
     BILLIONAIRE = 'BILLIONAIRE'
 
     valid_commands = {JOIN,
@@ -134,28 +133,38 @@ class Command():
                       CANCEL,
                       BILLIONAIRE}
 
-    def __init__(self, data):
-        self.command = data['command']
-        self._attrs = {key: val for key, val in data.items()
-                       if key != 'command'}
+    def __init__(self, command, **attrs):
+        if command not in self.valid_commands:
+            raise ValueError(f'{command} not a valid command')
+
+        self.command = command
+        self._attrs = attrs
 
     def __eq__(self, other):
         return self.command == other
 
     def __repr__(self):
-        return '<Command.{}, attrs={}>'.format(self.command, repr(self._attrs))
+        return f'<Command.{self.command}, attrs={self._attrs!r}>'
 
     def __getattr__(self, name):
         return self._attrs.get(name)
 
+    @classmethod
+    def from_dict(cls, data):
+        command = data['command']
+        attrs = {key: val for key, val in data.items()
+                 if key != 'command'}
+        return cls(command, **attrs)
+
+    def to_json(self):
+        return json.dumps({'command': self.command, **self._attrs},
+                          separators=(',', ':'))
+
 
 class CommandList():
     """docstring for CommandList"""
-    def __init__(self, data):
-        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
-        commands = json.loads(data.decode())
-        command_objs = [Command(entry) for entry in commands['commands']]
-        self._cmds = {entry.command: entry for entry in command_objs}
+    def __init__(self, *command_objs):
+        self._cmds = {cmd_obj.command: cmd_obj for cmd_obj in command_objs}
 
     def __contains__(self, cmd_str):
         return cmd_str in self._cmds
@@ -164,7 +173,21 @@ class CommandList():
         return self._cmds.get(cmd_str)
 
     def __repr__(self):
-        return repr(list(self._cmds.values()))
+        return f'<CommandList {list(self._cmds.values())!r}>'
+
+    @classmethod
+    def from_data(cls, data):
+        # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
+        commands = json.loads(data.decode())
+        command_objs = [Command.from_dict(cmd)
+                        for cmd in commands['commands']]
+        return cls(*command_objs)
+
+    def to_json(self):
+        return json.dumps({'commands':
+                           [{'command': cmd.command, **cmd._attrs}
+                            for cmd in self._cmds.values()]},
+                          separators=(',', ':'))
 
 
 class BotDriver():
@@ -178,7 +201,7 @@ class BotDriver():
 
     def run(self):
         coro = self.loop.create_connection(lambda: self.protocol,
-                                             *self.address)
+                                           *self.address)
         self.loop.run_until_complete(coro)
 
         try:
@@ -192,6 +215,7 @@ class BotDriver():
             command = await self.protocol.issue_command()
             await self.protocol.send_command(command)
             await asyncio.sleep(1)
+
 
 if __name__ == '__main__':
     driver = BotDriver(ADDR)
