@@ -66,32 +66,21 @@ void
 buffered_on_read(struct bufferevent* bev, void* arg)
 {
   struct client* this_client = (struct client*) arg;
-  struct client* client;
   uint8_t data[8192];
 
-  printf("Received from %s: ", this_client->id);
+  size_t n = 1;
+  size_t total_bytes = 0;
+  char cmd_str[8192];
 
-  /* Read 8k at a time and send it to all connected clients. */
-  for (;;) {
-    size_t n = bufferevent_read(bev, data, sizeof(data));
-    if (n == 0) {
-      /* Done. */
-      break;
-    }
-    
-    /* Send data to all connected clients except for the
-     * client that sent the data. */
-    /*
-    TAILQ_FOREACH(client, &client_tailq_head, entries) {
-      if (client != this_client) {
-        bufferevent_write(client->buf_ev, data, n);
-      }
-    }
-    */
-
-    printf("%s", data);
+  /* Read 8k at a time. */
+  while (n != 0) {
+    total_bytes += n;
+    n = bufferevent_read(bev, data, sizeof(data));
   }
-  printf("\n");
+
+  snprintf(cmd_str, total_bytes, "%s", data);
+
+  printf("Received from %s: %s\n", this_client->id, cmd_str);
 }
 
 void
@@ -100,7 +89,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   struct client* client = (struct client*) arg;
 
   if (what & BEV_EVENT_EOF) {
-    /* Client disconnected, remove the read event and the
+    /* Client disconnected, remove the read event and then
      * free the client structure. */
     printf("Client '%s' disconnected.\n", client->id);
   }
