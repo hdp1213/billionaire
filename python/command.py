@@ -6,6 +6,7 @@ class Command():
     JOIN = 'JOIN'
     START = 'START'
     RECEIVE = 'RECEIVE'
+    BOOK_STATE = 'BOOK_STATE'
     CHECK = 'CHECK'
     FINISH = 'FINISH'
     ASK = 'ASK'
@@ -15,6 +16,7 @@ class Command():
     valid_commands = {JOIN,
                       START,
                       RECEIVE,
+                      BOOK_STATE,
                       CHECK,
                       FINISH,
                       ASK,
