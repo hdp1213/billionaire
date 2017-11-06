@@ -6,7 +6,7 @@
 #include "utils.h"
 
 const struct commands Command = {
-  "JOIN", "START", "RECEIVE", "CHECK", "FINISH", "ASK", "CANCEL", "BILLIONAIRE"
+  "JOIN", "START", "RECEIVE", "BOOK_STATE", "CHECK", "FINISH", "ASK", "CANCEL", "BILLIONAIRE"
 };
 
 json_object*

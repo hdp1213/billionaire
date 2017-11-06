@@ -14,6 +14,7 @@ struct commands {
   const char* JOIN;
   const char* START;
   const char* RECEIVE;
+  const char* BOOK_STATE;
   const char* CHECK;
   const char* FINISH;
   const char* ASK;
