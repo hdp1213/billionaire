@@ -66,7 +66,7 @@ class CommandList():
         return f'<CommandList {list(self._cmds.values())!r}>'
 
     @classmethod
-    def from_data(cls, data):
+    def from_bytes(cls, data):
         # Will throw either UnicodeDecodeError or json.decoder.JSONDecodeError
         commands = json.loads(data.decode())
         command_objs = [Command.from_dict(cmd)
