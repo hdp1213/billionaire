@@ -4,7 +4,7 @@ from functools import wraps
 from json.decoder import JSONDecodeError
 import signal
 
-from card import Card
+from card import Cards
 from command import Command, CommandList
 
 
@@ -74,9 +74,9 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         self._on_start = asyncio.Event()
 
         # Billionaire bot variables
-        self.received_cmds = None
-        self.id = None
-        self.hand = []
+        self.received_cmds = CommandList()
+        self.id = ''
+        self.hand = Cards()
 
     async def _send_from_queue(self):
         """Send commands to the server as they are enqueued
@@ -111,7 +111,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         """Receive commands from the server
 
         A received command must have the following field:
-            command:        JOIN/START/RECEIVE/CHECK/FINISH
+            command:        JOIN/START/RECEIVE/BOOK_STATE/CHECK/FINISH
 
         Optionally, a received command may also contain:
             bot_id:         the unique identifier given by the server
@@ -137,6 +137,9 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
             self._on_start.set()
 
         if Command.RECEIVE in self.received_cmds:
+            pass
+
+        if Command.BOOK_STATE in self.received_cmds:
             pass
 
         if Command.CHECK in self.received_cmds:
@@ -170,7 +173,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
 
         start_cmd = self.received_cmds[Command.START]
 
-        self.hand = [Card.from_dict(c) for c in start_cmd.hand]
+        self.hand = Cards.from_json(start_cmd.hand)
         print(f'Received following hand: {self.hand!r}')
 
     @abc.abstractmethod
