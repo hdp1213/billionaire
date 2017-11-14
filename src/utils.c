@@ -35,6 +35,27 @@ JSON_to_str(json_object* json_obj, size_t* str_len)
 }
 
 json_object*
+str_to_JSON(const char* json_str, size_t json_str_len)
+{
+  enum json_tokener_error jerr;
+
+  json_tokener* tok = json_tokener_new();
+
+  /* New object is initialised, must be apprpriately handled later on */
+  json_object* parse_obj = json_tokener_parse_ex(tok, json_str, (int) json_str_len);
+
+  jerr = json_tokener_get_error(tok);
+  json_tokener_free(tok);
+
+  if (jerr != json_tokener_success) {
+    const char* jerr_desc = json_tokener_error_desc(jerr);
+    err(1, "JSON error %d: %s", jerr, jerr_desc);
+  }
+
+  return parse_obj;
+}
+
+json_object*
 get_JSON_value(json_object* json_obj, const char* key)
 {
   json_bool has_field;

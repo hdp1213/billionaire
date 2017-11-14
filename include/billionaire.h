@@ -44,4 +44,14 @@ json_object* billionaire_start(card** player_cards, size_t num_cards);
  */
 json_object* billionaire_finish();
 
+/**
+ * Get the name of a command.
+ */
+const char* get_command_name(json_object* cmd, size_t* str_len);
+
+/**
+ * Check the type of command.
+ */
+bool command_is(json_object* cmd, const char* cmd_name);
+
 #endif

@@ -47,6 +47,8 @@
 #include "billionaire-server.h"
 #include "utils.h"
 
+extern const struct commands Command;
+
 int
 setnonblock(int fd)
 {
@@ -70,7 +72,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
   size_t n = 1;
   size_t total_bytes = 0;
-  char cmd_str[8192];
+  char json_str[8192];
 
   /* Read 8k at a time. */
   while (n != 0) {
@@ -78,9 +80,42 @@ buffered_on_read(struct bufferevent* bev, void* arg)
     n = bufferevent_read(bev, data, sizeof(data));
   }
 
-  snprintf(cmd_str, total_bytes, "%s", data);
+  snprintf(json_str, total_bytes, "%s", data);
 
-  printf("Received from %s: %s\n", this_client->id, cmd_str);
+  /* If the game is running, parse command list object */
+  if (billionaire_game->running) {
+    json_object* parse_obj = str_to_JSON(json_str, total_bytes);
+    json_object* cmd_array = get_JSON_value(parse_obj, "commands");
+
+    JSON_ARRAY_FOREACH(cmd_obj, cmd_array) {
+      if (command_is(cmd_obj, Command.ASK)) {
+        printf("Received ASK from %s\n", this_client->id);
+
+        json_object* card_array = get_JSON_value(cmd_obj, "cards");
+
+        printf("Cards are:\n");
+        JSON_ARRAY_FOREACH(card_json, card_array) {
+          card* card_obj = card_from_JSON(card_json);
+          printf("  type %d, commodity %d\n", card_obj->type, card_obj->commodity);
+          free(card_obj);
+        }
+      }
+      else if (command_is(cmd_obj, Command.CANCEL)) {
+        printf("Received CANCEL from %s\n", this_client->id);
+      }
+      else if (command_is(cmd_obj, Command.BILLIONAIRE)) {
+        printf("Received BILLIONAIRE from %s\n", this_client->id);
+      }
+    }
+
+    /* Free parse_obj after use */
+    json_object_put(parse_obj);
+  }
+
+  else {
+    /* This can eventually be removed */
+    printf("Received from %s: %s\n", this_client->id, json_str);
+  }
 }
 
 void

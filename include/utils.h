@@ -7,6 +7,13 @@
 
 #define HASH_LENGTH 9
 
+#define JSON_ARRAY_FOREACH(obj, json_array)                            \
+  size_t array_len = json_object_array_length((json_array));           \
+  json_object* obj = NULL;                                             \
+  for (size_t i = 0, obj = json_object_array_get_idx((json_array), i); \
+       i < array_len;                                                  \
+       ++i, obj = json_object_array_get_idx((json_array), i))
+
 /**
  * Return a 8-digit hex string of a 32-bit hash based on the client
  * address.
@@ -21,6 +28,11 @@ char* hash_addr(const char* addr, size_t length);
  * Also return the length of the resulting C string to str_len.
  */
 const char* JSON_to_str(json_object* json_obj, size_t* str_len);
+
+/**
+ * Convert a C string to a JSON object.
+ */
+json_object* str_to_JSON(const char* json_str, size_t json_str_len);
 
 /**
  * Extract a value from a JSON object given its key
