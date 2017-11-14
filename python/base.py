@@ -185,6 +185,12 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         """
         return NotImplemented
 
+    async def ask(self, cards):
+        ask = Command(Command.ASK,
+                      bot_id=self.bot_id,
+                      cards=cards.to_dict())
+        return ask
+
 
 class BotDriver():
     """docstring for BotDriver"""
