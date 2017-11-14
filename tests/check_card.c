@@ -147,6 +147,9 @@ START_TEST(test_card_dealing)
   /* Check player one's hand: */
   for (size_t i = 0; i < player_hand_sizes[0]; ++i) {
     ck_assert_card_eq(player_hands[0][i], real_player1_hand[i]);
+
+    /* Free the cards used to initialise real_player1_hand */
+    free(real_player1_hand[i]);
   }
 
   free(player_hand_sizes);
