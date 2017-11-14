@@ -12,5 +12,5 @@ class DumbBot(BaseBillionaireBot):
             card_id, amt = None, 0
 
         cards = self.hand.take_card(card_id, amt)
-        ask = Command(Command.ASK, cards=cards.to_dict())
+        ask = Command(Command.ASK, cards=cards.to_list())
         return ask

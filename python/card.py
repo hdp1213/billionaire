@@ -133,6 +133,9 @@ class Cards():
     def to_json(self):
         return json.dumps(self.to_dict(), separators=(',', ':'))
 
+    def to_list(self):
+        return [card.to_dict() for card in self._cards.elements()]
+
     def _clean_zeros(self):
         elems = list(self._cards.keys())
 
