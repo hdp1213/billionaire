@@ -6,7 +6,7 @@ all: .base billionaire-server
 	if ! [ -e $(BUILDDIR) ]; then mkdir $(BUILDDIR) ; mkdir $(BUILDDIR)/lib; fi;
 	touch build/.base
 
-vpath %.c src
+vpath %.c src:tests
 vpath %.o build
 vpath .base build
 
@@ -23,13 +23,15 @@ LDFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
 # Includes and libraries
 INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm -ljson-c
+CHECK_LIBS = -ljson-c -lcheck
 
 # Object files to compile
 MAIN = billionaire-server.o
 SOURCE = billionaire.o card.o game_state.o utils.o
 
-CHECK_CARD = tests/check_card.o
-MEM_TEST = tests/mem_test.o
+CHECK_CARD = check_card.o
+CHECK_UTILS = check_utils.o
+MEM_TEST = mem_test.o
 
 # Rules
 %.o: %.c .base
@@ -39,12 +41,15 @@ billionaire-server: $(MAIN) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
 check_card: $(CHECK_CARD) $(SOURCE)
-	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS) -lcheck
+	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
+
+check_utils: $(CHECK_UTILS) $(SOURCE)
+	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
 mem_test: $(MEM_TEST) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-check: check_card
+check: check_card check_utils
 	$(addsuffix ;, $(addprefix ./, $^))
 
 clean:

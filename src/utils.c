@@ -18,7 +18,7 @@ hash_addr(const char* addr, size_t length)
   hash_str = calloc(HASH_LENGTH, sizeof(char));
 
   if (hash_str == NULL) {
-    err(1, "malloc failed");
+    err(1, "hash_str malloc failed");
   }
 
   snprintf(hash_str, HASH_LENGTH, "%08x", hash);
@@ -41,12 +41,13 @@ str_to_JSON(const char* json_str, size_t json_str_len)
 
   json_tokener* tok = json_tokener_new();
 
-  /* New object is initialised, must be apprpriately handled later on */
+  /* New object is initialised, must be appropriately handled later on */
   json_object* parse_obj = json_tokener_parse_ex(tok, json_str, (int) json_str_len);
 
   jerr = json_tokener_get_error(tok);
   json_tokener_free(tok);
 
+  /* Malformed JSON. TODO: set errno to jerr. */
   if (jerr != json_tokener_success) {
     const char* jerr_desc = json_tokener_error_desc(jerr);
     err(1, "JSON error %d: %s", jerr, jerr_desc);
@@ -70,4 +71,20 @@ get_JSON_value(json_object* json_obj, const char* key)
   }
 
   return json_value;
+}
+
+size_t
+get_next_highest_power_of_two(size_t num)
+{
+  size_t result = num;
+
+  result--;
+  result |= result >> 1;
+  result |= result >> 2;
+  result |= result >> 4;
+  result |= result >> 8;
+  result |= result >> 16;
+  result++;
+
+  return result;
 }

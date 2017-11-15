@@ -35,8 +35,19 @@ const char* JSON_to_str(json_object* json_obj, size_t* str_len);
 json_object* str_to_JSON(const char* json_str, size_t json_str_len);
 
 /**
- * Extract a value from a JSON object given its key
+ * Extract a value from a JSON object given its key.
  */
 json_object* get_JSON_value(json_object* json_obj, const char* key);
+
+/**
+ * Get the next highest power of two of given 32-bit num.
+ *
+ * Only works for 0 <= num <= UINT_MAX/2 + 1, otherwise an overflow
+ * condition is reached.
+ *
+ * Method taken from:
+ * https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+ */
+size_t get_next_highest_power_of_two(size_t num);
 
 #endif
