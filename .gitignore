@@ -161,4 +161,5 @@ build/
 *.png
 billionaire-server
 check_*
+!tests/check_*.c
 mem_test
