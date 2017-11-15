@@ -27,9 +27,10 @@ CHECK_LIBS = -ljson-c -lcheck
 
 # Object files to compile
 MAIN = billionaire-server.o
-SOURCE = billionaire.o card.o game_state.o utils.o
+SOURCE = billionaire.o card.o card_location.o game_state.o utils.o
 
 CHECK_CARD = check_card.o
+CHECK_CARD_LOCATION = check_card_location.o
 CHECK_UTILS = check_utils.o
 MEM_TEST = mem_test.o
 
@@ -43,13 +44,16 @@ billionaire-server: $(MAIN) $(SOURCE)
 check_card: $(CHECK_CARD) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
+check_card_location: $(CHECK_CARD_LOCATION) $(SOURCE)
+	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
+
 check_utils: $(CHECK_UTILS) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
 mem_test: $(MEM_TEST) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-check: check_card check_utils
+check: check_card check_card_location check_utils
 	$(addsuffix ;, $(addprefix ./, $^))
 
 clean:
