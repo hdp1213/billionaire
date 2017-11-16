@@ -14,11 +14,15 @@ card_location_new()
     err(1, "new_card_location malloc failed");
   }
 
-  /* Initialise fields of new struct sensibly */
-  new_card_location->cards = NULL;
+  /* Create array used to count the number of cards, initialised to zero */
+  new_card_location->card_counts = calloc(TOTAL_UNIQUE_CARDS, sizeof(size_t));
+
+  if (new_card_location->card_counts == NULL) {
+    err(1, "new_card_location->card_counts malloc failed");
+  }
+
+  /* Initialise other fields */
   new_card_location->num_cards = 0;
-  new_card_location->fixed_size = false;
-  new_card_location->store_lim = 0;
 
   return new_card_location;
 }
@@ -26,23 +30,16 @@ card_location_new()
 card_location*
 card_location_init(size_t num_cards, ...)
 {
+  card_location* new_card_location = card_location_new();
+
+  /* Initialise card_counts with the list of new cards */
   va_list card_list;
-
-  card_location* new_card_location = malloc(sizeof(card_location));
-
-  if (new_card_location == NULL) {
-    err(1, "new_card_location malloc failed");
-  }
-
-  new_card_location->cards = calloc(num_cards, sizeof(card*));
-  new_card_location->num_cards = num_cards;
-  new_card_location->fixed_size = false;
-  new_card_location->store_lim = get_next_highest_power_of_two(num_cards);
-
   va_start(card_list, num_cards);
 
   for (size_t i = 0; i < num_cards; ++i) {
-    new_card_location->cards[i] = va_arg(card_list, card*);
+    card_id card = va_arg(card_list, card_id);
+
+    add_cards_to_location(new_card_location, card, 1);
   }
 
   va_end(card_list);
@@ -51,85 +48,80 @@ card_location_init(size_t num_cards, ...)
 }
 
 void
-add_card(card_location* card_loc, card* new_card)
+add_card_to_location(card_location* card_loc, card_id card)
 {
-  if (card_loc->fixed_size) {
-    err(1, "no cards can be added to a card_loc with fixed size");
+  add_cards_to_location(card_loc, card, 1);
+}
+
+void
+remove_card_from_location(card_location* card_loc, card_id card)
+{
+  remove_cards_from_location(card_loc, card, 1);
+}
+
+void
+add_cards_to_location(card_location* card_loc, card_id card, size_t amount)
+{
+  card_loc->num_cards += amount;
+
+  /* Add new cards to card_loc->card_counts */
+  card_loc->card_counts[card] += amount;
+}
+
+void
+remove_cards_from_location(card_location* card_loc, card_id card, size_t amount)
+{
+  if (check_card_amount(card_loc, card, amount)) {
+    card_loc->num_cards -= amount;
+
+    card_loc->card_counts[card] -= amount;
   }
-
-  card_loc->num_cards++;
-
-  /* Intialise memory if we haven't already */
-  if (card_loc->cards == NULL) {
-    card_loc->store_lim = get_next_highest_power_of_two(card_loc->num_cards);
-    card_loc->cards = calloc(card_loc->store_lim, sizeof(card*));
-
-    if (card_loc->cards == NULL) {
-      err(1, "card_loc->cards malloc failed");
-    }
+  else {
+    /* Handle not having enough cards to remove */
   }
+}
 
-  /* Increase storage size if the current number of cards is
-     larger than the current storage limit */
-  if (card_loc->num_cards > card_loc->store_lim) {
-    card_loc->store_lim = get_next_highest_power_of_two(card_loc->num_cards);
-    card_loc->cards = realloc(card_loc->cards, card_loc->store_lim*sizeof(card*));
+size_t
+get_card_amount(card_location* card_loc, card_id card)
+{
+  return card_loc->card_counts[card];
+}
 
-    if (card_loc->cards == NULL) {
-      err(1, "card_loc->cards realloc failed");
-    }
-  }
+bool
+check_card_amount(card_location* card_loc, card_id card, size_t amount)
+{
+  size_t amount_at_location = get_card_amount(card_loc, card);
 
-  /* Add new card to card_loc->cards */
-  int card_ind = (int) card_loc->num_cards - 1;
-  card_loc->cards[card_ind] = new_card;
+  return (amount <= amount_at_location);
 }
 
 void
 clear_card_location(card_location* card_loc)
 {
-  if (card_loc->num_cards > 0) {
-    /* Free each card */
-    for (size_t i = 0; i < card_loc->num_cards; ++i) {
-      free(card_loc->cards[i]);
-    }
+  card_loc->num_cards = 0;
 
-    /* Free containing array */
-    free(card_loc->cards);
-
-    /* Re-initialise defaults once again */
-    card_loc->cards = NULL;
-    card_loc->num_cards = 0;
-    card_loc->fixed_size = false;
-    card_loc->store_lim = 0;
+  for (size_t card = 0; card < TOTAL_UNIQUE_CARDS; ++card) {
+    card_loc->card_counts[card] = 0;
   }
 }
 
 void
-fix_card_location_size(card_location* card_loc)
+move_cards(card_location* from_loc, card_location* to_loc, card_id card, size_t amount)
 {
-  card_loc->fixed_size = true;
-
-  card_loc->store_lim = card_loc->num_cards;
-  card_loc->cards = realloc(card_loc->cards, card_loc->store_lim*sizeof(card*));
-
-  if (card_loc->cards == NULL) {
-    err(1, "card_loc->cards realloc failed");
+  /* Only add cards to to_loc if they can be removed from from_loc */
+  if (check_card_amount(from_loc, card, amount)) {
+    remove_cards_from_location(from_loc, card, amount);
+    add_cards_to_location(to_loc, card, amount);
+  }
+  else {
+    /* Handle not having enough cards to remove */
   }
 }
 
 void
 free_card_location(card_location* card_loc)
 {
-  if (card_loc->num_cards > 0) {
-    /* Free each card */
-    for (size_t i = 0; i < card_loc->num_cards; ++i) {
-      free(card_loc->cards[i]);
-    }
-
-    /* Free containing array */
-    free(card_loc->cards);
-  }
+  free(card_loc->card_counts);
 
   /* Free the struct itself */
   free(card_loc);

@@ -1,14 +1,7 @@
 #include <check.h>
+#include <stdbool.h>
 
-#include "card.h"
 #include "card_location.h"
-
-void
-ck_assert_card_eq(card* card1, card* card2)
-{
-  ck_assert_int_eq(card1->type, card2->type);
-  ck_assert_int_eq(card1->commodity, card2->commodity);
-}
 
 START_TEST(test_card_location_init)
 {
@@ -16,107 +9,195 @@ START_TEST(test_card_location_init)
   card_location* card_loc;
 
   card_loc = card_location_init(card_amt,
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS));
+                                DIAMONDS,
+                                DIAMONDS,
+                                DIAMONDS,
+                                DIAMONDS);
 
-  /* Check number of cards in card_loc is equal to number given */
+  /* Assert number of cards in card_loc is equal to number given */
   ck_assert_uint_eq(card_loc->num_cards, card_amt);
-
-  /* Check store limit is == to number of cards given (4) */
-  ck_assert_uint_eq(card_loc->store_lim, card_amt);
 
   free_card_location(card_loc);
 }
 END_TEST
 
-START_TEST(test_card_location_add)
+START_TEST(test_card_location_add_unique)
 {
-  card* cards[] = {
-    card_new(COMMODITY, DIAMONDS),
-    card_new(COMMODITY, GOLD),
-    card_new(COMMODITY, OIL),
-    card_new(COMMODITY, PROPERTY),
-    card_new(COMMODITY, MINING),
-    card_new(COMMODITY, SHIPPING),
-    card_new(COMMODITY, BANKING),
-    card_new(COMMODITY, SPORT),
-    card_new(BILLIONAIRE, NONE),
-    card_new(TAXMAN, NONE)
+  card_id cards[] = {
+    DIAMONDS,
+    GOLD,
+    OIL,
+    PROPERTY,
+    MINING,
+    SHIPPING,
+    BANKING,
+    SPORT,
+    BILLIONAIRE,
+    TAX_COLLECTOR
   };
-  size_t card_amt = 10;
+  size_t card_amt = TOTAL_UNIQUE_CARDS;
 
   card_location* card_loc = card_location_new();
 
   for (size_t i = 0; i < card_amt; ++i) {
-    add_card(card_loc, cards[i]);
+    size_t total_cards = i + 1;
+    add_card_to_location(card_loc, cards[i]);
 
-    /* Check store limit is >= amount of cards in location so far */
-    ck_assert_uint_ge(card_loc->store_lim, card_loc->num_cards);
+    /* Assert amount of cards in location so far is equal to number given */
+    ck_assert_uint_eq(card_loc->num_cards, total_cards);
   }
 
-  /* Check number of cards in card_loc is equal to number given */
-  ck_assert_uint_eq(card_loc->num_cards, card_amt);
-
-  /* Check store limit is >= to number of cards given */
-  ck_assert_uint_ge(card_loc->store_lim, card_amt);
-
-  /* Check that cards are actually the same */
-  for (size_t i = 0; i < card_loc->num_cards; ++i) {
-    ck_assert_card_eq(card_loc->cards[i], cards[i]);
+  /* Assert that each card only appears once */
+  for (size_t card = 0; card < card_loc->num_cards; ++card) {
+    ck_assert_uint_eq(get_card_amount(card_loc, card), 1);
   }
 
-  /* Calling this should also free cards initialised in cards[] */
+  free_card_location(card_loc);
+}
+END_TEST
+
+START_TEST(test_card_location_remove)
+{
+  size_t card_amt = 7;
+
+  card_location* card_loc = card_location_init(card_amt,
+                                               DIAMONDS,
+                                               DIAMONDS,
+                                               OIL,
+                                               MINING,
+                                               OIL,
+                                               OIL,
+                                               BILLIONAIRE);
+
+  remove_card_from_location(card_loc, DIAMONDS);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, DIAMONDS), 1);
+  ck_assert_uint_eq(card_loc->num_cards, card_amt - 1);
+
+  remove_card_from_location(card_loc, OIL);
+  remove_card_from_location(card_loc, OIL);
+  remove_card_from_location(card_loc, OIL);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, OIL), 0);
+  ck_assert_uint_eq(card_loc->num_cards, card_amt - 4);
+
+  remove_card_from_location(card_loc, BILLIONAIRE);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, BILLIONAIRE), 0);
+  ck_assert_uint_eq(card_loc->num_cards, card_amt - 5);
+
   free_card_location(card_loc);
 }
 END_TEST
 
 START_TEST(test_card_location_clear)
 {
-  size_t card_amt = 4;
+  size_t card_amt = 5;
   card_location* card_loc;
 
   card_loc = card_location_init(card_amt,
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, GOLD),
-                                card_new(COMMODITY, OIL),
-                                card_new(COMMODITY, PROPERTY));
+                                DIAMONDS,
+                                GOLD,
+                                OIL,
+                                PROPERTY,
+                                MINING);
 
-  ck_assert(card_loc->cards != NULL);
-  ck_assert_uint_ne(card_loc->num_cards, 0);
-  ck_assert_uint_ne(card_loc->store_lim, 0);
+  /* Another sanity check */
+  ck_assert_uint_eq(card_loc->num_cards, card_amt);
 
   clear_card_location(card_loc);
 
-  ck_assert(card_loc->cards == NULL);
+  /* Assert the card_location is properly cleared */
   ck_assert_uint_eq(card_loc->num_cards, 0);
-  ck_assert_uint_eq(card_loc->store_lim, 0);
+
+  free_card_location(card_loc);
 }
 END_TEST
 
-START_TEST(test_card_location_fix_size)
+START_TEST(test_card_location_add_remove)
 {
-  size_t card_amt = 6;
+  size_t card_amt = 5;
   card_location* card_loc;
 
   card_loc = card_location_init(card_amt,
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, DIAMONDS),
-                                card_new(COMMODITY, GOLD),
-                                card_new(BILLIONAIRE, NONE));
+                                DIAMONDS,
+                                OIL,
+                                OIL,
+                                DIAMONDS,
+                                OIL);
 
-  /* Check store limit is > to number of cards given (8 > 6) */
-  ck_assert_uint_gt(card_loc->store_lim, card_amt);
+  ck_assert_uint_eq(get_card_amount(card_loc, DIAMONDS), 2);
+  ck_assert_uint_eq(get_card_amount(card_loc, OIL), 3);
 
-  fix_card_location_size(card_loc);
+  add_cards_to_location(card_loc, DIAMONDS, 4);
 
-  /* Check store limit == number of cards after size fix */
-  ck_assert_uint_eq(card_loc->store_lim, card_amt);
+  ck_assert_uint_eq(get_card_amount(card_loc, DIAMONDS), 6);
+
+  remove_cards_from_location(card_loc, DIAMONDS, 3);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, DIAMONDS), 3);
+
+  remove_cards_from_location(card_loc, OIL, 3);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, OIL), 0);
+
+  remove_cards_from_location(card_loc, OIL, 9);
+
+  ck_assert_uint_eq(get_card_amount(card_loc, OIL), 0);
+
+  ck_assert(check_card_amount(card_loc, OIL, 5) == false);
 
   free_card_location(card_loc);
+}
+END_TEST
+
+START_TEST(test_card_location_move)
+{
+  card_location* card_loc1;
+  card_location* card_loc2;
+
+  card_loc1 = card_location_init(6,
+                                 GOLD,
+                                 GOLD,
+                                 DIAMONDS,
+                                 GOLD,
+                                 DIAMONDS,
+                                 OIL);
+
+  card_loc2 = card_location_init(6,
+                                 DIAMONDS,
+                                 OIL,
+                                 GOLD,
+                                 GOLD,
+                                 DIAMONDS,
+                                 OIL);
+
+  /* Move one DIAMONDS from card_loc1 to card_loc2 */
+  move_cards(card_loc1, card_loc2, DIAMONDS, 1);
+
+  ck_assert_uint_eq(get_card_amount(card_loc1, DIAMONDS), 1);
+  ck_assert_uint_eq(get_card_amount(card_loc2, DIAMONDS), 3);
+  ck_assert_uint_eq(card_loc1->num_cards, 5);
+  ck_assert_uint_eq(card_loc2->num_cards, 7);
+
+  /* Move all GOLD from card_loc2 to card_loc1 */
+  move_cards(card_loc2, card_loc1, GOLD, 2);
+
+  ck_assert_uint_eq(get_card_amount(card_loc1, GOLD), 5);
+  ck_assert_uint_eq(get_card_amount(card_loc2, GOLD), 0);
+  ck_assert_uint_eq(card_loc1->num_cards, 7);
+  ck_assert_uint_eq(card_loc2->num_cards, 5);
+
+  /* Fail to move three OIL from card_loc1 (only one OIL) */
+  move_cards(card_loc1, card_loc2, OIL, 3);
+
+  ck_assert_uint_eq(get_card_amount(card_loc1, OIL), 1);
+  ck_assert_uint_eq(get_card_amount(card_loc1, OIL), 1);
+  ck_assert_uint_eq(card_loc1->num_cards, 7);
+  ck_assert_uint_eq(card_loc2->num_cards, 5);
+
+  free_card_location(card_loc1);
+  free_card_location(card_loc2);
 }
 END_TEST
 
@@ -131,9 +212,11 @@ card_location_suite(void)
   tc_core = tcase_create("Core");
 
   tcase_add_test(tc_core, test_card_location_init);
-  tcase_add_test(tc_core, test_card_location_add);
+  tcase_add_test(tc_core, test_card_location_add_unique);
+  tcase_add_test(tc_core, test_card_location_remove);
   tcase_add_test(tc_core, test_card_location_clear);
-  tcase_add_test(tc_core, test_card_location_fix_size);
+  tcase_add_test(tc_core, test_card_location_add_remove);
+  tcase_add_test(tc_core, test_card_location_move);
 
   suite_add_tcase(s, tc_core);
 
