@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "card.h"
+#include "card_location.h"
 
 typedef struct game_state game_state;
 
@@ -18,11 +18,8 @@ struct game_state {
   /* Whether the game is currently running */
   bool running;
 
-  /* Size of deck */
-  size_t deck_size;
-
   /* Deck of cards used for the game */
-  card** deck;
+  card_array* deck;
 };
 
 /**

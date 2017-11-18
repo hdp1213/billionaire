@@ -88,23 +88,20 @@ buffered_on_read(struct bufferevent* bev, void* arg)
     json_object* cmd_array = get_JSON_value(parse_obj, "commands");
 
     JSON_ARRAY_FOREACH(cmd_obj, cmd_array) {
-      if (command_is(cmd_obj, Command.ASK)) {
-        printf("Received ASK from %s\n", this_client->id);
+      if (command_is(cmd_obj, Command.NEW_OFFER)) {
+        printf("Received NEW_OFFER from %s\n", this_client->id);
 
         json_object* card_array = get_JSON_value(cmd_obj, "cards");
+        card_location* card_loc = card_location_from_JSON(card_array);
 
         printf("Cards are:\n");
-        JSON_ARRAY_FOREACH(card_json, card_array) {
-          card* card_obj = card_from_JSON(card_json);
-          printf("  type %d, commodity %d\n", card_obj->type, card_obj->commodity);
-          free(card_obj);
+        for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+          size_t card_amt = get_card_amount(card_loc, card);
+          printf("%zux of card %d\n", card_amt, card);
         }
       }
-      else if (command_is(cmd_obj, Command.CANCEL)) {
-        printf("Received CANCEL from %s\n", this_client->id);
-      }
-      else if (command_is(cmd_obj, Command.BILLIONAIRE)) {
-        printf("Received BILLIONAIRE from %s\n", this_client->id);
+      else if (command_is(cmd_obj, Command.CANCEL_OFFER)) {
+        printf("Received CANCEL_OFFER from %s\n", this_client->id);
       }
     }
 
@@ -226,30 +223,25 @@ on_accept(int fd, short ev, void* arg)
            billionaire_game->player_limit);
     billionaire_game->running = true;
 
-    card*** player_hands;
-    size_t* player_hand_sizes;
+    card_location** player_hands;
 
     printf("Dealing cards...\n");
-    deal_cards(billionaire_game->num_players, billionaire_game->deck,
-               billionaire_game->deck_size, &player_hands,
-               &player_hand_sizes);
+    player_hands = deal_cards(billionaire_game->num_players,
+                              billionaire_game->deck);
 
     size_t iplayer = 0;
 
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
-      json_object* start = billionaire_start(player_hands[iplayer],
-                                player_hand_sizes[iplayer]);
+      json_object* start = billionaire_start(player_hands[iplayer]);
+      free_card_location(player_hands[iplayer]);
 
       printf("Queued START for %s\n", client->id);
 
       enqueue_command(client, start);
       iplayer++;
     }
-
-    free(player_hand_sizes);
-    free_player_hands(player_hands, billionaire_game->num_players);
   }
 
   /* Flush all client command queues to the corresponding client */

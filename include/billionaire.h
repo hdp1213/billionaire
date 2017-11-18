@@ -6,20 +6,19 @@
 
 #include <json-c/json.h>
 
-#include "card.h"
+#include "card_location.h"
 
 #define MAX_PLAYERS 8
 
 struct commands {
   const char* JOIN;
   const char* START;
-  const char* RECEIVE;
-  const char* BOOK_STATE;
-  const char* CHECK;
+  const char* SUCCESSFUL_TRADE;
+  const char* BOOK_EVENT;
   const char* FINISH;
-  const char* ASK;
-  const char* CANCEL;
-  const char* BILLIONAIRE;
+  const char* ERROR;
+  const char* NEW_OFFER;
+  const char* CANCEL_OFFER;
 };
 
 /**
@@ -35,9 +34,9 @@ json_object* make_command(const char* cmd);
 json_object* billionaire_join(char* id);
 
 /**
- * Create a START command containing the client's cards.
+ * Create a START command containing the client's hand.
  */
-json_object* billionaire_start(card** player_cards, size_t num_cards);
+json_object* billionaire_start(card_location* player_hand);
 
 /**
  * Create a FINISH command.

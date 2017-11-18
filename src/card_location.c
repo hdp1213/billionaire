@@ -1,9 +1,65 @@
+#include <assert.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdio.h>
 
 #include "card_location.h"
 #include "utils.h"
+
+
+json_object*
+JSON_from_card_location(card_location* card_loc)
+{
+  json_object* card_loc_json = json_object_new_array();
+
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t card_amt = get_card_amount(card_loc, card);
+
+    if (card_amt == 0) {
+      continue;
+    }
+
+    json_object* card_json = json_object_new_object();
+
+    json_object* card_id_json = json_object_new_int(card);
+    json_object* card_amt_json = json_object_new_int((int) card_amt);
+
+    json_object_object_add(card_json, "id", card_id_json);
+    json_object_object_add(card_json, "amt", card_amt_json);
+
+    json_object_array_add(card_loc_json, card_json);
+  }
+
+  return card_loc_json;
+}
+
+card_location*
+card_location_from_JSON(json_object* card_loc_json)
+{
+  if (!json_object_is_type(card_loc_json, json_type_array)) {
+    /* Handle error here */
+    return NULL;
+  }
+
+  card_location* card_loc = card_location_new();
+
+  /* Iterate through each array item */
+  size_t array_len = json_object_array_length(card_loc_json);
+
+  for (size_t i = 0; i < array_len; ++i) {
+    json_object* card_json = json_object_array_get_idx(card_loc_json, i);
+
+    json_object* card_id_json = get_JSON_value(card_json, "id");
+    json_object* card_amt_json = get_JSON_value(card_json, "amt");
+
+    card_id card = json_object_get_int(card_id_json);
+    size_t card_amt = (size_t) json_object_get_int(card_amt_json);
+
+    add_cards_to_location(card_loc, card, card_amt);
+  }
+
+  return card_loc;
+}
 
 card_location*
 card_location_new()
@@ -39,12 +95,38 @@ card_location_init(size_t num_cards, ...)
   for (size_t i = 0; i < num_cards; ++i) {
     card_id card = va_arg(card_list, card_id);
 
-    add_cards_to_location(new_card_location, card, 1);
+    add_card_to_location(new_card_location, card);
   }
 
   va_end(card_list);
 
   return new_card_location;
+}
+
+card_location*
+generate_deck(int num_players, bool has_billionaire, bool has_tax_collector)
+{
+  card_location* new_deck = card_location_new();
+
+  /* Get the last commodity card for the amount of players playing */
+  card_id last_comm = (card_id) num_players;
+
+  /* The number of commodity cards added to a new deck is always equal to the
+     number of unique commodities plus one */
+  for (card_id comm_card = DIAMONDS; comm_card < last_comm; ++comm_card) {
+    size_t amount = TOTAL_COMMODITY_AMOUNT + 1;
+    add_cards_to_location(new_deck, comm_card, amount);
+  }
+
+  if (has_billionaire) {
+    add_card_to_location(new_deck, BILLIONAIRE);
+  }
+
+  if (has_tax_collector) {
+    add_card_to_location(new_deck, TAX_COLLECTOR);
+  }
+
+  return new_deck;
 }
 
 void
@@ -63,17 +145,14 @@ void
 add_cards_to_location(card_location* card_loc, card_id card, size_t amount)
 {
   card_loc->num_cards += amount;
-
-  /* Add new cards to card_loc->card_counts */
   card_loc->card_counts[card] += amount;
 }
 
 void
 remove_cards_from_location(card_location* card_loc, card_id card, size_t amount)
 {
-  if (check_card_amount(card_loc, card, amount)) {
+  if (has_enough_cards(card_loc, card, amount)) {
     card_loc->num_cards -= amount;
-
     card_loc->card_counts[card] -= amount;
   }
   else {
@@ -87,8 +166,14 @@ get_card_amount(card_location* card_loc, card_id card)
   return card_loc->card_counts[card];
 }
 
+size_t
+get_total_cards(card_location* card_loc)
+{
+  return card_loc->num_cards;
+}
+
 bool
-check_card_amount(card_location* card_loc, card_id card, size_t amount)
+has_enough_cards(card_location* card_loc, card_id card, size_t amount)
 {
   size_t amount_at_location = get_card_amount(card_loc, card);
 
@@ -100,7 +185,7 @@ clear_card_location(card_location* card_loc)
 {
   card_loc->num_cards = 0;
 
-  for (size_t card = 0; card < TOTAL_UNIQUE_CARDS; ++card) {
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
     card_loc->card_counts[card] = 0;
   }
 }
@@ -109,7 +194,7 @@ void
 move_cards(card_location* from_loc, card_location* to_loc, card_id card, size_t amount)
 {
   /* Only add cards to to_loc if they can be removed from from_loc */
-  if (check_card_amount(from_loc, card, amount)) {
+  if (has_enough_cards(from_loc, card, amount)) {
     remove_cards_from_location(from_loc, card, amount);
     add_cards_to_location(to_loc, card, amount);
   }
@@ -118,11 +203,108 @@ move_cards(card_location* from_loc, card_location* to_loc, card_id card, size_t 
   }
 }
 
+card_array*
+flatten_card_location(card_location* card_loc)
+{
+  size_t total_card_amt = get_total_cards(card_loc);
+
+  card_array* card_arr = card_array_new(total_card_amt);
+
+  size_t i = 0;
+
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t card_amt = get_card_amount(card_loc, card);
+
+    if (card_amt == 0) {
+      continue;
+    }
+
+    for (size_t card_number = 0; card_number < card_amt; ++card_number) {
+      assert(i < total_card_amt);
+      card_arr->cards[i] = card;
+      i++;
+    }
+  }
+
+  return card_arr;
+}
+
 void
 free_card_location(card_location* card_loc)
 {
   free(card_loc->card_counts);
-
-  /* Free the struct itself */
   free(card_loc);
+}
+
+
+
+card_array*
+card_array_new(size_t num_cards)
+{
+  card_array* new_card_array = malloc(sizeof(card_array));
+
+  if (new_card_array == NULL) {
+    err(1, "new_card_array malloc failed");
+  }
+
+  new_card_array->cards = malloc(num_cards*sizeof(card_id));
+
+  if (new_card_array->cards == NULL) {
+    err(1, "new_card_array->cards malloc failed");
+  }
+
+  new_card_array->num_cards = num_cards;
+
+  return new_card_array;
+}
+
+void
+shuffle_card_array(card_array* card_arr)
+{
+  if (card_arr->num_cards > 1) {
+    for (size_t i = 0; i < card_arr->num_cards - 1; ++i) {
+      size_t rnd = (size_t) rand();
+      size_t j = i + rnd/(RAND_MAX/(card_arr->num_cards - i) + 1);
+
+      card_id tmp = card_arr->cards[j];
+      card_arr->cards[j] = card_arr->cards[i];
+      card_arr->cards[i] = tmp;
+    }
+  }
+}
+
+card_location**
+deal_cards(size_t num_players, card_array* ordered_deck)
+{
+  card_location** player_hands = calloc(num_players, sizeof(card_location*));
+
+  if (player_hands == NULL) {
+    err(1, "*player_hands malloc failed");
+  }
+
+  for (size_t i = 0; i < num_players; ++i) {
+    player_hands[i] = card_location_new();
+  }
+
+  /* Deal cards out */
+  for (size_t i = 0; i < ordered_deck->num_cards; ++i) {
+    /* Get the current player */
+    size_t iplayer = i % num_players;
+
+#ifdef DBUG
+    printf("Player %zu, card %zu\n", iplayer, i);
+#endif
+
+    /* Give a card from the deck to the current player */
+    add_card_to_location(player_hands[iplayer], ordered_deck->cards[i]);
+  }
+
+  return player_hands;
+}
+
+void
+free_card_array(card_array* card_arr)
+{
+  free(card_arr->cards);
+  free(card_arr);
 }

@@ -7,7 +7,8 @@
 #include "utils.h"
 
 const struct commands Command = {
-  "JOIN", "START", "RECEIVE", "BOOK_STATE", "CHECK", "FINISH", "ASK", "CANCEL", "BILLIONAIRE"
+  "JOIN", "START", "SUCCESSFUL_TRADE", "BOOK_EVENT", "FINISH", "ERROR",
+  "NEW_OFFER", "CANCEL_OFFER"
 };
 
 json_object*
@@ -32,18 +33,12 @@ billionaire_join(char* id)
 }
 
 json_object*
-billionaire_start(card** player_cards, size_t num_cards)
+billionaire_start(card_location* player_hand)
 {
   json_object* cmd = make_command(Command.START);
 
-  json_object* hand = json_object_new_array();
-
-  for (size_t i = 0; i < num_cards; ++i) {
-    json_object* card = JSON_from_card(player_cards[i]);
-    json_object_array_add(hand, card);
-  }
-
-  json_object_object_add(cmd, "hand", hand);
+  json_object* hand_json = JSON_from_card_location(player_hand);
+  json_object_object_add(cmd, "hand", hand_json);
 
   return cmd;
 }

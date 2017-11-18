@@ -18,15 +18,14 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
   new_game_state->player_limit = player_limit;
   new_game_state->running = false;
 
-  /* Initialise deck */
-  new_game_state->deck = generate_deck(player_limit,
-                                       has_billionaire,
-                                       has_taxman,
-                                       &new_game_state->deck_size);
+  /* Initialise and shuffle deck */
+  card_location* unordered_deck = generate_deck(player_limit,
+                                                has_billionaire,
+                                                has_taxman);
 
-  /* Shuffle the deck */
-  shuffle_cards(new_game_state->deck,
-                new_game_state->deck_size);
+  new_game_state->deck = flatten_card_location(unordered_deck);
+
+  shuffle_card_array(new_game_state->deck);
 
   return new_game_state;
 }
@@ -34,6 +33,6 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
 void
 game_state_free(game_state* gs_obj)
 {
-  free_cards(gs_obj->deck, gs_obj->deck_size);
+  free_card_array(gs_obj->deck);
   free(gs_obj);
 }
