@@ -7,7 +7,7 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
-PEP8_IGNORE=""
+PYSTYLE_IGNORE=""
 
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
@@ -86,18 +86,18 @@ else
 	echo "No .py files found in ${toplevel_dir}/tests. Skipping pytest..."
 fi
 
-# Run pep8 on source .py files
+# Run pycodestyle on source .py files
 staged_py_files=$(git diff $against --cached --name-only | grep \.py$)
 
 if [ -n "$staged_py_files" ]; then
-	echo "Running pep8 on committed python files..."
+	echo "Running pycodestyle on committed python files..."
 	for py_file in $staged_py_files; do
 		if [ -e $py_file ]; then
-			/usr/bin/env pep8 --exclude="$PEP8_IGNORE" $py_file || exit $?
+			/usr/bin/env pycodestyle --exclude="$PYSTYLE_IGNORE" $py_file || exit $?
 		fi
 	done
 else
-	echo "No .py files committed. Skipping pep8..."
+	echo "No .py files committed. Skipping pycodestyle..."
 fi
 
 # Run cppcheck on C/C++ source files
