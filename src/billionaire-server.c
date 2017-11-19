@@ -47,6 +47,8 @@
 #include "billionaire-server.h"
 #include "utils.h"
 
+#define READ_BYTES_AMOUNT 8192
+
 extern const struct commands Command;
 
 int
@@ -68,11 +70,11 @@ void
 buffered_on_read(struct bufferevent* bev, void* arg)
 {
   struct client* this_client = (struct client*) arg;
-  uint8_t data[8192];
+  uint8_t data[READ_BYTES_AMOUNT];
 
   size_t n = 1;
   size_t total_bytes = 0;
-  char json_str[8192];
+  char json_str[READ_BYTES_AMOUNT];
 
   /* Read 8k at a time. */
   while (n != 0) {
