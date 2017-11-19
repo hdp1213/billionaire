@@ -4,7 +4,7 @@ from functools import wraps
 from json.decoder import JSONDecodeError
 import signal
 
-from card import Cards
+from card import CardLocation
 from command import Command, CommandList
 
 
@@ -76,7 +76,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         # Billionaire bot variables
         self.received_cmds = CommandList()
         self.id = ''
-        self.hand = Cards()
+        self.hand = CardLocation()
 
     async def _send_from_queue(self):
         """Send commands to the server as they are enqueued
@@ -111,7 +111,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         """Receive commands from the server
 
         A received command must have the following field:
-            command:        JOIN/START/RECEIVE/BOOK_STATE/CHECK/FINISH
+            command:        JOIN/START/SUCCESSFUL_TRADE/BOOK_EVENT/FINISH/ERROR
 
         Optionally, a received command may also contain:
             bot_id:         the unique identifier given by the server
@@ -136,18 +136,18 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
             print('Starting game...')
             self._on_start.set()
 
-        if Command.RECEIVE in self.received_cmds:
+        if Command.SUCCESSFUL_TRADE in self.received_cmds:
             pass
 
-        if Command.BOOK_STATE in self.received_cmds:
-            pass
-
-        if Command.CHECK in self.received_cmds:
+        if Command.BOOK_EVENT in self.received_cmds:
             pass
 
         if Command.FINISH in self.received_cmds:
             print('Stopping game...')
             self._on_start.clear()
+
+        if Command.ERROR in self.received_cmds:
+            pass
 
     def connection_lost(self, exc):
         """Handle lost connections"""
@@ -173,7 +173,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
 
         start_cmd = self.received_cmds[Command.START]
 
-        self.hand = Cards.from_json(start_cmd.hand)
+        self.hand = CardLocation.from_json(start_cmd.hand)
         print(f'Received following hand: {self.hand!r}')
 
     @abc.abstractmethod
@@ -185,11 +185,10 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         """
         return NotImplemented
 
-    async def ask(self, cards):
-        ask = Command(Command.ASK,
-                      bot_id=self.bot_id,
-                      cards=cards.to_dict())
-        return ask
+    async def new_offer(self, cards):
+        new_offer = Command(Command.NEW_OFFER,
+                            cards=cards.to_dict())
+        return new_offer
 
 
 class BotDriver():

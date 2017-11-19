@@ -5,27 +5,25 @@ class Command():
     """docstring for Command"""
     JOIN = 'JOIN'
     START = 'START'
-    RECEIVE = 'RECEIVE'
-    BOOK_STATE = 'BOOK_STATE'
-    CHECK = 'CHECK'
+    SUCCESSFUL_TRADE = 'SUCCESSFUL_TRADE'
+    BOOK_EVENT = 'BOOK_EVENT'
     FINISH = 'FINISH'
-    ASK = 'ASK'
-    CANCEL = 'CANCEL'
-    BILLIONAIRE = 'BILLIONAIRE'
+    ERROR = 'ERROR'
+    NEW_OFFER = 'NEW_OFFER'
+    CANCEL_OFFER = 'CANCEL_OFFER'
 
     valid_commands = {JOIN,
                       START,
-                      RECEIVE,
-                      BOOK_STATE,
-                      CHECK,
+                      SUCCESSFUL_TRADE,
+                      BOOK_EVENT,
                       FINISH,
-                      ASK,
-                      CANCEL,
-                      BILLIONAIRE}
+                      ERROR,
+                      NEW_OFFER,
+                      CANCEL_OFFER}
 
     def __init__(self, command, **attrs):
         if command not in self.valid_commands:
-            raise ValueError(f'{command} not a valid command')
+            raise ValueError(f'{command!r} not a valid command')
 
         self.command = command
         self._attrs = attrs
@@ -34,7 +32,7 @@ class Command():
         return self.command == other
 
     def __repr__(self):
-        return f'<Command.{self.command}, attrs={self._attrs!r}>'
+        return f'<Command.{self.command}: attrs={self._attrs!r}>'
 
     def __getattr__(self, name):
         return self._attrs.get(name)
@@ -65,7 +63,7 @@ class CommandList():
         return self._cmds.get(cmd_str)
 
     def __repr__(self):
-        return f'<CommandList {list(self._cmds.values())!r}>'
+        return f'<CommandList: {list(self._cmds.values())!r}>'
 
     @classmethod
     def from_bytes(cls, data):

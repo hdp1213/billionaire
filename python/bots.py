@@ -1,6 +1,6 @@
 from base import BaseBillionaireBot
 
-from card import Card, CardType, Commodity
+from card import CardID, CardLocation
 from command import Command, CommandList
 
 
@@ -9,9 +9,9 @@ class DumbBot(BaseBillionaireBot):
         try:
             card_id, amt = self.hand.most_common(1)[0]
         except IndexError:
-            card_id, amt = None, 0
+            card_id, amt = CardID.INVALID, 0
 
         cards = self.hand.take_card(card_id, amt)
-        # ask = self.ask(cards)
-        ask = Command(Command.ASK, cards=cards.to_list())
-        return ask
+        # new_offer = self.new_offer(cards)
+        new_offer = Command(Command.NEW_OFFER, cards=cards.to_list())
+        return new_offer
