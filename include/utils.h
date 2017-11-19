@@ -7,11 +7,11 @@
 
 #define HASH_LENGTH 9
 
-#define JSON_ARRAY_FOREACH(obj, json_array)                            \
-  size_t array_len = json_object_array_length((json_array));           \
-  json_object* obj = NULL;                                             \
-  for (size_t i = 0, obj = json_object_array_get_idx((json_array), i); \
-       i < array_len;                                                  \
+#define JSON_ARRAY_FOREACH(obj, json_array)                     \
+  size_t i, array_len = json_object_array_length((json_array)); \
+  json_object* obj;                                             \
+  for (i = 0, obj = json_object_array_get_idx((json_array), i); \
+       i < array_len;                                           \
        ++i, obj = json_object_array_get_idx((json_array), i))
 
 /**
