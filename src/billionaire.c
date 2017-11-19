@@ -60,6 +60,18 @@ get_command_name(json_object* cmd, size_t* str_len)
   return cmd_str;
 }
 
+json_object*
+parse_command_list_string(char* json_str, size_t str_len)
+{
+  json_object* parse_obj = str_to_JSON(json_str, str_len);
+  json_object* cmd_array = get_JSON_value(parse_obj, "commands");
+
+  json_object_get(cmd_array);
+  json_object_put(parse_obj);
+
+  return cmd_array;
+}
+
 bool
 command_is(json_object* cmd, const char* cmd_name)
 {

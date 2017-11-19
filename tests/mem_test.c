@@ -1,8 +1,12 @@
+#include <assert.h>
 #include <mcheck.h>
 #include <stdio.h>
 
+#include "billionaire.h"
 #include "card_location.h"
 #include "utils.h"
+
+extern const struct commands Command;
 
 void
 mem_check_card_JSON()
@@ -65,6 +69,21 @@ mem_check_dealing()
   free_card_location(deck);
 }
 
+void
+mem_check_command_parse()
+{
+  char* json_str = "{\"commands\":[{\"command\":\"FINISH\"}]}";
+  size_t str_len = 36;
+
+  json_object* cmd_array = parse_command_list_string(json_str, str_len);
+
+  JSON_ARRAY_FOREACH(cmd, cmd_array) {
+    assert(command_is(cmd, Command.FINISH));
+  }
+
+  json_object_put(cmd_array);
+}
+
 int
 main()
 {
@@ -75,4 +94,6 @@ main()
   mem_check_deck_JSON();
 
   mem_check_dealing();
+
+  mem_check_command_parse();
 }

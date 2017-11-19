@@ -49,6 +49,13 @@ json_object* billionaire_finish();
 const char* get_command_name(json_object* cmd, size_t* str_len);
 
 /**
+ * Parse a string representing a JSON command list object.
+ *
+ * Returns a JSON array where each element is a command object.
+ */
+json_object* parse_command_list_string(char* json_str, size_t str_len);
+
+/**
  * Check the type of command.
  */
 bool command_is(json_object* cmd, const char* cmd_name);

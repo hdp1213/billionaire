@@ -84,29 +84,50 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
   /* If the game is running, parse command list object */
   if (billionaire_game->running) {
-    json_object* parse_obj = str_to_JSON(json_str, total_bytes);
-    json_object* cmd_array = get_JSON_value(parse_obj, "commands");
+    json_object* cmd_array = parse_command_list_string(json_str, total_bytes);
 
     JSON_ARRAY_FOREACH(cmd_obj, cmd_array) {
       if (command_is(cmd_obj, Command.NEW_OFFER)) {
         printf("Received NEW_OFFER from %s\n", this_client->id);
 
+        /* Parse offer */
         json_object* card_array = get_JSON_value(cmd_obj, "cards");
         card_location* card_loc = card_location_from_JSON(card_array);
+        size_t total_cards = get_total_cards(card_loc);
 
-        printf("Cards are:\n");
+        if (total_cards == 0) {
+          printf("No cards in the offer. Ignoring...\n");
+          break;
+        }
+
+        printf("Offer of %zu cards\n", total_cards);
+
+#ifdef DBUG
         for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
           size_t card_amt = get_card_amount(card_loc, card);
-          printf("%zux of card %d\n", card_amt, card);
+
+          if (card_amt == 0) {
+            continue;
+          }
+
+          printf("  %zux of card %d\n", card_amt, card);
         }
+#endif /* DBUG */
+
+        /* Insert new offer into book */
       }
+
       else if (command_is(cmd_obj, Command.CANCEL_OFFER)) {
         printf("Received CANCEL_OFFER from %s\n", this_client->id);
       }
+
+      else {
+        /* Invalid command */
+      }
     }
 
-    /* Free parse_obj after use */
-    json_object_put(parse_obj);
+    /* Free cmd_array after use */
+    json_object_put(cmd_array);
   }
 
   else {
