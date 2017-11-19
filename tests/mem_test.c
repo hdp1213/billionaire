@@ -1,20 +1,20 @@
 #include <mcheck.h>
 #include <stdio.h>
 
-#include "card.h"
+#include "card_location.h"
 #include "utils.h"
 
 void
 mem_check_card_JSON()
 {
-  card* new_card;
-  json_object* card_json;
+  card_location* new_card_loc;
+  json_object* card_loc_json;
 
-  new_card = card_new(COMMODITY, DIAMONDS);
-  card_json = JSON_from_card(new_card);
+  new_card_loc = card_location_init(4, DIAMONDS, DIAMONDS, DIAMONDS, OIL);
+  card_loc_json = JSON_from_card_location(new_card_loc);
 
-  free(new_card);
-  json_object_put(card_json);
+  free_card_location(new_card_loc);
+  json_object_put(card_loc_json);
 }
 
 void
@@ -22,22 +22,16 @@ mem_check_deck_JSON()
 {
   size_t num_players = 8;
   bool has_billionaire = true;
-  bool has_taxman = true;
-  size_t deck_size = 0;
+  bool has_tax_collector = true;
 
   const char* total_str;
   size_t total_str_len;
 
-  card** deck = generate_deck(num_players, has_billionaire, has_taxman,
-                              &deck_size);
+  card_location* deck = generate_deck(num_players, has_billionaire,
+                                      has_tax_collector);
 
   json_object* total = json_object_new_object();
-  json_object* hand = json_object_new_array();
-
-  for (size_t i = 0; i < deck_size; ++i) {
-    json_object* card = JSON_from_card(deck[i]);
-    json_object_array_add(hand, card);
-  }
+  json_object* hand = JSON_from_card_location(deck);
 
   json_object_object_add(total, "hand", hand);
 
@@ -45,7 +39,7 @@ mem_check_deck_JSON()
 
   printf("%s\n", total_str);
 
-  free_cards(deck, deck_size);
+  free_card_location(deck);
   json_object_put(total);
 }
 
@@ -54,21 +48,21 @@ mem_check_dealing()
 {
   size_t num_players = 8;
   bool has_billionaire = true;
-  bool has_taxman = true;
-  size_t deck_size = 0;
+  bool has_tax_collector = true;
 
-  card** deck = generate_deck(num_players, has_billionaire, has_taxman,
-                              &deck_size);
+  card_location* deck = generate_deck(num_players, has_billionaire,
+                                      has_tax_collector);
 
-  card*** player_hands;
-  size_t* player_hand_sizes;
+  card_array* ordered_deck = flatten_card_location(deck);
+  card_location** player_hands = deal_cards(num_players, ordered_deck);
 
-  deal_cards(num_players, deck, deck_size,
-             &player_hands, &player_hand_sizes);
+  for (size_t i = 0; i < num_players; ++i) {
+    free_card_location(player_hands[i]);
+  }
 
-  free(player_hand_sizes);
-  free_player_hands(player_hands, num_players);
-  free_cards(deck, deck_size);
+  free(player_hands);
+  free_card_array(ordered_deck);
+  free_card_location(deck);
 }
 
 int
