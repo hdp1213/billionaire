@@ -293,7 +293,7 @@ deal_cards(size_t num_players, card_array* ordered_deck)
 
 #ifdef DBUG
     printf("Player %zu, card %zu\n", iplayer, i);
-#endif
+#endif /* DBUG */
 
     /* Give a card from the deck to the current player */
     add_card_to_location(player_hands[iplayer], ordered_deck->cards[i]);
