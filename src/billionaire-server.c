@@ -49,8 +49,6 @@
 
 #define READ_BYTES_AMOUNT 8192
 
-extern const struct commands Command;
-
 int
 setnonblock(int fd)
 {

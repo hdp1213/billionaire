@@ -26,6 +26,11 @@
 /* Maximum size of address string used for hashing */
 #define ADDR_STR_SIZE 23
 
+/**
+ * External command struct used for checking command types.
+ */
+extern const struct commands Command;
+
 /* The libevent event base.  In libevent 1 you didn't need to worry
  * about this for simple programs, but its used more in the libevent 2
  * API. */
