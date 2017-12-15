@@ -4,11 +4,11 @@ all: .base billionaire-server
 
 .base:
 	if ! [ -e $(BUILDDIR) ]; then mkdir $(BUILDDIR) ; mkdir $(BUILDDIR)/lib; fi;
-	touch build/.base
+	touch $(BUILDDIR)/.base
 
 vpath %.c src:tests
-vpath %.o build
-vpath .base build
+vpath %.o $(BUILDDIR)
+vpath .base $(BUILDDIR)
 
 # Compilers
 CC = gcc
