@@ -1,0 +1,6 @@
+{
+   ignore_libcheck_still_reachable_errors
+   Memcheck:Leak
+   ...
+   obj:*/libcheck.so.*
+}

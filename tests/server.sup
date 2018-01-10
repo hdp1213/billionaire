@@ -1,0 +1,6 @@
+{
+   ignore_libevent_leak_errors
+   Memcheck:Leak
+   ...
+   obj:*/libevent.so.*
+}
