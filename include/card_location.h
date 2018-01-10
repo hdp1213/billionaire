@@ -8,7 +8,6 @@
 
 typedef enum card_id card_id;
 typedef struct card_location card_location;
-typedef struct card_array card_array;
 
 /**
  * Enumeration for card ID.
@@ -40,16 +39,6 @@ enum card_id {
  */
 struct card_location {
   size_t* card_counts;
-  size_t num_cards;
-};
-
-/**
- * Struct preserving the order of cards.
- *
- * Needed for card shuffling routines, where card order is meaningful.
- */
-struct card_array {
-  card_id* cards;
   size_t num_cards;
 };
 
@@ -129,35 +118,8 @@ void move_cards(card_location* from_loc, card_location* to_loc,
                 card_id card, size_t amount);
 
 /**
- * Convert a card_location into an card_array struct.
- */
-card_array* flatten_card_location(card_location* card_loc);
-
-/**
  * Free a card_location struct, and all cards within it.
  */
 void free_card_location(card_location* card_loc);
-
-
-
-/**
- * Create a new card_array with a size of num_cards
- */
-card_array* card_array_new(size_t num_cards);
-
-/**
- * Shuffle an ordered array of cards.
- */
-void shuffle_card_array(card_array* card_arr);
-
-/**
- * Deal cards to players.
- */
-card_location** deal_cards(size_t num_players, card_array* ordered_deck);
-
-/**
- * Free a card_array.
- */
-void free_card_array(card_array* card_arr);
 
 #endif

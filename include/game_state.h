@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "card_location.h"
+#include "card_array.h"
 
 typedef struct game_state game_state;
 

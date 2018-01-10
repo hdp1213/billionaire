@@ -45,6 +45,8 @@
 #include <getopt.h>
 
 #include "billionaire-server.h"
+#include "card_location.h"
+#include "card_array.h"
 #include "utils.h"
 
 #define READ_BYTES_AMOUNT 8192

@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "card_location.h"
+#include "card_array.h"
 #include "utils.h"
 
 

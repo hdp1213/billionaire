@@ -4,6 +4,7 @@
 
 #include "billionaire.h"
 #include "card_location.h"
+#include "card_array.h"
 #include "utils.h"
 
 extern const struct commands Command;
