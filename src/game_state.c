@@ -28,6 +28,8 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
 
   shuffle_card_array(new_game_state->deck);
 
+  new_game_state->current_trades = book_new();
+
   return new_game_state;
 }
 

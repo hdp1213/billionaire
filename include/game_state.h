@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "card_array.h"
+#include "book.h"
 
 typedef struct game_state game_state;
 
@@ -20,6 +21,9 @@ struct game_state {
 
   /* Deck of cards used for the game */
   card_array* deck;
+
+  /* Trade book containing active offers */
+  book* current_trades;
 };
 
 /**
