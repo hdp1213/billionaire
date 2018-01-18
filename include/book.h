@@ -65,9 +65,21 @@ void set_offer_at(book* book_obj, int offer_ind, offer* offer_obj);
 offer* get_offer_at(book* book_obj, int offer_ind);
 
 /**
+ * Remove an offer from the book.
+ *
+ * NOTE: this method does not free the removed offer from memory.
+ */
+void remove_offer_at(book* book_obj, int offer_ind);
+
+/**
  * Add an offer to the book, or return one that is ready to complete.
  */
 offer* fill_offer(book* book_obj, offer* offer_obj);
+
+/**
+ * Remove an offer from the book if it exists and belongs to the client.
+ */
+offer* cancel_offer(book* book_obj, size_t card_amt, const char* client_id);
 
 /**
  * Free a book.
@@ -76,14 +88,9 @@ void free_book(book* book_obj);
 
 
 /**
- * Convert a offer struct to a JSON object offer.
+ * Convert an offer struct to a JSON object offer.
  */
 json_object* JSON_from_offer(offer* offer_obj);
-
-/**
- * Convert a JSON object offer to a offer struct.
- */
-offer* offer_from_JSON(json_object* offer_json);
 
 /**
  * Create a new empty offer.
@@ -91,9 +98,24 @@ offer* offer_from_JSON(json_object* offer_json);
 offer* offer_new();
 
 /**
+ * Initialise an offer struct with cards and the offer owner's ID.
+ */
+offer* offer_init(card_location* cards, const char* owner_id);
+
+/**
  * Get the index of an offer corresponding to its place in a book.
  */
-int get_offer_ind(offer* offer_obj);
+int get_offer_index(offer* offer_obj);
+
+/**
+ * Return the offset index corresponding to the number of cards in a trade.
+ */
+int offset_index(size_t card_amt);
+
+/**
+ * Check if a prospective owner actually owns the offer in question.
+ */
+bool is_owner(offer* offer_obj, const char* prospective_owner_id);
 
 /**
  * Free an offer.

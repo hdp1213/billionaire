@@ -1,9 +1,11 @@
 #include <err.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "book.h"
 
-book* book_new()
+book*
+book_new()
 {
   book* new_book = malloc(sizeof(book));
 
@@ -43,6 +45,53 @@ get_offer_at(book* book_obj, int offer_ind)
 }
 
 void
+remove_offer_at(book* book_obj, int offer_ind)
+{
+  set_offer_at(book_obj, offer_ind, NULL);
+}
+
+offer*
+fill_offer(book* book_obj, offer* offer_obj)
+{
+  int offer_ind = get_offer_index(offer_obj);
+
+  if (no_offer_at(book_obj, offer_ind)) {
+    set_offer_at(book_obj, offer_ind, offer_obj);
+    return NULL;
+  }
+
+  else {
+    /* Return the offer object ready to trade to the parent method */
+    return get_offer_at(book_obj, offer_ind);
+  }
+}
+
+offer*
+cancel_offer(book* book_obj, size_t card_amt, const char* client_id)
+{
+  int offer_ind = offset_index(card_amt);
+
+  if (no_offer_at(book_obj, offer_ind)) {
+    /* No offer to cancel, set error code and return */
+    return NULL;
+  }
+
+  else {
+    offer* offer_to_cancel = get_offer_at(book_obj, offer_ind);
+
+    if (is_owner(offer_to_cancel, client_id)) {
+      remove_offer_at(book_obj, offer_ind);
+      return offer_to_cancel;
+    }
+
+    else {
+      /* Client does not own offer to cancel, set error code and return */
+      return NULL;
+    }
+  }
+}
+
+void
 free_book(book* book_obj)
 {
   for (int i = 0; i < (TOTAL_COMMODITY_AMOUNT + 1) - OFFER_INDEX_OFFSET; ++i) {
@@ -54,51 +103,18 @@ free_book(book* book_obj)
   free(book_obj);
 }
 
-offer*
-fill_offer(book* book_obj, offer* offer_obj)
-{
-  int offer_ind = get_offer_ind(offer_obj);
-
-  if (no_offer_at(book_obj, offer_ind)) {
-    set_offer_at(book_obj, offer_ind, offer_obj);
-    return NULL;
-  }
-  else {
-    /* Return the offer object ready to trade to the parent method */
-    return get_offer_at(book_obj, offer_ind);
-  }
-}
-
 
 json_object*
 JSON_from_offer(offer* offer_obj)
 {
+  /* The client does not verify it is the owner of the offer, so the JSON
+     object does not need to contain the owner_id field. */
   json_object* offer_json = json_object_new_object();
 
   json_object* offer_cards_json = JSON_from_card_location(offer_obj->cards);
-  json_object* id_json = json_object_new_string(offer_obj->owner_id);
-
   json_object_object_add(offer_json, "cards", offer_cards_json);
-  json_object_object_add(offer_json, "client_id", id_json);
 
   return offer_json;
-}
-
-offer*
-offer_from_JSON(json_object* offer_json)
-{
-  offer* offer_obj = offer_new();
-
-  json_object* offer_cards_json = get_JSON_value(offer_json, "cards");
-  json_object* id_json = get_JSON_value(offer_json, "client_id");
-
-  offer_obj->cards = card_location_from_JSON(offer_cards_json);
-
-  /* Assume client_id has length HASH_LENGTH, as it should come from utils.h */
-  const char* client_id = json_object_get_string(id_json);
-  strncpy(offer_obj->owner_id, client_id, HASH_LENGTH);
-
-  return offer_obj;
 }
 
 offer*
@@ -110,18 +126,44 @@ offer_new()
     err(1, "new_offer malloc failed");
   }
 
+  strncpy(new_offer->owner_id, "", 2);
   new_offer->cards = NULL;
 
   return new_offer;
 }
 
+offer*
+offer_init(card_location* cards, const char* owner_id)
+{
+  offer* offer_obj = offer_new();
+
+  /* Assume owner_id has length HASH_LENGTH, as it should come from utils.h */
+  strncpy(offer_obj->owner_id, owner_id, HASH_LENGTH);
+
+  offer_obj->cards = cards;
+
+  return offer_obj;
+}
+
 int
-get_offer_ind(offer* offer_obj)
+get_offer_index(offer* offer_obj)
 {
   size_t card_amt = get_total_cards(offer_obj->cards);
 
+  return offset_index(card_amt);
+}
+
+int
+offset_index(size_t card_amt)
+{
   /* Already asserted that num_cards >= OFFER_INDEX_OFFSET */
   return (int) card_amt - OFFER_INDEX_OFFSET;
+}
+
+bool
+is_owner(offer* offer_obj, const char* prospective_owner_id)
+{
+  return strncmp(offer_obj->owner_id, prospective_owner_id, HASH_LENGTH) == 0;
 }
 
 void
