@@ -7,8 +7,8 @@
 #include "utils.h"
 
 const struct commands Command = {
-  "JOIN", "START", "SUCCESSFUL_TRADE", "BOOK_EVENT", "FINISH", "ERROR",
-  "NEW_OFFER", "CANCEL_OFFER"
+  "JOIN", "START", "SUCCESSFUL_TRADE", "CANCELLED_OFFER", "BOOK_EVENT",
+  "FINISH", "ERROR", "NEW_OFFER", "CANCEL_OFFER"
 };
 
 json_object*
@@ -26,8 +26,8 @@ billionaire_join(char* id)
 {
   json_object* cmd = make_command(Command.JOIN);
 
-  json_object* bot_id = json_object_new_string(id);
-  json_object_object_add(cmd, "bot_id", bot_id);
+  json_object* client_id = json_object_new_string(id);
+  json_object_object_add(cmd, "client_id", client_id);
 
   return cmd;
 }

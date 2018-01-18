@@ -67,14 +67,16 @@ can communicate with the server.
 Starts the game when enough clients have joined. Contains the starting
 hands for each client.
  - `hand`: array of cards objects.
- - `client_id`: client ID, so the client can confirm it has received the
-cards meant for it.
 
 #### `SUCCESSFUL_TRADE`:
 Gives a client a set of cards corresponding to a successful trade.
  - `cards`: array of cards objects.
- - `client_id`: client ID, so the client can confirm it has received the
-cards meant for it.
+ - `owner_id`: ID of the cards' original owner which the client can use
+at its own discretion.
+
+#### `CANCELLED_OFFER`:
+Returns to the client a cancelled offer they had previously added.
+ - `cards`: array of cards objects.
 
 #### `BOOK_EVENT`:
 Sent to all non-participants when a book event occurs, _i.e._ something

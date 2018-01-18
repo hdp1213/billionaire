@@ -6,6 +6,7 @@
 
 #include <json-c/json.h>
 
+#include "book.h"
 #include "card_location.h"
 
 #define MAX_PLAYERS 8
@@ -14,6 +15,7 @@ struct commands {
   const char* JOIN;
   const char* START;
   const char* SUCCESSFUL_TRADE;
+  const char* CANCELLED_OFFER;
   const char* BOOK_EVENT;
   const char* FINISH;
   const char* ERROR;
@@ -37,6 +39,23 @@ json_object* billionaire_join(char* id);
  * Create a START command containing the client's hand.
  */
 json_object* billionaire_start(card_location* player_hand);
+
+/**
+ * Create a SUCCESSFUL_TRADE command containing new cards and the previous
+ * owner's ID.
+ */
+json_object* billionaire_successful_trade(offer* traded_offer);
+
+/**
+ * Create a CANCELLED_OFFER command containing a cancelled offer.
+ */
+json_object* billionaire_cancelled_offer(offer* cancelled_offer);
+
+/**
+ * Create a BOOK_EVENT command containing the book event
+ */
+json_object* billionaire_book_event(const char* event, size_t card_amt,
+                                    const char* participants[2]);
 
 /**
  * Create a FINISH command.
