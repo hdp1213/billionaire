@@ -45,6 +45,7 @@
 #include <getopt.h>
 
 #include "billionaire-server.h"
+#include "book.h"
 #include "card_location.h"
 #include "card_array.h"
 #include "utils.h"
@@ -116,15 +117,46 @@ buffered_on_read(struct bufferevent* bev, void* arg)
         }
 #endif /* DBUG */
 
-        /* Insert new offer into book */
-      }
+        offer* new_offer = offer_init(card_loc, this_client->id);
+        offer* traded_offer = fill_offer(billionaire_game->current_trades,
+                                         new_offer);
+
+        if (traded_offer != NULL) {
+          /* A trade has been made */
+          /* TODO: Send a SUCCESSFUL_TRADE to participants, and a BOOK_EVENT to
+             remaining players */
+        }
+
+        else {
+          printf("Offer added to book\n");
+          /* TODO: Send a BOOK_EVENT to remaining players */
+        }
+      } /* Command.NEW_OFFER */
 
       else if (command_is(cmd_obj, Command.CANCEL_OFFER)) {
         printf("Received CANCEL_OFFER from %s\n", this_client->id);
-      }
+
+        /* Parse offer */
+        json_object* card_amt_json = get_JSON_value(cmd_obj, "card_amt");
+        size_t card_amt = (size_t) json_object_get_int(card_amt_json);
+
+        offer* cancelled_offer = cancel_offer(billionaire_game->current_trades,
+                                              card_amt, this_client->id);
+
+        if (cancelled_offer != NULL) {
+          /* Offer has been successfully cancelled */
+          /* TODO: Send a CANCELLED_OFFER back to this_client and a BOOK_EVENT
+              to remaining players */
+        }
+
+        else {
+          /* TODO: Send an ERROR back to this_client */
+        }
+      } /* Command.CANCEL_OFFER */
 
       else {
         /* Invalid command */
+        /* TODO: Send an ERROR back to this_client */
       }
     }
 
