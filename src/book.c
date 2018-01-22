@@ -62,7 +62,9 @@ fill_offer(book* book_obj, offer* offer_obj)
 
   else {
     /* Return the offer object ready to trade to the parent method */
-    return get_offer_at(book_obj, offer_ind);
+    offer* return_offer = get_offer_at(book_obj, offer_ind);
+    remove_offer_at(book_obj, offer_ind);
+    return return_offer;
   }
 }
 
