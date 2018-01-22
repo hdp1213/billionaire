@@ -103,6 +103,13 @@ offer* offer_new();
 offer* offer_init(card_location* cards, const char* owner_id);
 
 /**
+ * Initialise an offer struct with a number of cards.
+ *
+ * Used for testing purposes only.
+ */
+offer* offer_init_cards(card_id card, size_t amount, const char* owner_id);
+
+/**
  * Get the index of an offer corresponding to its place in a book.
  */
 int get_offer_index(offer* offer_obj);

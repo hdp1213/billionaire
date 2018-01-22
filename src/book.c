@@ -145,6 +145,16 @@ offer_init(card_location* cards, const char* owner_id)
   return offer_obj;
 }
 
+offer*
+offer_init_cards(card_id card, size_t amount, const char* owner_id)
+{
+  card_location* cards = card_location_new();
+  add_cards_to_location(cards, card, amount);
+
+  return offer_init(cards, owner_id);
+}
+
+
 int
 get_offer_index(offer* offer_obj)
 {
