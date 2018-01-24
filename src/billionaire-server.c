@@ -239,7 +239,7 @@ on_accept(int fd, short ev, void* arg)
   /* We've accepted a new client, create a client object. */
   client = calloc(1, sizeof(*client));
   if (client == NULL)
-    err(1, "malloc failed");
+    err(1, "client malloc failed");
   client->fd = client_fd;
 
   client->buf_ev = bufferevent_socket_new(evbase, client_fd, 0);

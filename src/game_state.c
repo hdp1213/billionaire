@@ -11,7 +11,7 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
   game_state* new_game_state = malloc(sizeof(game_state));
 
   if (new_game_state == NULL) {
-    err(1, "malloc failed");
+    err(1, "new_game_state malloc failed");
   }
 
   /* Initialise parameter values */
