@@ -50,7 +50,7 @@ json_object* JSON_from_card_location(card_location* card_loc);
 /**
  * Convert a JSON array of cards objects to a card_location struct.
  *
- * Sets cmd_errno to EBADTYPE.
+ * Sets cmd_errno to EJSONTYPE.
  * Checks cmd_errno, on failure returns NULL.
  */
 card_location* card_location_from_JSON(json_object* card_loc_json);

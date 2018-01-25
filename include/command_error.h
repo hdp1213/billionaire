@@ -8,13 +8,13 @@
 enum errorno {
   EJSON = json_tokener_error_size, /* Upper value for JSON parsing errors */
   EJSONVAL, /* JSON value unable to be extracted */
+  EJSONTYPE, /* JSON object is not the desired type */
   EBADCMDNAME, /* Invalid command name */
   EBADCMDOBJ, /* Command object does not contain 'command' field */
   ECANEMPTY, /* Offer to cancel is empty */
   ECANPERM, /* Offer could not be cancelled due to permission error */
   EOFFEROVER, /* New offer overrides previously declared offer */
-  EBADTYPE, /* Bad JSON type */
-  NUM_ERRORS = EBADTYPE - EJSON
+  NUM_ERRORS = EOFFEROVER - EJSON
 };
 
 extern int cmd_errno;

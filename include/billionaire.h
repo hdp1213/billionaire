@@ -78,7 +78,7 @@ const char* get_command_name(json_object* cmd, size_t* str_len);
  * Parse a string representing a JSON command list object.
  *
  * Returns a JSON array where each element is a command object.
- * Sets cmd_errno to EBADTYPE.
+ * Sets cmd_errno to EJSONTYPE.
  * Checks cmd_errno, on failure returns NULL.
  */
 json_object* parse_command_list_string(char* json_str, size_t str_len);

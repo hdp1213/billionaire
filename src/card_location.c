@@ -37,7 +37,7 @@ card_location*
 card_location_from_JSON(json_object* card_loc_json)
 {
   if (!json_object_is_type(card_loc_json, json_type_array)) {
-    cmd_errno = (int) EBADTYPE;
+    cmd_errno = (int) EJSONTYPE;
     return NULL;
   }
 

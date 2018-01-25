@@ -149,6 +149,7 @@ server:
 this is handled by the `json-c` library.
  - `EJSONVAL`: command object does not contain a field needed by the
 server.
+ - `EJSONTYPE`: JSON object is not the desired type.
  - `EBADCMDNAME`: command object has an invalid command name.
  - `EBADCMDOBJ`: command object does not have a 'command' field.
  - `ECANEMPTY`: `CANCEL_ORDER` object cancelling an empty offer.
@@ -156,4 +157,3 @@ server.
 the client.
  - `EOFFEROVER`: `NEW_OFFER` object attempting to overwrite client's
 offer already in book.
- - `EBADTYPE`: JSON object is of an incorrect type needed by the server.

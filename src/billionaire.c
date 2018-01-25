@@ -111,7 +111,7 @@ parse_command_list_string(char* json_str, size_t str_len)
   }
 
   if (!json_object_is_type(cmd_array, json_type_array)) {
-    cmd_errno = (int) EBADTYPE;
+    cmd_errno = (int) EJSONTYPE;
     return NULL;
   }
 
