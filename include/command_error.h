@@ -13,10 +13,10 @@ enum errorno {
   ECANEMPTY, /* Offer to cancel is empty */
   ECANPERM, /* Offer could not be cancelled due to permission error */
   EOFFEROVER, /* New offer overrides previously declared offer */
-  EBADTYPE /* Bad JSON type */
+  EBADTYPE, /* Bad JSON type */
+  NUM_ERRORS = EBADTYPE - EJSON
 };
 
 extern int cmd_errno;
 
-// extern const char error_what[4][MAX_ERROR_LENGTH];
-extern const char* error_what[7];
+extern const char* error_what[NUM_ERRORS];
