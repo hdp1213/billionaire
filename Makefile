@@ -41,13 +41,13 @@ MEM_TEST = mem_test.o
 billionaire-server: $(MAIN) $(SOURCE)
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-check_book: $(CHECK_BOOK) book.o card_location.o utils.o
+check_book: $(CHECK_BOOK) book.o card_location.o command_error.o utils.o
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
-check_card_location: $(CHECK_CARD_LOCATION) card_location.o card_array.o utils.o
+check_card_location: $(CHECK_CARD_LOCATION) card_location.o command_error.o card_array.o utils.o
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
-check_utils: $(CHECK_UTILS) utils.o
+check_utils: $(CHECK_UTILS) command_error.o utils.o
 	$(CC) $(LDFLAGS) -o $@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
 mem_test: $(MEM_TEST) $(SOURCE)
