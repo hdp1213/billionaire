@@ -31,11 +31,15 @@ const char* JSON_to_str(json_object* json_obj, size_t* str_len);
 
 /**
  * Convert a C string to a JSON object.
+ *
+ * Sets cmd_errno to jerr, on failure returns NULL.
  */
 json_object* str_to_JSON(const char* json_str, size_t json_str_len);
 
 /**
  * Extract a value from a JSON object given its key.
+ *
+ * Sets cmd_errno to EJSONVAL, on failure returns NULL.
  */
 json_object* get_JSON_value(json_object* json_obj, const char* key);
 

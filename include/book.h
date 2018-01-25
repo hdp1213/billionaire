@@ -78,6 +78,8 @@ offer* fill_offer(book* book_obj, offer* offer_obj);
 
 /**
  * Remove an offer from the book if it exists and belongs to the client.
+ *
+ * Sets cmd_errno to ECANEMPTY or ECANPERM, on failure returns NULL.
  */
 offer* cancel_offer(book* book_obj, size_t card_amt, const char* client_id);
 

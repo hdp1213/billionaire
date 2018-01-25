@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <errno.h>
-#include <err.h>
 #include <string.h>
 
 #include "billionaire.h"
+#include "command_error.h"
 #include "utils.h"
 
 const struct commands Command = {
@@ -49,10 +48,44 @@ billionaire_finish()
   return make_command(Command.FINISH);
 }
 
+json_object*
+billionaire_error()
+{
+  json_object* cmd = make_command(Command.ERROR);
+
+  json_object* errno_json = json_object_new_int(cmd_errno);
+
+  char* what;
+
+  if (cmd_errno <= EJSON) { /* The error comes from <json-c/json-c.h> */
+    what = json_tokener_error_desc(cmd_errno);
+    printf("External JSON error, %s\n", what);
+  }
+
+  else { /* The error is internal and has a specified reason */
+    what = error_what[cmd_errno - EJSON - 1];
+    printf("Internal error, %d: %s\n", cmd_errno - EJSON - 1, what);
+  }
+
+  json_object* what_json = json_object_new_string(what);
+
+  json_object_object_add(cmd, "errno", errno_json);
+  json_object_object_add(cmd, "what", what_json);
+
+  cmd_errno = CMD_SUCCESS;
+
+  return cmd;
+}
+
 const char*
 get_command_name(json_object* cmd, size_t* str_len)
 {
   json_object* cmd_str_json = get_JSON_value(cmd, "command");
+
+  if (cmd_errno != CMD_SUCCESS) {
+    *str_len = 0;
+    return NULL;
+  }
 
   const char* cmd_str = json_object_get_string(cmd_str_json);
   *str_len = (size_t) json_object_get_string_len(cmd_str_json);
@@ -64,7 +97,18 @@ json_object*
 parse_command_list_string(char* json_str, size_t str_len)
 {
   json_object* parse_obj = str_to_JSON(json_str, str_len);
+
+  if (cmd_errno != CMD_SUCCESS) {
+    json_object_put(parse_obj);
+    return NULL;
+  }
+
   json_object* cmd_array = get_JSON_value(parse_obj, "commands");
+
+  if (cmd_errno != CMD_SUCCESS) {
+    json_object_put(parse_obj);
+    return NULL;
+  }
 
   json_object_get(cmd_array);
   json_object_put(parse_obj);

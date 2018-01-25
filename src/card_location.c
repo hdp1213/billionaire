@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "card_location.h"
+#include "command_error.h"
 #include "utils.h"
 
 
@@ -36,7 +37,7 @@ card_location*
 card_location_from_JSON(json_object* card_loc_json)
 {
   if (!json_object_is_type(card_loc_json, json_type_array)) {
-    /* Handle error here */
+    cmd_errno = (int) EBADTYPE;
     return NULL;
   }
 
@@ -49,7 +50,16 @@ card_location_from_JSON(json_object* card_loc_json)
     json_object* card_json = json_object_array_get_idx(card_loc_json, i);
 
     json_object* card_id_json = get_JSON_value(card_json, "id");
+
+    if (cmd_errno != CMD_SUCCESS) {
+      return NULL;
+    }
+
     json_object* card_amt_json = get_JSON_value(card_json, "amt");
+
+    if (cmd_errno != CMD_SUCCESS) {
+      return NULL;
+    }
 
     card_id card = json_object_get_int(card_id_json);
     size_t card_amt = (size_t) json_object_get_int(card_amt_json);

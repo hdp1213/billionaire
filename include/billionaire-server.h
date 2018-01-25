@@ -91,6 +91,7 @@ int setnonblock(int fd);
  * Called by libevent when there is data to read.
  *
  * This is where all of the server logic should go.
+ * Responds to changes in cmd_errno by sending ERROR commands.
  */
 void buffered_on_read(struct bufferevent* bev, void* arg);
 

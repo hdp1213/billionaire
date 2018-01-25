@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "command_error.h"
 
 #include <err.h>
 #include <stdio.h>
@@ -42,15 +43,16 @@ str_to_JSON(const char* json_str, size_t json_str_len)
   json_tokener* tok = json_tokener_new();
 
   /* New object is initialised, must be appropriately handled later on */
-  json_object* parse_obj = json_tokener_parse_ex(tok, json_str, (int) json_str_len);
+  json_object* parse_obj = json_tokener_parse_ex(tok, json_str,
+                                                 (int) json_str_len);
 
   jerr = json_tokener_get_error(tok);
   json_tokener_free(tok);
 
-  /* Malformed JSON. TODO: set errno to jerr. */
+  /* Malformed JSON */
   if (jerr != json_tokener_success) {
-    const char* jerr_desc = json_tokener_error_desc(jerr);
-    err(1, "JSON error %d: %s", jerr, jerr_desc);
+    cmd_errno = (int) jerr;
+    return NULL;
   }
 
   return parse_obj;
@@ -66,8 +68,9 @@ get_JSON_value(json_object* json_obj, const char* key)
                                         key,
                                         &json_value);
 
-  if (has_field == FALSE || json_value == NULL) {
-    err(1, "failed to extract value corresponding to '%s'", key);
+  if (!has_field || json_value == NULL) {
+    cmd_errno = (int) EJSONVAL;
+    return NULL;
   }
 
   return json_value;

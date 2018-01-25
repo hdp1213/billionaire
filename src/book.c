@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "book.h"
+#include "command_error.h"
 
 book*
 book_new()
@@ -74,7 +75,8 @@ cancel_offer(book* book_obj, size_t card_amt, const char* client_id)
   int offer_ind = offset_index(card_amt);
 
   if (no_offer_at(book_obj, offer_ind)) {
-    /* No offer to cancel, set error code and return */
+    /* No offer to cancel */
+    cmd_errno = (int) ECANEMPTY;
     return NULL;
   }
 
@@ -87,7 +89,8 @@ cancel_offer(book* book_obj, size_t card_amt, const char* client_id)
     }
 
     else {
-      /* Client does not own offer to cancel, set error code and return */
+      /* Client does not own offer to cancel */
+      cmd_errno = (int) ECANPERM;
       return NULL;
     }
   }

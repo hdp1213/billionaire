@@ -35,6 +35,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
@@ -48,6 +49,7 @@
 #include "book.h"
 #include "card_location.h"
 #include "card_array.h"
+#include "command_error.h"
 #include "utils.h"
 
 #define READ_BYTES_AMOUNT 8192
@@ -77,6 +79,8 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   size_t total_bytes = 0;
   char json_str[READ_BYTES_AMOUNT];
 
+  cmd_errno = CMD_SUCCESS;
+
   /* Read 8k at a time. */
   while (n != 0) {
     total_bytes += n;
@@ -89,79 +93,118 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   if (billionaire_game->running) {
     json_object* cmd_array = parse_command_list_string(json_str, total_bytes);
 
-    JSON_ARRAY_FOREACH(cmd_obj, cmd_array) {
-      if (command_is(cmd_obj, Command.NEW_OFFER)) {
-        printf("Received NEW_OFFER from %s\n", this_client->id);
+    if (cmd_errno != CMD_SUCCESS) {
+      enqueue_command(this_client, billionaire_error());
+    }
 
-        /* Parse offer */
-        json_object* card_array = get_JSON_value(cmd_obj, "cards");
-        card_location* card_loc = card_location_from_JSON(card_array);
-        size_t total_cards = get_total_cards(card_loc);
-
-        if (total_cards == 0) {
-          printf("No cards in the offer. Ignoring...\n");
-          break;
+    else {
+      JSON_ARRAY_FOREACH(cmd_obj, cmd_array) {
+        /* Check cmd_object has command field */
+        if (get_JSON_value(cmd_obj, "command") == NULL) {
+          cmd_errno = (int) EBADCMDOBJ;
+          enqueue_command(this_client, billionaire_error());
+          continue;
         }
 
-        printf("Offer of %zu cards\n", total_cards);
+        if (command_is(cmd_obj, Command.NEW_OFFER)) {
+          printf("Received NEW_OFFER from %s\n", this_client->id);
 
-#ifdef DBUG
-        for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
-          size_t card_amt = get_card_amount(card_loc, card);
+          /* Parse offer */
+          json_object* card_array = get_JSON_value(cmd_obj, "cards");
 
-          if (card_amt == 0) {
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
             continue;
           }
 
-          printf("  %zux of card %d\n", card_amt, card);
-        }
-#endif /* DBUG */
+          card_location* card_loc = card_location_from_JSON(card_array);
 
-        offer* new_offer = offer_init(card_loc, this_client->id);
-        offer* traded_offer = fill_offer(billionaire_game->current_trades,
-                                         new_offer);
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
+            continue;
+          }
 
-        if (traded_offer != NULL) {
-          /* A trade has been made */
-          /* TODO: Send a SUCCESSFUL_TRADE to participants, and a BOOK_EVENT to
-             remaining players */
-        }
+          size_t total_cards = get_total_cards(card_loc);
+
+          if (total_cards == 0) {
+            printf("No cards in the offer. Ignoring...\n");
+            continue;
+          }
+
+          printf("Offer of %zu cards\n", total_cards);
+
+  #ifdef DBUG
+          for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+            size_t card_amt = get_card_amount(card_loc, card);
+
+            if (card_amt == 0) {
+              continue;
+            }
+
+            printf("  %zux of card %d\n", card_amt, card);
+          }
+  #endif /* DBUG */
+
+          offer* new_offer = offer_init(card_loc, this_client->id);
+          offer* traded_offer = fill_offer(billionaire_game->current_trades,
+                                           new_offer);
+
+          if (traded_offer != NULL) {
+            /* A trade has been made */
+            /* TODO: Send a SUCCESSFUL_TRADE to participants, and a BOOK_EVENT
+               to remaining players */
+          }
+
+          else {
+            printf("Offer added to book\n");
+            /* TODO: Send a BOOK_EVENT to remaining players */
+          }
+        } /* Command.NEW_OFFER */
+
+        else if (command_is(cmd_obj, Command.CANCEL_OFFER)) {
+          printf("Received CANCEL_OFFER from %s\n", this_client->id);
+
+          /* Parse offer */
+          json_object* card_amt_json = get_JSON_value(cmd_obj, "card_amt");
+
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
+            continue;
+          }
+
+          size_t card_amt = (size_t) json_object_get_int(card_amt_json);
+
+          offer* cancelled_offer = cancel_offer(billionaire_game->current_trades,
+                                                card_amt, this_client->id);
+
+          if (cancelled_offer != NULL) {
+            /* Offer has been successfully cancelled */
+            /* TODO: Send a CANCELLED_OFFER back to this_client and a
+               BOOK_EVENT to remaining players */
+          }
+
+          else {
+            /* Invalid cancellation */
+            assert(cmd_errno != CMD_SUCCESS);
+            enqueue_command(this_client, billionaire_error());
+            continue;
+          }
+        } /* Command.CANCEL_OFFER */
 
         else {
-          printf("Offer added to book\n");
-          /* TODO: Send a BOOK_EVENT to remaining players */
+          /* Invalid command name */
+          cmd_errno = (int) EBADCMDNAME;
+          enqueue_command(this_client, billionaire_error());
+          continue;
         }
-      } /* Command.NEW_OFFER */
-
-      else if (command_is(cmd_obj, Command.CANCEL_OFFER)) {
-        printf("Received CANCEL_OFFER from %s\n", this_client->id);
-
-        /* Parse offer */
-        json_object* card_amt_json = get_JSON_value(cmd_obj, "card_amt");
-        size_t card_amt = (size_t) json_object_get_int(card_amt_json);
-
-        offer* cancelled_offer = cancel_offer(billionaire_game->current_trades,
-                                              card_amt, this_client->id);
-
-        if (cancelled_offer != NULL) {
-          /* Offer has been successfully cancelled */
-          /* TODO: Send a CANCELLED_OFFER back to this_client and a BOOK_EVENT
-              to remaining players */
-        }
-
-        else {
-          /* TODO: Send an ERROR back to this_client */
-        }
-      } /* Command.CANCEL_OFFER */
-
-      else {
-        /* Invalid command */
-        /* TODO: Send an ERROR back to this_client */
       }
     }
 
     /* Free cmd_array after use */
     json_object_put(cmd_array);
+
+    /* Send any outstanding commands to clients */
+    send_commands_to_clients(&client_tailq_head);
   }
 
   else {
@@ -202,7 +245,6 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     json_object* finish = billionaire_finish();
 
     TAILQ_FOREACH(client, &client_tailq_head, entries) {
-      printf("Queued FINISH for %s\n", client->id);
       enqueue_command(client, finish);
     }
   }
@@ -270,8 +312,6 @@ on_accept(int fd, short ev, void* arg)
   join = billionaire_join(client->id);
   enqueue_command(client, join);
 
-  printf("Queued JOIN for %s\n", client->id);
-
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
     printf("Player limit of %d reached. Game starting...\n",
@@ -292,8 +332,6 @@ on_accept(int fd, short ev, void* arg)
       json_object* start = billionaire_start(player_hands[iplayer]);
       free_card_location(player_hands[iplayer]);
 
-      printf("Queued START for %s\n", client->id);
-
       enqueue_command(client, start);
       iplayer++;
     }
@@ -307,6 +345,11 @@ void
 enqueue_command(struct client* client, json_object* cmd)
 {
   struct command* cmd_struct = calloc(1, sizeof(struct command));
+
+  size_t cmd_len;
+  const char* cmd_str = get_command_name(cmd, &cmd_len);
+
+  printf("Queued %s for %s\n", cmd_str, client->id);
 
   cmd_struct->cmd_json = cmd;
   STAILQ_INSERT_TAIL(&client->command_stailq_head, cmd_struct, cmds);
