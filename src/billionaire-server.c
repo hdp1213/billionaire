@@ -131,6 +131,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
             continue;
           }
 
+          else if (total_cards < 2) {
+            /* Send CANCELLED_OFFER back to this_client */
+            printf("Not enough cards in the offer, sent back...\n");
+            continue;
+          }
+
           printf("Offer of %zu cards\n", total_cards);
 
   #ifdef DBUG
