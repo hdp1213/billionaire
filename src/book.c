@@ -64,6 +64,12 @@ fill_offer(book* book_obj, offer* offer_obj)
   else {
     /* Return the offer object ready to trade to the parent method */
     offer* return_offer = get_offer_at(book_obj, offer_ind);
+
+    if (have_same_owner(return_offer, offer_obj)) {
+      cmd_errno = (int) EOFFEROVER;
+      return NULL;
+    }
+
     remove_offer_at(book_obj, offer_ind);
     return return_offer;
   }

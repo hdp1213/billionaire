@@ -73,6 +73,8 @@ void remove_offer_at(book* book_obj, int offer_ind);
 
 /**
  * Add an offer to the book, or return one that is ready to complete.
+ *
+ * Sets cmd_errno to EOFFEROVER, on failure returns NULL.
  */
 offer* fill_offer(book* book_obj, offer* offer_obj);
 
