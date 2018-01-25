@@ -135,4 +135,25 @@ than zero.
 
 
 ## Error codes
-TODO: define error codes used by the server in the `ERROR` command.
+
+When a command is given to the Billionaire server, it must satisfy both
+the protocol defined in this document, as well as dynamic conditions
+resulting from a game being played. If at any given point such a command
+fails any of these checks, an `ERROR` command is sent from the server
+back to the client to notify the client of the check it has failed.
+
+Following are the different error codes that can be received from the
+server:
+
+ - `EJSON`: sent JSON cannot be parsed. Takes many different values as
+this is handled by the `json-c` library.
+ - `EJSONVAL`: command object does not contain a field needed by the
+server.
+ - `EBADCMDNAME`: command object has an invalid command name.
+ - `EBADCMDOBJ`: command object does not have a 'command' field.
+ - `ECANEMPTY`: `CANCEL_ORDER` object cancelling an empty offer.
+ - `ECANPERM`: `CANCEL_ORDER` object cancelling an offer not owned by
+the client.
+ - `EOFFEROVER`: `NEW_OFFER` object attempting to overwrite client's
+offer already in book.
+ - `EBADTYPE`: JSON object is of an incorrect type needed by the server.
