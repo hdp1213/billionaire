@@ -149,6 +149,11 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           offer* traded_offer = fill_offer(billionaire_game->current_trades,
                                            new_offer);
 
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
+            continue;
+          }
+
           if (traded_offer != NULL) {
             /* A trade has been made */
             /* TODO: Send a SUCCESSFUL_TRADE to participants, and a BOOK_EVENT
@@ -177,18 +182,15 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           offer* cancelled_offer = cancel_offer(billionaire_game->current_trades,
                                                 card_amt, this_client->id);
 
-          if (cancelled_offer != NULL) {
-            /* Offer has been successfully cancelled */
-            /* TODO: Send a CANCELLED_OFFER back to this_client and a
-               BOOK_EVENT to remaining players */
-          }
-
-          else {
-            /* Invalid cancellation */
-            assert(cmd_errno != CMD_SUCCESS);
+          if (cmd_errno != CMD_SUCCESS) {
             enqueue_command(this_client, billionaire_error());
             continue;
           }
+
+          /* Offer has been successfully cancelled */
+          /* TODO: Send a CANCELLED_OFFER back to this_client and a
+             BOOK_EVENT to remaining players */
+          assert(cancelled_offer != NULL);
         } /* Command.CANCEL_OFFER */
 
         else {
