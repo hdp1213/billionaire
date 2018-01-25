@@ -110,6 +110,11 @@ parse_command_list_string(char* json_str, size_t str_len)
     return NULL;
   }
 
+  if (!json_object_is_type(cmd_array, json_type_array)) {
+    cmd_errno = (int) EBADTYPE;
+    return NULL;
+  }
+
   json_object_get(cmd_array);
   json_object_put(parse_obj);
 
