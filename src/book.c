@@ -181,6 +181,12 @@ is_owner(offer* offer_obj, const char* prospective_owner_id)
   return strncmp(offer_obj->owner_id, prospective_owner_id, HASH_LENGTH) == 0;
 }
 
+bool
+have_same_owner(offer* offer1, offer* offer2)
+{
+  return is_owner(offer1, offer2->owner_id);
+}
+
 void
 free_offer(offer* offer_obj)
 {

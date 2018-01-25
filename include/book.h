@@ -127,6 +127,11 @@ int offset_index(size_t card_amt);
 bool is_owner(offer* offer_obj, const char* prospective_owner_id);
 
 /**
+ * Check if two offers have the same owner.
+ */
+bool have_same_owner(offer* offer1, offer* offer2);
+
+/**
  * Free an offer.
  */
 void free_offer(offer* offer_obj);
