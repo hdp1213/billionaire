@@ -68,6 +68,8 @@ json_object* billionaire_finish();
 
 /**
  * Create an ERROR command containing the latest error.
+ *
+ * Resets cmd_errno to CMD_SUCCESS.
  */
 json_object* billionaire_error();
 
