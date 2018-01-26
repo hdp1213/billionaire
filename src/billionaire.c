@@ -43,6 +43,59 @@ billionaire_start(card_location* player_hand)
 }
 
 json_object*
+billionaire_successful_trade(offer* traded_offer)
+{
+  json_object* cmd = make_command(Command.SUCCESSFUL_TRADE);
+
+  json_object* offer_cards = JSON_from_card_location(traded_offer->cards);
+  json_object* offer_owner = json_object_new_string(traded_offer->owner_id);
+
+  json_object_object_add(cmd, "cards", offer_cards);
+  json_object_object_add(cmd, "owner_id", offer_owner);
+
+  return cmd;
+}
+
+json_object*
+billionaire_cancelled_offer(offer* cancelled_offer)
+{
+  json_object* cmd = make_command(Command.CANCELLED_OFFER);
+
+  json_object* offer_cards = JSON_from_card_location(cancelled_offer->cards);
+  json_object_object_add(cmd, "cards", offer_cards);
+
+  return cmd;
+}
+
+json_object*
+billionaire_book_event(const char* event, size_t card_amt,
+                       const char* participants[MAX_PARTICIPANTS])
+{
+  json_object* cmd = make_command(Command.BOOK_EVENT);
+
+  json_object* event_json = json_object_new_string(event);
+  json_object* card_amt_json = json_object_new_int((int) card_amt);
+  json_object* participants_json = json_object_new_array();
+
+  for (int i = 0; i < MAX_PARTICIPANTS; ++i) {
+    const char* participant = participants[i];
+
+    if (participant == NULL) {
+      continue;
+    }
+
+    json_object* participant_json = json_object_new_string(participant);
+    json_object_array_add(participants_json, participant_json);
+  }
+
+  json_object_object_add(cmd, "event", event_json);
+  json_object_object_add(cmd, "card_amt", card_amt_json);
+  json_object_object_add(cmd, "participants", participants_json);
+
+  return cmd;
+}
+
+json_object*
 billionaire_finish()
 {
   return make_command(Command.FINISH);

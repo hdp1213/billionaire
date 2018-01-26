@@ -52,10 +52,14 @@ json_object* billionaire_successful_trade(offer* traded_offer);
 json_object* billionaire_cancelled_offer(offer* cancelled_offer);
 
 /**
- * Create a BOOK_EVENT command containing the book event
+ * Create a BOOK_EVENT command containing the book event.
+ *
+ * The participants array must have MAX_PARTICIPANTS elements in it. If
+ * there is less than MAX_PARTICIPANTS participants in the event, the
+ * other elements must be set to NULL.
  */
 json_object* billionaire_book_event(const char* event, size_t card_amt,
-                                    const char* participants[2]);
+                                    const char* participants[MAX_PARTICIPANTS]);
 
 /**
  * Create a FINISH command.

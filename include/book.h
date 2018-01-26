@@ -10,6 +10,7 @@
 #include "utils.h"
 
 #define OFFER_INDEX_OFFSET 2
+#define MAX_PARTICIPANTS 2
 
 typedef struct book book;
 typedef struct offer offer;
