@@ -73,6 +73,7 @@ void
 buffered_on_read(struct bufferevent* bev, void* arg)
 {
   struct client* this_client = (struct client*) arg;
+  struct client* client = NULL;
   uint8_t data[READ_BYTES_AMOUNT];
 
   size_t n = 1;
@@ -162,13 +163,48 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (traded_offer != NULL) {
             /* A trade has been made */
-            /* TODO: Send a SUCCESSFUL_TRADE to participants, and a BOOK_EVENT
-               to remaining players */
+            const char* other_id = traded_offer->owner_id;
+            // struct client* other_client;
+
+            json_object* this_trade = billionaire_successful_trade(traded_offer);
+            json_object* other_trade = billionaire_successful_trade(new_offer);
+
+            enqueue_command(this_client, this_trade);
+            assert(other_trade != NULL);
+            // enqueue_command(other_client, other_trade);
+
+            /* Send BOOK_EVENT to remaining players */
+            const char* participants[MAX_PARTICIPANTS] = {this_client->id, other_id};
+            json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
+                                                             total_cards,
+                                                             participants);
+
+            TAILQ_FOREACH(client, &client_tailq_head, entries) {
+              if (strncmp(client->id, this_client->id, HASH_LENGTH) == 0 ||
+                  strncmp(client->id, other_id, HASH_LENGTH) == 0) {
+                continue;
+              }
+
+              enqueue_command(client, book_event);
+            }
           }
 
           else {
             printf("Offer added to book\n");
-            /* TODO: Send a BOOK_EVENT to remaining players */
+
+            /* Send BOOK_EVENT to remaining players */
+            const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
+            json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
+                                                             total_cards,
+                                                             participants);
+
+            TAILQ_FOREACH(client, &client_tailq_head, entries) {
+              if (strncmp(client->id, this_client->id, HASH_LENGTH)) {
+                continue;
+              }
+
+              enqueue_command(client, book_event);
+            }
           }
         } /* Command.NEW_OFFER */
 
@@ -194,9 +230,22 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           }
 
           /* Offer has been successfully cancelled */
-          /* TODO: Send a CANCELLED_OFFER back to this_client and a
-             BOOK_EVENT to remaining players */
-          assert(cancelled_offer != NULL);
+          json_object* cancel = billionaire_cancelled_offer(cancelled_offer);
+          enqueue_command(this_client, cancel);
+
+          /* Send BOOK_EVENT to remaining players */
+          const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
+          json_object* book_event = billionaire_book_event(Command.CANCELLED_OFFER,
+                                                           card_amt,
+                                                           participants);
+
+          TAILQ_FOREACH(client, &client_tailq_head, entries) {
+            if (strncmp(client->id, this_client->id, HASH_LENGTH) == 0) {
+              continue;
+            }
+
+            enqueue_command(client, book_event);
+          }
         } /* Command.CANCEL_OFFER */
 
         else {
