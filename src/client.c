@@ -3,6 +3,7 @@
 #include "utils.h"
 
 #include <stdio.h>
+#include <string.h>
 
 void
 enqueue_command(struct client* client, json_object* cmd)
@@ -64,4 +65,11 @@ send_commands_to_clients(struct client_head* client_head)
     /* Free the command wrapper and its constituent objects */
     json_object_put(command_wrapper);
   }
+}
+
+bool
+client_eq(struct client* client1, struct client* client2)
+{
+  return (strncmp(client1->id, client2->id, HASH_LENGTH) == 0) &&
+         (client1->fd == client2->fd);
 }

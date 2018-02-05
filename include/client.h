@@ -1,6 +1,7 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
+#include <stdbool.h>
 #include <sys/queue.h>
 
 /* Libevent */
@@ -65,5 +66,13 @@ void enqueue_command(struct client* client, json_object* cmd);
  * Memory allocated to the JSON objects is (hopefully) freed here.
  */
 void send_commands_to_clients(struct client_head* client_head);
+
+/**
+ * Compare two clients for equality.
+ *
+ * Two clients are equal if their IDs are equal and their sockets are
+ * the same.
+ */
+bool client_eq(struct client* client1, struct client* client2);
 
 #endif

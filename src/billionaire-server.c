@@ -181,7 +181,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                              participants);
 
             TAILQ_FOREACH(client, &client_tailq_head, entries) {
-              if (strncmp(client->id, this_client->id, HASH_LENGTH) == 0 ||
+              if (client_eq(client, this_client) ||
                   strncmp(client->id, other_id, HASH_LENGTH) == 0) {
                 continue;
               }
@@ -200,7 +200,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                              participants);
 
             TAILQ_FOREACH(client, &client_tailq_head, entries) {
-              if (strncmp(client->id, this_client->id, HASH_LENGTH)) {
+              if (client_eq(client, this_client)) {
                 continue;
               }
 
@@ -241,7 +241,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                            participants);
 
           TAILQ_FOREACH(client, &client_tailq_head, entries) {
-            if (strncmp(client->id, this_client->id, HASH_LENGTH) == 0) {
+            if (client_eq(client, this_client)) {
               continue;
             }
 
