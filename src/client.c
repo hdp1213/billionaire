@@ -101,7 +101,7 @@ send_commands_to_clients(client_head* client_head_obj)
 }
 
 bool
-client_eq(struct client* client1, struct client* client2)
+client_eq(client* client1, client* client2)
 {
   return (strncmp(client1->id, client2->id, HASH_LENGTH) == 0) &&
          (client1->fd == client2->fd);
