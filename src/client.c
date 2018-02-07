@@ -2,8 +2,41 @@
 #include "billionaire.h"
 #include "utils.h"
 
+#include <err.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <event2/event.h>
+
+client*
+client_new(struct event_base* evbase, int fd,
+           bufferevent_data_cb readcb, bufferevent_event_cb eventcb)
+{
+  client* new_client = malloc(sizeof(client));
+
+  if (new_client == NULL) {
+    err(1, "new_client malloc failed");
+  }
+
+  new_client->fd = fd;
+
+  new_client->buf_ev = bufferevent_socket_new(evbase, new_client->fd, 0);
+
+  /* Set callback functions of bufferevent */
+  bufferevent_setcb(new_client->buf_ev, readcb, NULL,
+                    eventcb, new_client);
+
+  /* Enable bufferevent so callbacks will be called */
+  bufferevent_enable(new_client->buf_ev, EV_READ);
+
+  /* Initialise the command queue */
+  STAILQ_INIT(&new_client->command_stailq_head);
+
+  /* Add the new client to the tailq. */
+  TAILQ_INSERT_TAIL(&client_tailq_head, new_client, entries);
+
+  return new_client;
+}
 
 void
 enqueue_command(client* client_obj, json_object* cmd)

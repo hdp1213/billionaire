@@ -26,7 +26,7 @@ struct client {
   /* The client ID. */
   char* id;
 
-  /* The bufferedevent for this client. */
+  /* The bufferevent for this client. */
   struct bufferevent* buf_ev;
 
   /*
@@ -35,7 +35,7 @@ struct client {
    */
   TAILQ_ENTRY(client) entries;
 
-  /* The head of the single tail queue for commands */
+  /* The head of the single tail queue for commands. */
   STAILQ_HEAD(, command) command_stailq_head;
 };
 
@@ -53,6 +53,16 @@ struct command {
 
   STAILQ_ENTRY(command) cmds;
 };
+
+/**
+ * Create a new empty client.
+ *
+ * A client by definition must contain an open socket allowing command
+ * communication, so it only makes sense that all new clients must be
+ * registered to the event_base struct.
+ */
+client* client_new(struct event_base* evbase, int fd,
+                   bufferevent_data_cb readcb, bufferevent_event_cb eventcb);
 
 /**
  * Add a Billionaire command to the client's command queue.

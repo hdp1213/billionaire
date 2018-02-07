@@ -339,24 +339,9 @@ on_accept(int fd, short ev, void* arg)
     warn("failed to set client socket non-blocking");
 
   /* We've accepted a new client, create a client object. */
-  new_client = calloc(1, sizeof(client));
-  if (new_client == NULL)
-    err(1, "new_client malloc failed");
-  new_client->fd = client_fd;
+  new_client = client_new(evbase, client_fd,
+                          buffered_on_read, buffered_on_error);
 
-  new_client->buf_ev = bufferevent_socket_new(evbase, client_fd, 0);
-  bufferevent_setcb(new_client->buf_ev, buffered_on_read, NULL,
-                    buffered_on_error, new_client);
-
-  /* We have to enable it before our callbacks will be
-   * called. */
-  bufferevent_enable(new_client->buf_ev, EV_READ);
-
-  /* Also initialise the command queue */
-  STAILQ_INIT(&new_client->command_stailq_head);
-
-  /* Add the new client to the tailq. */
-  TAILQ_INSERT_TAIL(&client_tailq_head, new_client, entries);
   billionaire_game->num_players++;
 
   /* Get client address:port as a string */
