@@ -194,7 +194,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             /* Send BOOK_EVENT to remaining players */
             const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
-            json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
+            json_object* book_event = billionaire_book_event(Command.NEW_OFFER,
                                                              total_cards,
                                                              participants);
 
