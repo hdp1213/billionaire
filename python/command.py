@@ -6,6 +6,7 @@ class Command():
     JOIN = 'JOIN'
     START = 'START'
     SUCCESSFUL_TRADE = 'SUCCESSFUL_TRADE'
+    CANCELLED_OFFER = 'CANCELLED_OFFER'
     BOOK_EVENT = 'BOOK_EVENT'
     FINISH = 'FINISH'
     ERROR = 'ERROR'
@@ -15,6 +16,7 @@ class Command():
     valid_commands = {JOIN,
                       START,
                       SUCCESSFUL_TRADE,
+                      CANCELLED_OFFER,
                       BOOK_EVENT,
                       FINISH,
                       ERROR,
