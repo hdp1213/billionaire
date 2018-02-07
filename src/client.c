@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <event2/event.h>
+#include <unistd.h> /* for close() */
 
 client*
 client_new(struct event_base* evbase, int fd,
@@ -105,4 +106,13 @@ client_eq(client* client1, client* client2)
 {
   return (strncmp(client1->id, client2->id, HASH_LENGTH) == 0) &&
          (client1->fd == client2->fd);
+}
+
+void
+free_client(client* client_obj)
+{
+  bufferevent_free(client_obj->buf_ev);
+  close(client_obj->fd);
+  free(client_obj->id);
+  free(client_obj);
 }

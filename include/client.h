@@ -88,4 +88,9 @@ void send_commands_to_clients(client_head* client_head_obj);
  */
 bool client_eq(client* client1, client* client2);
 
+/**
+ * Free a client.
+ */
+void free_client(client* client_obj);
+
 #endif

@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <errno.h>
 #include <err.h>
 
@@ -290,10 +289,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   TAILQ_REMOVE(&client_tailq_head, this_client, entries);
   billionaire_game->num_players--;
 
-  bufferevent_free(this_client->buf_ev);
-  close(this_client->fd);
-  free(this_client->id);
-  free(this_client);
+  free_client(this_client);
 
   if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
     printf("Player limit of %d no longer satisfied. Game stopping...\n",
