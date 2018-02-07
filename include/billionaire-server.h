@@ -14,9 +14,6 @@
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 
-/* JSON */
-#include <json-c/json.h>
-
 #include "billionaire.h"
 #include "game_state.h"
 
