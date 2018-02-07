@@ -9,5 +9,7 @@ const char* error_what[NUM_ERRORS] = {
   "Command object does not contain 'command' field",
   "Offer to cancel is empty",
   "Offer to cancel not owned by client",
-  "New offer overrides previously declared offer"
+  "New offer overrides previously declared offer",
+  "Offer does not contain any cards",
+  "Offer does not contain enough cards"
 };

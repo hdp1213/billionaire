@@ -128,13 +128,25 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           size_t total_cards = get_total_cards(card_loc);
 
           if (total_cards == 0) {
-            printf("No cards in the offer. Ignoring...\n");
+            /* Offer does not contain any cards */
+            cmd_errno = (int) ENOOFFER;
+            enqueue_command(this_client, billionaire_error());
             continue;
           }
 
-          else if (total_cards < 2) {
+          else if (total_cards < OFFER_MIN_CARDS) {
+            /* Offer does not contain enough cards */
+            cmd_errno = (int) ESMALLOFFER;
+            enqueue_command(this_client, billionaire_error());
+
             /* Send CANCELLED_OFFER back to this_client */
-            printf("Not enough cards in the offer, sent back...\n");
+            offer* bad_offer = offer_init(card_loc, this_client->id);
+
+            json_object* cancel = billionaire_cancelled_offer(bad_offer);
+            enqueue_command(this_client, cancel);
+
+            free_offer(bad_offer);
+
             continue;
           }
 

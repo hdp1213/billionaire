@@ -11,6 +11,9 @@
 
 #define MAX_PLAYERS 8
 
+/* Minimum number of cards to consider to be an offer. */
+#define OFFER_MIN_CARDS 2
+
 struct commands {
   const char* JOIN;
   const char* START;

@@ -14,7 +14,9 @@ enum errorno {
   ECANEMPTY, /* Offer to cancel is empty */
   ECANPERM, /* Offer could not be cancelled due to permission error */
   EOFFEROVER, /* New offer overrides previously declared offer */
-  NUM_ERRORS = EOFFEROVER - EJSON
+  ENOOFFER, /* Offer does not contain any cards */
+  ESMALLOFFER, /* Offer does not contain enough cards */
+  NUM_ERRORS = ESMALLOFFER - EJSON
 };
 
 extern int cmd_errno;
