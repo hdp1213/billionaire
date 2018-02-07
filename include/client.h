@@ -10,6 +10,9 @@
 /* JSON */
 #include <json-c/json.h>
 
+typedef struct client client;
+typedef struct client_head client_head;
+
 /**
  * A struct for client specific data.
  *
@@ -54,7 +57,7 @@ struct command {
 /**
  * Add a Billionaire command to the client's command queue.
  */
-void enqueue_command(struct client* client, json_object* cmd);
+void enqueue_command(client* client_obj, json_object* cmd);
 
 /**
  * Send a series of Billionaire commands to each client.
@@ -65,7 +68,7 @@ void enqueue_command(struct client* client, json_object* cmd);
  *
  * Memory allocated to the JSON objects is (hopefully) freed here.
  */
-void send_commands_to_clients(struct client_head* client_head);
+void send_commands_to_clients(client_head* client_head_obj);
 
 /**
  * Compare two clients for equality.
@@ -73,6 +76,6 @@ void send_commands_to_clients(struct client_head* client_head);
  * Two clients are equal if their IDs are equal and their sockets are
  * the same.
  */
-bool client_eq(struct client* client1, struct client* client2);
+bool client_eq(client* client1, client* client2);
 
 #endif

@@ -6,26 +6,26 @@
 #include <string.h>
 
 void
-enqueue_command(struct client* client, json_object* cmd)
+enqueue_command(client* client_obj, json_object* cmd)
 {
   struct command* cmd_struct = calloc(1, sizeof(struct command));
 
   size_t cmd_len;
   const char* cmd_str = get_command_name(cmd, &cmd_len);
 
-  printf("Queued %s for %s\n", cmd_str, client->id);
+  printf("Queued %s for %s\n", cmd_str, client_obj->id);
 
   cmd_struct->cmd_json = cmd;
-  STAILQ_INSERT_TAIL(&client->command_stailq_head, cmd_struct, cmds);
+  STAILQ_INSERT_TAIL(&client_obj->command_stailq_head, cmd_struct, cmds);
 }
 
 void
-send_commands_to_clients(struct client_head* client_head)
+send_commands_to_clients(client_head* client_head_obj)
 {
-  struct client* client = NULL;
+  client* client_obj = NULL;
 
   /* For each joined client, flush their command queue */
-  TAILQ_FOREACH(client, client_head, entries) {
+  TAILQ_FOREACH(client_obj, client_head_obj, entries) {
     struct command* cmd_struct;
     struct command* next_cmd_struct;
 
@@ -33,13 +33,13 @@ send_commands_to_clients(struct client_head* client_head)
     json_object* json_commands = json_object_new_array();
 
     /* If a client does not have any commands to flush, skip it */
-    if (STAILQ_EMPTY(&client->command_stailq_head)) {
+    if (STAILQ_EMPTY(&client_obj->command_stailq_head)) {
       continue;
     }
 
     /* This loop does not free memory allocated to the JSON object
        representing the actual command */
-    cmd_struct = STAILQ_FIRST(&client->command_stailq_head);
+    cmd_struct = STAILQ_FIRST(&client_obj->command_stailq_head);
 
     while (cmd_struct != NULL) {
       next_cmd_struct = STAILQ_NEXT(cmd_struct, cmds);
@@ -50,7 +50,7 @@ send_commands_to_clients(struct client_head* client_head)
     }
 
     /* Re-initialise the queue after it has been cleared */
-    STAILQ_INIT(&client->command_stailq_head);
+    STAILQ_INIT(&client_obj->command_stailq_head);
 
     /* Add JSON array to the wrapper object */
     json_object_object_add(command_wrapper, "commands", json_commands);
@@ -58,9 +58,9 @@ send_commands_to_clients(struct client_head* client_head)
     /* Write resulting object to client's bufferevent */
     size_t cmd_len = 0;
     const char* cmd_str = JSON_to_str(command_wrapper, &cmd_len);
-    bufferevent_write(client->buf_ev, cmd_str, cmd_len);
+    bufferevent_write(client_obj->buf_ev, cmd_str, cmd_len);
 
-    printf("Sent queued command(s) to %s\n", client->id);
+    printf("Sent queued command(s) to %s\n", client_obj->id);
 
     /* Free the command wrapper and its constituent objects */
     json_object_put(command_wrapper);

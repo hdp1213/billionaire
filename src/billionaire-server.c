@@ -73,8 +73,8 @@ setnonblock(int fd)
 void
 buffered_on_read(struct bufferevent* bev, void* arg)
 {
-  struct client* this_client = (struct client*) arg;
-  struct client* client = NULL;
+  client* this_client = (client*) arg;
+  client* client_obj = NULL;
   uint8_t data[READ_BYTES_AMOUNT];
 
   size_t n = 1;
@@ -165,7 +165,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           if (traded_offer != NULL) {
             /* A trade has been made */
             const char* other_id = traded_offer->owner_id;
-            // struct client* other_client;
+            // client* other_client;
 
             json_object* this_trade = billionaire_successful_trade(traded_offer);
             json_object* other_trade = billionaire_successful_trade(new_offer);
@@ -180,13 +180,13 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                              total_cards,
                                                              participants);
 
-            TAILQ_FOREACH(client, &client_tailq_head, entries) {
-              if (client_eq(client, this_client) ||
-                  strncmp(client->id, other_id, HASH_LENGTH) == 0) {
+            TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+              if (client_eq(client_obj, this_client) ||
+                  strncmp(client_obj->id, other_id, HASH_LENGTH) == 0) {
                 continue;
               }
 
-              enqueue_command(client, book_event);
+              enqueue_command(client_obj, book_event);
             }
           }
 
@@ -199,12 +199,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                              total_cards,
                                                              participants);
 
-            TAILQ_FOREACH(client, &client_tailq_head, entries) {
-              if (client_eq(client, this_client)) {
+            TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+              if (client_eq(client_obj, this_client)) {
                 continue;
               }
 
-              enqueue_command(client, book_event);
+              enqueue_command(client_obj, book_event);
             }
           }
         } /* Command.NEW_OFFER */
@@ -240,12 +240,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                            card_amt,
                                                            participants);
 
-          TAILQ_FOREACH(client, &client_tailq_head, entries) {
-            if (client_eq(client, this_client)) {
+          TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+            if (client_eq(client_obj, this_client)) {
               continue;
             }
 
-            enqueue_command(client, book_event);
+            enqueue_command(client_obj, book_event);
           }
         } /* Command.CANCEL_OFFER */
 
@@ -274,25 +274,26 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 void
 buffered_on_error(struct bufferevent* bev, short what, void* arg)
 {
-  struct client* client = (struct client*) arg;
+  client* this_client = (client*) arg;
+  client* client_obj = NULL;
 
   if (what & BEV_EVENT_EOF) {
     /* Client disconnected, remove the read event and then
      * free the client structure. */
-    printf("Client '%s' disconnected.\n", client->id);
+    printf("Client '%s' disconnected.\n", this_client->id);
   }
   else {
-    warn("Client '%s' socket error, disconnecting.\n", client->id);
+    warn("Client '%s' socket error, disconnecting.\n", this_client->id);
   }
 
   /* Remove the client from the tailq. */
-  TAILQ_REMOVE(&client_tailq_head, client, entries);
+  TAILQ_REMOVE(&client_tailq_head, this_client, entries);
   billionaire_game->num_players--;
 
-  bufferevent_free(client->buf_ev);
-  close(client->fd);
-  free(client->id);
-  free(client);
+  bufferevent_free(this_client->buf_ev);
+  close(this_client->fd);
+  free(this_client->id);
+  free(this_client);
 
   if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
     printf("Player limit of %d no longer satisfied. Game stopping...\n",
@@ -302,8 +303,8 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     /* Send a FINISH command to each remaining client */
     json_object* finish = billionaire_finish();
 
-    TAILQ_FOREACH(client, &client_tailq_head, entries) {
-      enqueue_command(client, finish);
+    TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+      enqueue_command(client_obj, finish);
     }
   }
 
@@ -316,7 +317,8 @@ on_accept(int fd, short ev, void* arg)
   int client_fd;
   struct sockaddr_in client_addr;
   socklen_t client_len = sizeof(client_addr);
-  struct client* client;
+  client* new_client;
+  client* client_obj = NULL;
 
   char client_addr_str[ADDR_STR_SIZE];
   json_object* join;
@@ -337,24 +339,24 @@ on_accept(int fd, short ev, void* arg)
     warn("failed to set client socket non-blocking");
 
   /* We've accepted a new client, create a client object. */
-  client = calloc(1, sizeof(*client));
-  if (client == NULL)
-    err(1, "client malloc failed");
-  client->fd = client_fd;
+  new_client = calloc(1, sizeof(client));
+  if (new_client == NULL)
+    err(1, "new_client malloc failed");
+  new_client->fd = client_fd;
 
-  client->buf_ev = bufferevent_socket_new(evbase, client_fd, 0);
-  bufferevent_setcb(client->buf_ev, buffered_on_read, NULL,
-                    buffered_on_error, client);
+  new_client->buf_ev = bufferevent_socket_new(evbase, client_fd, 0);
+  bufferevent_setcb(new_client->buf_ev, buffered_on_read, NULL,
+                    buffered_on_error, new_client);
 
   /* We have to enable it before our callbacks will be
    * called. */
-  bufferevent_enable(client->buf_ev, EV_READ);
+  bufferevent_enable(new_client->buf_ev, EV_READ);
 
   /* Also initialise the command queue */
-  STAILQ_INIT(&client->command_stailq_head);
+  STAILQ_INIT(&new_client->command_stailq_head);
 
   /* Add the new client to the tailq. */
-  TAILQ_INSERT_TAIL(&client_tailq_head, client, entries);
+  TAILQ_INSERT_TAIL(&client_tailq_head, new_client, entries);
   billionaire_game->num_players++;
 
   /* Get client address:port as a string */
@@ -362,13 +364,13 @@ on_accept(int fd, short ev, void* arg)
            inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
 
   /* Create unique id from address:port */
-  client->id = hash_addr(client_addr_str, ADDR_STR_SIZE);
+  new_client->id = hash_addr(client_addr_str);
 
-  printf("Accepted connection from %s (%s)\n", client_addr_str, client->id);
+  printf("Accepted connection from %s (%s)\n", client_addr_str, new_client->id);
 
   /* Queue a JOIN command for the client. */
-  join = billionaire_join(client->id);
-  enqueue_command(client, join);
+  join = billionaire_join(new_client->id);
+  enqueue_command(new_client, join);
 
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
@@ -384,13 +386,13 @@ on_accept(int fd, short ev, void* arg)
 
     size_t iplayer = 0;
 
-    TAILQ_FOREACH(client, &client_tailq_head, entries) {
+    TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
       json_object* start = billionaire_start(player_hands[iplayer]);
       free_card_location(player_hands[iplayer]);
 
-      enqueue_command(client, start);
+      enqueue_command(client_obj, start);
       iplayer++;
     }
   }
