@@ -4,19 +4,25 @@
 #include <err.h>
 #include <stdio.h>
 
-char*
-hash_addr(const char* addr, size_t length)
+unsigned long
+hash_djb2(const char* key)
 {
-  unsigned int hash = 5381;
-  char* hash_str = NULL;
+  unsigned long hash = 5381;
+  int c;
 
-  /* Check that either i exceeds length, or that the current
-     character is the terminating \0 character */
-  for (size_t i = 0; *addr != '\0' || i < length; ++addr, ++i) {
-    hash = ((hash << 5) + hash) + (*addr);
+  while (c = *key++) {
+    hash = ((hash << 5) + hash) ^ c;
   }
 
-  hash_str = calloc(HASH_LENGTH, sizeof(char));
+  return hash;
+}
+
+char*
+hash_addr(const char* addr)
+{
+  unsigned int hash = (unsigned int) hash_djb2(addr);
+
+  char* hash_str = calloc(HASH_LENGTH, sizeof(char));
 
   if (hash_str == NULL) {
     err(1, "hash_str malloc failed");

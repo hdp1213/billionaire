@@ -15,12 +15,19 @@
        ++i, obj = json_object_array_get_idx((json_array), i))
 
 /**
+ * Hashes a string key using the DJB2 hash function.
+ *
+ * Taken from http://www.cse.yorku.ca/~oz/hash.html.
+ */
+unsigned long hash_djb2(const char* key);
+
+/**
  * Return a 8-digit hex string of a 32-bit hash based on the client
  * address.
  *
  * Used to uniquely identify clients based on their address.
  */
-char* hash_addr(const char* addr, size_t length);
+char* hash_addr(const char* addr);
 
 /**
  * Convert a JSON object to a C string.
