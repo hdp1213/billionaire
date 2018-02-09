@@ -27,7 +27,7 @@ CHECK_LIBS = -ljson-c -lcheck
 
 # Object files to compile
 MAIN = billionaire-server.o
-SOURCE = billionaire.o book.o card_location.o card_array.o client.o command_error.o game_state.o utils.o
+SOURCE = billionaire.o book.o card_location.o card_array.o client.o client_hash_table.o command_error.o game_state.o utils.o
 
 CHECK_BOOK = check_book.o
 CHECK_CARD_LOCATION = check_card_location.o
