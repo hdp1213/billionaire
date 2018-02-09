@@ -4,13 +4,15 @@
 #include <err.h>
 #include <stdio.h>
 
-unsigned long
+uint32_t
 hash_djb2(const char* key)
 {
-  unsigned long hash = 5381;
+  const uint8_t* data = (const uint8_t*) key;
+
+  uint32_t hash = 5381;
   int c;
 
-  while (c = *key++) {
+  while ((c = *data++)) {
     hash = ((hash << 5) + hash) ^ c;
   }
 
@@ -20,7 +22,7 @@ hash_djb2(const char* key)
 char*
 hash_addr(const char* addr)
 {
-  unsigned int hash = (unsigned int) hash_djb2(addr);
+  uint32_t hash = hash_djb2(addr);
 
   char* hash_str = calloc(HASH_LENGTH, sizeof(char));
 

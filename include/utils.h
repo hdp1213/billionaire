@@ -1,6 +1,7 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include <stdint.h> /* uint32_t */
 #include <stdlib.h>
 
 #include <json-c/json.h>
@@ -19,7 +20,7 @@
  *
  * Taken from http://www.cse.yorku.ca/~oz/hash.html.
  */
-unsigned long hash_djb2(const char* key);
+uint32_t hash_djb2(const char* key);
 
 /**
  * Return a 8-digit hex string of a 32-bit hash based on the client
