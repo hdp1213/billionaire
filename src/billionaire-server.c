@@ -309,6 +309,9 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
            billionaire_game->player_limit);
     billionaire_game->running = false;
 
+    /* Clear current trade book of current trades */
+    clear_book(billionaire_game->current_trades);
+
     /* Send a FINISH command to each remaining client */
     json_object* finish = billionaire_finish();
 
