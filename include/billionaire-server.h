@@ -16,12 +16,16 @@
 
 #include "billionaire.h"
 #include "game_state.h"
+#include "client_hash_table.h"
 
 /* Port to listen on. */
 #define SERVER_PORT 5555
 
 /* Maximum size of address string used for hashing */
 #define ADDR_STR_SIZE 23
+
+/* Client hash table size */
+#define CLIENT_HASH_TABLE_SIZE 64
 
 /**
  * External command struct used for checking command types.
@@ -37,6 +41,11 @@ static struct event_base* evbase;
  * Global game state structure.
  */
 static game_state* billionaire_game;
+
+/**
+ * The static hash table containing all hashed clients.
+ */
+static client_hash_table* hashed_clients;
 
 /**
  * Set a socket to non-blocking mode.

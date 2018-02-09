@@ -175,25 +175,23 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (traded_offer != NULL) {
             /* A trade has been made */
-            const char* other_id = traded_offer->owner_id;
-            // client* other_client;
+            client* other_client = get_client(hashed_clients, traded_offer->owner_id);
 
             json_object* this_trade = billionaire_successful_trade(traded_offer);
             json_object* other_trade = billionaire_successful_trade(new_offer);
 
             enqueue_command(this_client, this_trade);
-            assert(other_trade != NULL);
-            // enqueue_command(other_client, other_trade);
+            enqueue_command(other_client, other_trade);
 
             /* Send BOOK_EVENT to remaining players */
-            const char* participants[MAX_PARTICIPANTS] = {this_client->id, other_id};
+            const char* participants[MAX_PARTICIPANTS] = {this_client->id, other_client->id};
             json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
                                                              total_cards,
                                                              participants);
 
             TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
               if (client_eq(client_obj, this_client) ||
-                  strncmp(client_obj->id, other_id, HASH_LENGTH) == 0) {
+                  client_eq(client_obj, other_client)) {
                 continue;
               }
 
@@ -301,6 +299,9 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   TAILQ_REMOVE(&client_tailq_head, this_client, entries);
   billionaire_game->num_players--;
 
+  /* Remove the client from the hash table */
+  del_client(hashed_clients, this_client);
+
   free_client(this_client);
 
   if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
@@ -358,6 +359,9 @@ on_accept(int fd, short ev, void* arg)
 
   /* Create unique id from address:port */
   new_client->id = hash_addr(client_addr_str);
+
+  /* Add client to client hash table */
+  put_client(hashed_clients, new_client);
 
   printf("Accepted connection from %s (%s)\n", client_addr_str, new_client->id);
 
@@ -480,6 +484,9 @@ main(int argc, char** argv)
   /* Initialise Billionaire game state */
   billionaire_game = game_state_new(player_limit,
                                     has_billionaire, has_taxman);
+
+  /* Initialise client hash table */
+  hashed_clients = client_hash_table_new(CLIENT_HASH_TABLE_SIZE);
 
   /* Initialise the tailq. */
   TAILQ_INIT(&client_tailq_head);

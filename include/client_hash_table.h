@@ -25,11 +25,6 @@ struct client_hash_table {
 };
 
 /**
- * The static hash table containing all hashed clients.
- */
-static client_hash_table* hashed_clients;
-
-/**
  * Create an empty client hash table with defined size.
  */
 client_hash_table* client_hash_table_new(size_t size);
