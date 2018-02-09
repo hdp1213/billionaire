@@ -54,7 +54,7 @@ client* get_client(const client_hash_table* table_obj, const char* client_id);
  *
  * This method does not deallocate memory associated with the client.
  */
-void del_client(client_hash_table* table_obj, const char* client_id);
+void del_client(client_hash_table* table_obj, client* client_obj);
 
 /**
  * Get the bucket index by computing a modulo on the hash.

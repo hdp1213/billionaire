@@ -85,9 +85,9 @@ get_client(const client_hash_table* table_obj, const char* client_id)
 }
 
 void
-del_client(client_hash_table* table_obj, const char* client_id)
+del_client(client_hash_table* table_obj, client* client_obj)
 {
-  size_t bucket_idx = get_bucket_idx(table_obj, client_id);
+  size_t bucket_idx = get_bucket_idx(table_obj, client_obj->id);
 
   client* prev = NULL;
   client* current = table_obj->buckets[bucket_idx];
@@ -96,7 +96,8 @@ del_client(client_hash_table* table_obj, const char* client_id)
   while (current != NULL) {
     next = current->next_hash;
 
-    if (memcmp(current->id, client_id, HASH_LENGTH) == 0) {
+    /* Stronger check of equality than memcmp'ing IDs */
+    if (client_eq(current, client_obj)) {
       if (prev != NULL) {
         prev->next_hash = next;
       }
