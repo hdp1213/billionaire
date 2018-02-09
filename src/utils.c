@@ -3,6 +3,9 @@
 
 #include <err.h>
 #include <stdio.h>
+#include <string.h>
+
+#include <xxhash.h>
 
 uint32_t
 hash_djb2(const char* key)
@@ -19,10 +22,21 @@ hash_djb2(const char* key)
   return hash;
 }
 
+uint32_t
+hash_xxhash(const char* key)
+{
+  unsigned int seed = 0;
+  size_t length = strlen(key);
+
+  XXH32_hash_t hash = XXH32((const void*) key, length, seed);
+
+  return (uint32_t) hash;
+}
+
 char*
 hash_addr(const char* addr)
 {
-  uint32_t hash = hash_djb2(addr);
+  uint32_t hash = hash_xxhash(addr);
 
   char* hash_str = calloc(HASH_LENGTH, sizeof(char));
 

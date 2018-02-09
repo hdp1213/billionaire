@@ -22,7 +22,7 @@ LDFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
 
 # Includes and libraries
 INCLUDES = -Iinclude
-LIBS = -levent -lrt -lm -ljson-c
+LIBS = -levent -lrt -lm -ljson-c -lxxhash
 CHECK_LIBS = -ljson-c -lcheck
 
 # Object files to compile

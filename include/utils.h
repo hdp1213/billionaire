@@ -23,6 +23,11 @@
 uint32_t hash_djb2(const char* key);
 
 /**
+ * Hashes a string key using the xxHash algorithm.
+ */
+uint32_t hash_xxhash(const char* key);
+
+/**
  * Return a 8-digit hex string of a 32-bit hash based on the client
  * address.
  *
