@@ -87,6 +87,11 @@ offer* fill_offer(book* book_obj, offer* offer_obj);
 offer* cancel_offer(book* book_obj, size_t card_amt, const char* client_id);
 
 /**
+ * Removes all current offers in book and frees associated memory.
+ */
+void clear_book(book* book_obj);
+
+/**
  * Free a book.
  */
 void free_book(book* book_obj);

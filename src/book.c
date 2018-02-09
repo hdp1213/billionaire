@@ -103,6 +103,17 @@ cancel_offer(book* book_obj, size_t card_amt, const char* client_id)
 }
 
 void
+clear_book(book* book_obj)
+{
+  for (int i = 0; i < (TOTAL_COMMODITY_AMOUNT + 1) - OFFER_INDEX_OFFSET; ++i) {
+    if (offer_at(book_obj, i)) {
+      free_offer(book_obj->offers[i]);
+      book_obj->offers[i] = NULL;
+    }
+  }
+}
+
+void
 free_book(book* book_obj)
 {
   for (int i = 0; i < (TOTAL_COMMODITY_AMOUNT + 1) - OFFER_INDEX_OFFSET; ++i) {
