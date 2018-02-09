@@ -29,10 +29,10 @@ struct client {
   /* The bufferevent for this client. */
   struct bufferevent* buf_ev;
 
-  /*
-   * This holds the pointers to the next and previous entries in
-   * the tail queue.
-   */
+  /* The next client in the hash table. */
+  struct client* next_hash;
+
+  /* The pointers to the next and previous entries in the tail queue. */
   TAILQ_ENTRY(client) entries;
 
   /* The head of the single tail queue for commands. */
