@@ -26,6 +26,8 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
 
   new_game_state->deck = flatten_card_location(unordered_deck);
 
+  free_card_location(unordered_deck);
+
   shuffle_card_array(new_game_state->deck);
 
   new_game_state->current_trades = book_new();
