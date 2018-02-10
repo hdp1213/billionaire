@@ -170,7 +170,7 @@ remove_cards_from_location(card_location* card_loc, card_id card, size_t amount)
 }
 
 void
-merge_card_location(card_location* dest_loc, card_location* src_loc)
+merge_card_location(card_location* dest_loc, const card_location* src_loc)
 {
   for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
     size_t card_amt = get_card_amount(src_loc, card);
@@ -180,7 +180,7 @@ merge_card_location(card_location* dest_loc, card_location* src_loc)
 }
 
 void
-subtract_card_location(card_location* dest_loc, card_location* src_loc)
+subtract_card_location(card_location* dest_loc, const card_location* src_loc)
 {
   for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
     size_t card_amt = get_card_amount(src_loc, card);
@@ -195,19 +195,19 @@ subtract_card_location(card_location* dest_loc, card_location* src_loc)
 }
 
 size_t
-get_card_amount(card_location* card_loc, card_id card)
+get_card_amount(const card_location* card_loc, card_id card)
 {
   return card_loc->card_counts[card];
 }
 
 size_t
-get_total_cards(card_location* card_loc)
+get_total_cards(const card_location* card_loc)
 {
   return card_loc->num_cards;
 }
 
 bool
-has_enough_cards(card_location* card_loc, card_id card, size_t amount)
+has_enough_cards(const card_location* card_loc, card_id card, size_t amount)
 {
   size_t amount_at_location = get_card_amount(card_loc, card);
 

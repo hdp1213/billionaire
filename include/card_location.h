@@ -99,29 +99,29 @@ void remove_cards_from_location(card_location* card_loc, card_id card, size_t am
  *
  * Here, src_loc's cards are added to dest_loc, src_loc is unchanged.
  */
-void merge_card_location(card_location* dest_loc, card_location* src_loc);
+void merge_card_location(card_location* dest_loc, const card_location* src_loc);
 
 /**
  * Subtract one card location's cards from another.
  *
  * Here, src_loc's cards are removed from dest_loc, src_loc is unchanged.
  */
-void subtract_card_location(card_location* dest_loc, card_location* src_loc);
+void subtract_card_location(card_location* dest_loc, const card_location* src_loc);
 
 /**
  * Return the amount of cards of a specific type at a card_location.
  */
-size_t get_card_amount(card_location* card_loc, card_id card);
+size_t get_card_amount(const card_location* card_loc, card_id card);
 
 /**
  * Return the total number of cards at a card_location.
  */
-size_t get_total_cards(card_location* card_loc);
+size_t get_total_cards(const card_location* card_loc);
 
 /**
  * Check if the card_location contains more than amount cards of a given type.
  */
-bool has_enough_cards(card_location* card_loc, card_id card, size_t amount);
+bool has_enough_cards(const card_location* card_loc, card_id card, size_t amount);
 
 /**
  * Remove all cards within a card_location struct.
