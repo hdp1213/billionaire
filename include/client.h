@@ -10,6 +10,8 @@
 /* JSON */
 #include <json-c/json.h>
 
+#include "card_location.h"
+
 typedef struct client client;
 typedef struct client_head client_head;
 
@@ -25,6 +27,9 @@ struct client {
 
   /* The client ID. */
   char* id;
+
+  /* The client's hand */
+  card_location* hand;
 
   /* The bufferevent for this client. */
   struct bufferevent* buf_ev;

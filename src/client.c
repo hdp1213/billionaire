@@ -111,6 +111,7 @@ client_eq(client* client1, client* client2)
 void
 free_client(client* client_obj)
 {
+  free_card_location(client_obj->hand);
   bufferevent_free(client_obj->buf_ev);
   close(client_obj->fd);
   free(client_obj->id);
