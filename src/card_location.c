@@ -169,6 +169,31 @@ remove_cards_from_location(card_location* card_loc, card_id card, size_t amount)
   }
 }
 
+void
+merge_card_location(card_location* dest_loc, card_location* src_loc)
+{
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t card_amt = get_card_amount(src_loc, card);
+
+    add_cards_to_location(dest_loc, card, card_amt);
+  }
+}
+
+void
+subtract_card_location(card_location* dest_loc, card_location* src_loc)
+{
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t card_amt = get_card_amount(src_loc, card);
+
+    if (has_enough_cards(dest_loc, card, card_amt)) {
+      remove_cards_from_location(dest_loc, card, card_amt);
+    }
+    else {
+      /* TODO: handle error */
+    }
+  }
+}
+
 size_t
 get_card_amount(card_location* card_loc, card_id card)
 {

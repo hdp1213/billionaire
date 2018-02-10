@@ -95,6 +95,20 @@ void add_cards_to_location(card_location* card_loc, card_id card, size_t amount)
 void remove_cards_from_location(card_location* card_loc, card_id card, size_t amount);
 
 /**
+ * Merge one card location into another.
+ *
+ * Here, src_loc's cards are added to dest_loc, src_loc is unchanged.
+ */
+void merge_card_location(card_location* dest_loc, card_location* src_loc);
+
+/**
+ * Subtract one card location's cards from another.
+ *
+ * Here, src_loc's cards are removed from dest_loc, src_loc is unchanged.
+ */
+void subtract_card_location(card_location* dest_loc, card_location* src_loc);
+
+/**
  * Return the amount of cards of a specific type at a card_location.
  */
 size_t get_card_amount(card_location* card_loc, card_id card);
