@@ -38,6 +38,10 @@ class BotMeta(abc.ABCMeta):
             elif isinstance(res, CommandList):
                 return res
 
+            # If no command has been sent, propagate it
+            elif res is None:
+                return None
+
             # TODO: stop execution nicely if return value is
             # incompatible with server
             else:
@@ -232,5 +236,6 @@ class BotDriver():
     async def command_loop(self):
         while True:
             command = await self.protocol.issue_command()
-            await self.protocol.send_command(command)
+            if command is not None:
+                await self.protocol.send_command(command)
             await asyncio.sleep(1)

@@ -9,7 +9,7 @@ class DumbBot(BaseBillionaireBot):
         try:
             card_id, amt = self.hand.most_common(1)[0]
         except IndexError:
-            card_id, amt = CardID.INVALID, 0
+            return None
 
         cards = self.hand.take_card(card_id, amt)
         # new_offer = self.new_offer(cards)
