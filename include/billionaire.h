@@ -17,6 +17,7 @@ struct commands {
   const char* SUCCESSFUL_TRADE;
   const char* CANCELLED_OFFER;
   const char* BOOK_EVENT;
+  const char* BILLIONAIRE;
   const char* FINISH;
   const char* ERROR;
   const char* NEW_OFFER;
@@ -60,6 +61,11 @@ json_object* billionaire_cancelled_offer(offer* cancelled_offer);
  */
 json_object* billionaire_book_event(const char* event, size_t card_amt,
                                     const char* participants[MAX_PARTICIPANTS]);
+
+/**
+ * Create a BILLIONAIRE command containing ID of winner.
+ */
+json_object* billionaire_billionaire(const char* winner_id);
 
 /**
  * Create a FINISH command.

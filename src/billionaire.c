@@ -7,7 +7,7 @@
 
 const struct commands Command = {
   "JOIN", "START", "SUCCESSFUL_TRADE", "CANCELLED_OFFER", "BOOK_EVENT",
-  "FINISH", "ERROR", "NEW_OFFER", "CANCEL_OFFER"
+  "BILLIONAIRE", "FINISH", "ERROR", "NEW_OFFER", "CANCEL_OFFER"
 };
 
 json_object*
@@ -91,6 +91,18 @@ billionaire_book_event(const char* event, size_t card_amt,
   json_object_object_add(cmd, "event", event_json);
   json_object_object_add(cmd, "card_amt", card_amt_json);
   json_object_object_add(cmd, "participants", participants_json);
+
+  return cmd;
+}
+
+json_object*
+billionaire_billionaire(const char* winner_id)
+{
+  json_object* cmd = make_command(Command.BILLIONAIRE);
+
+  json_object* winner_json = json_object_new_string(winner_id);
+
+  json_object_object_add(cmd, "winner_id", winner_json);
 
   return cmd;
 }
