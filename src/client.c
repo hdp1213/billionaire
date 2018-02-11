@@ -65,13 +65,13 @@ send_commands_to_clients(client_head* client_head_obj)
     struct command* cmd_struct;
     struct command* next_cmd_struct;
 
-    json_object* command_wrapper = json_object_new_object();
-    json_object* json_commands = json_object_new_array();
-
     /* If a client does not have any commands to flush, skip it */
     if (STAILQ_EMPTY(&client_obj->command_stailq_head)) {
       continue;
     }
+
+    json_object* command_wrapper = json_object_new_object();
+    json_object* json_commands = json_object_new_array();
 
     /* This loop does not free memory allocated to the JSON object
        representing the actual command */
