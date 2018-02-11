@@ -185,12 +185,7 @@ subtract_card_location(card_location* dest_loc, const card_location* src_loc)
   for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
     size_t card_amt = get_card_amount(src_loc, card);
 
-    if (has_enough_cards(dest_loc, card, card_amt)) {
-      remove_cards_from_location(dest_loc, card, card_amt);
-    }
-    else {
-      /* TODO: handle error */
-    }
+    remove_cards_from_location(dest_loc, card, card_amt);
   }
 }
 

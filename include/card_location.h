@@ -105,6 +105,8 @@ void merge_card_location(card_location* dest_loc, const card_location* src_loc);
  * Subtract one card location's cards from another.
  *
  * Here, src_loc's cards are removed from dest_loc, src_loc is unchanged.
+ * This method assumes src_loc is a subset of dest_loc, and does not
+ * check for any possible overflow due to src_loc containing more cards.
  */
 void subtract_card_location(card_location* dest_loc, const card_location* src_loc);
 
