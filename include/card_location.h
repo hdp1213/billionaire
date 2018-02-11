@@ -6,6 +6,10 @@
 
 #include <json-c/json.h>
 
+#define OFFER_MIN_CARDS 2
+#define OFFER_MAX_UNIQ_COMMS 1
+#define OFFER_MAX_UNIQ_WILDS 1
+
 typedef enum card_id card_id;
 typedef struct card_location card_location;
 
@@ -111,9 +115,13 @@ void merge_card_location(card_location* dest_loc, const card_location* src_loc);
 void subtract_card_location(card_location* dest_loc, const card_location* src_loc);
 
 /**
- * Validate that an offer given by a client is a subset of their hand.
+ * Validate an offer given by a client.
+ *
+ * This cross-checks against the client's hand to confirm the offer is a
+ * subset, and also checks the offer contains at most one commodity type
+ * and one wildcard type.
  */
-void check_offer_subset(const card_location* offer, const card_location* hand);
+void validate_offer(card_location* offer, const card_location* hand);
 
 /**
  * Return the amount of cards of a specific type at a card_location.

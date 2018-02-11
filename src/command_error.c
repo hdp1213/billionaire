@@ -12,5 +12,7 @@ const char* error_what[] = {
   "New offer overrides previously declared offer",
   "Offer does not contain any cards",
   "Offer does not contain enough cards",
-  "Cards in offer did not exist in hand"
+  "Cards in offer do not exist in hand",
+  "Offer contains too many unique commodities",
+  "Offer contains too many unique wildcards"
 };

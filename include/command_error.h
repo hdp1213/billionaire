@@ -16,7 +16,9 @@ enum errorno {
   EOFFEROVER, /* New offer overrides previously declared offer */
   ENOOFFER, /* Offer does not contain any cards */
   ESMALLOFFER, /* Offer does not contain enough cards */
-  EBADCARDS /* Cards in offer did not exist in hand */
+  EHANDSUBSET, /* Cards in offer do not exist in hand */
+  EUNIQCOMMS, /* Offer contains too many unique commodities */
+  EUNIQWILDS /* Offer contains too many unique wildcards */
 };
 
 extern int cmd_errno;

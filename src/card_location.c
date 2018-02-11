@@ -190,14 +190,60 @@ subtract_card_location(card_location* dest_loc, const card_location* src_loc)
 }
 
 void
-check_offer_subset(const card_location* offer, const card_location* hand)
+validate_offer(card_location* offer, const card_location* hand)
 {
-  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
-    size_t offer_amt = get_card_amount(offer, card);
+  size_t total_offer_size = get_total_cards(offer);
 
-    if (!has_enough_cards(hand, card, offer_amt)) {
-      cmd_errno = (int) EBADCARDS;
-      return;
+  /* Check if any cards were traded */
+  if (total_offer_size == 0) {
+    cmd_errno = (int) ENOOFFER;
+    free_card_location(offer);
+    return;
+  }
+
+  /* Check if enough cards were traded */
+  else if (total_offer_size < OFFER_MIN_CARDS) {
+    cmd_errno = (int) ESMALLOFFER;
+    /* Offer not freed as it needs to be sent back to client by server */
+    return;
+  }
+
+  /* Individual card type checking */
+  size_t num_commodities = 0, num_wildcards = 0;
+
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t card_amt = get_card_amount(offer, card);
+
+    if (card_amt > 0) {
+      /* Check offer is a subset of the hand */
+      if (!has_enough_cards(hand, card, card_amt)) {
+        cmd_errno = (int) EHANDSUBSET;
+        free_card_location(offer);
+        return;
+      }
+
+      /* Card type is commodity */
+      if (card < TOTAL_COMMODITY_AMOUNT) {
+        num_commodities++;
+
+        /* Check offer contains <= OFFER_MAX_UNIQ_COMMS unique commodities */
+        if (num_commodities > OFFER_MAX_UNIQ_COMMS) {
+          cmd_errno = (int) EUNIQCOMMS;
+          free_card_location(offer);
+          return;
+        }
+      }
+      /* Card type is wildcard */
+      else {
+        num_wildcards++;
+
+        /* Check offer contains <= OFFER_MAX_UNIQ_WILDS unique wildcards */
+        if (num_wildcards > OFFER_MAX_UNIQ_WILDS) {
+          cmd_errno = (int) EUNIQWILDS;
+          free_card_location(offer);
+          return;
+        }
+      }
     }
   }
 }
