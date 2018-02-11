@@ -8,6 +8,7 @@ class Command():
     SUCCESSFUL_TRADE = 'SUCCESSFUL_TRADE'
     CANCELLED_OFFER = 'CANCELLED_OFFER'
     BOOK_EVENT = 'BOOK_EVENT'
+    BILLIONAIRE = 'BILLIONAIRE'
     FINISH = 'FINISH'
     ERROR = 'ERROR'
     NEW_OFFER = 'NEW_OFFER'
@@ -18,6 +19,7 @@ class Command():
                       SUCCESSFUL_TRADE,
                       CANCELLED_OFFER,
                       BOOK_EVENT,
+                      BILLIONAIRE,
                       FINISH,
                       ERROR,
                       NEW_OFFER,

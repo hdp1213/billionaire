@@ -199,13 +199,30 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                              total_cards,
                                                              participants);
 
+            /*Check for win conditions */
+            bool this_client_has_won = has_won(this_client->hand);
+            bool other_client_has_won = has_won(other_client->hand);
+
             TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+              if (this_client_has_won) {
+                enqueue_command(client_obj, billionaire_billionaire(this_client->id));
+              }
+
+              if (other_client_has_won) {
+                enqueue_command(client_obj, billionaire_billionaire(other_client->id));
+              }
+
               if (client_eq(client_obj, this_client) ||
                   client_eq(client_obj, other_client)) {
                 continue;
               }
 
               enqueue_command(client_obj, book_event);
+            }
+
+            /* TODO: Reset the game */
+            if (this_client_has_won || other_client_has_won) {
+              clear_book(billionaire_game->current_trades);
             }
           }
 
