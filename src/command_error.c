@@ -11,5 +11,6 @@ const char* error_what[NUM_ERRORS] = {
   "Offer to cancel not owned by client",
   "New offer overrides previously declared offer",
   "Offer does not contain any cards",
-  "Offer does not contain enough cards"
+  "Offer does not contain enough cards",
+  "Cards in offer did not exist in hand"
 };
