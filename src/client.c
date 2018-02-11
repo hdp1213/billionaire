@@ -21,6 +21,8 @@ client_new(struct event_base* evbase, int fd,
 
   new_client->fd = fd;
 
+  new_client->hand = NULL;
+
   new_client->buf_ev = bufferevent_socket_new(evbase, new_client->fd, 0);
 
   /* Set callback functions of bufferevent */
@@ -111,7 +113,7 @@ client_eq(client* client1, client* client2)
 void
 free_client(client* client_obj)
 {
-  free_card_location(client_obj->hand);
+  if (client_obj->hand != NULL) free_card_location(client_obj->hand);
   bufferevent_free(client_obj->buf_ev);
   close(client_obj->fd);
   free(client_obj->id);
