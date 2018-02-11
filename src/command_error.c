@@ -2,7 +2,7 @@
 
 int cmd_errno = CMD_SUCCESS;
 
-const char* error_what[NUM_ERRORS] = {
+const char* error_what[] = {
   "JSON value unable to be extracted",
   "JSON object is not the desired type",
   "Invalid command name",

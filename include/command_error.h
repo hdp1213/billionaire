@@ -16,10 +16,9 @@ enum errorno {
   EOFFEROVER, /* New offer overrides previously declared offer */
   ENOOFFER, /* Offer does not contain any cards */
   ESMALLOFFER, /* Offer does not contain enough cards */
-  EBADCARDS, /* Cards in offer did not exist in hand */
-  NUM_ERRORS = EBADCARDS - EJSON
+  EBADCARDS /* Cards in offer did not exist in hand */
 };
 
 extern int cmd_errno;
 
-extern const char* error_what[NUM_ERRORS];
+extern const char* error_what[];
