@@ -125,30 +125,26 @@ buffered_on_read(struct bufferevent* bev, void* arg)
             continue;
           }
 
+          /* Validate the offer */
+          validate_offer(card_loc, this_client->hand);
+
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
+
+            if (cmd_errno == ESMALLOFFER) {
+              /* Send CANCELLED_OFFER back to this_client */
+              offer* bad_offer = offer_init(card_loc, this_client->id);
+
+              json_object* cancel = billionaire_cancelled_offer(bad_offer);
+              enqueue_command(this_client, cancel);
+
+              free_offer(bad_offer);
+            }
+
+            continue;
+          }
+
           size_t total_cards = get_total_cards(card_loc);
-
-          if (total_cards == 0) {
-            /* Offer does not contain any cards */
-            cmd_errno = (int) ENOOFFER;
-            enqueue_command(this_client, billionaire_error());
-            continue;
-          }
-
-          else if (total_cards < OFFER_MIN_CARDS) {
-            /* Offer does not contain enough cards */
-            cmd_errno = (int) ESMALLOFFER;
-            enqueue_command(this_client, billionaire_error());
-
-            /* Send CANCELLED_OFFER back to this_client */
-            offer* bad_offer = offer_init(card_loc, this_client->id);
-
-            json_object* cancel = billionaire_cancelled_offer(bad_offer);
-            enqueue_command(this_client, cancel);
-
-            free_offer(bad_offer);
-
-            continue;
-          }
 
           printf("Offer of %zu cards\n", total_cards);
 
@@ -164,6 +160,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           }
   #endif /* DBUG */
 
+          /* Add offer to book */
           offer* new_offer = offer_init(card_loc, this_client->id);
           offer* traded_offer = fill_offer(billionaire_game->current_trades,
                                            new_offer);
@@ -173,10 +170,23 @@ buffered_on_read(struct bufferevent* bev, void* arg)
             continue;
           }
 
+          /* Update this_client's hand */
+          subtract_card_location(this_client->hand, card_loc);
+
+          if (cmd_errno != CMD_SUCCESS) {
+            enqueue_command(this_client, billionaire_error());
+            continue;
+          }
+
+          /* Check if an offer has traded */
           if (traded_offer != NULL) {
-            /* A trade has been made */
             client* other_client = get_client(hashed_clients, traded_offer->owner_id);
 
+            /* Update participants' hands */
+            merge_card_location(this_client->hand, traded_offer->cards);
+            merge_card_location(other_client->hand, new_offer->cards);
+
+            /* Send SUCCESSFUL_TRADE commands to participants */
             json_object* this_trade = billionaire_successful_trade(traded_offer);
             json_object* other_trade = billionaire_successful_trade(new_offer);
 
@@ -390,7 +400,7 @@ on_accept(int fd, short ev, void* arg)
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
       json_object* start = billionaire_start(player_hands[iplayer]);
-      free_card_location(player_hands[iplayer]);
+      client_obj->hand = player_hands[iplayer];
 
       enqueue_command(client_obj, start);
       iplayer++;
