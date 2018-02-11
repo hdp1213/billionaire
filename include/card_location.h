@@ -124,6 +124,11 @@ void subtract_card_location(card_location* dest_loc, const card_location* src_lo
 void validate_offer(card_location* offer, const card_location* hand);
 
 /**
+ * Checks if a hand is a winning hand.
+ */
+bool has_won(const card_location* hand);
+
+/**
  * Return the amount of cards of a specific type at a card_location.
  */
 size_t get_card_amount(const card_location* card_loc, card_id card);

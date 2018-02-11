@@ -248,6 +248,26 @@ validate_offer(card_location* offer, const card_location* hand)
   }
 }
 
+bool
+has_won(const card_location* hand)
+{
+  /* Check for wildcards */
+  size_t num_wildcards = 0;
+  num_wildcards += get_card_amount(hand, BILLIONAIRE);
+  num_wildcards += get_card_amount(hand, TAX_COLLECTOR);
+
+  /* Check win condition */
+  for (card_id comm_card = DIAMONDS; comm_card < TOTAL_COMMODITY_AMOUNT; ++comm_card) {
+    size_t comm_amt = get_card_amount(hand, comm_card);
+
+    if ((comm_amt + num_wildcards) >= (TOTAL_COMMODITY_AMOUNT + 1)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 size_t
 get_card_amount(const card_location* card_loc, card_id card)
 {
