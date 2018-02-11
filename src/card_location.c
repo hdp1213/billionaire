@@ -194,6 +194,19 @@ subtract_card_location(card_location* dest_loc, const card_location* src_loc)
   }
 }
 
+void
+check_offer_subset(const card_location* offer, const card_location* hand)
+{
+  for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
+    size_t offer_amt = get_card_amount(offer, card);
+
+    if (!has_enough_cards(hand, card, offer_amt)) {
+      cmd_errno = (int) EBADCARDS;
+      return;
+    }
+  }
+}
+
 size_t
 get_card_amount(const card_location* card_loc, card_id card)
 {

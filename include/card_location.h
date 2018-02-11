@@ -109,6 +109,11 @@ void merge_card_location(card_location* dest_loc, const card_location* src_loc);
 void subtract_card_location(card_location* dest_loc, const card_location* src_loc);
 
 /**
+ * Validate that an offer given by a client is a subset of their hand.
+ */
+void check_offer_subset(const card_location* offer, const card_location* hand);
+
+/**
  * Return the amount of cards of a specific type at a card_location.
  */
 size_t get_card_amount(const card_location* card_loc, card_id card);
