@@ -67,10 +67,16 @@ void buffered_on_read(struct bufferevent* bev, void* arg);
 void buffered_on_error(struct bufferevent* bev, short what, void* arg);
 
 /**
- * This function will be called by libevent when there is a connection
- * ready to be accepted.
+ * Called by libevent when there is a connection ready to be accepted.
  */
 void on_accept(int fd, short ev, void* arg);
+
+/**
+ * Called by libevent when a SIGINT signal is caught.
+ *
+ * This breaks the base loop and allows cleanup code to execute.
+ */
+void on_sigint(int sig, short ev, void *arg);
 
 /**
  * Handle command line options using getopt_long.

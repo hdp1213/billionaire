@@ -43,6 +43,7 @@
 #include <err.h>
 
 #include <getopt.h>
+#include <signal.h>
 
 #include "billionaire-server.h"
 #include "book.h"
@@ -429,6 +430,14 @@ on_accept(int fd, short ev, void* arg)
 }
 
 void
+on_sigint(int sig, short ev, void *arg)
+{
+  printf("\n");
+  printf("SIGINT caught, exiting cleanly...\n");
+  event_base_loopbreak(evbase);
+}
+
+void
 parse_command_line_options(int argc, char** argv, int* player_limit,
                            bool* has_billionaire, bool* has_taxman) {
   while (true) {
@@ -497,7 +506,7 @@ main(int argc, char** argv)
 
   int listen_fd;
   struct sockaddr_in listen_addr;
-  struct event ev_accept;
+  struct event ev_accept, ev_sigint;
 
   /* Parse external options */
   parse_command_line_options(argc, argv,
@@ -550,15 +559,39 @@ main(int argc, char** argv)
 
   /* We now have a listening socket, we create a read event to
    * be notified when a client connects. */
-  event_assign(&ev_accept, evbase, listen_fd, EV_READ|EV_PERSIST,
-               on_accept, NULL);
+  event_assign(&ev_accept, evbase, listen_fd, EV_READ|EV_PERSIST, on_accept, NULL);
   event_add(&ev_accept, NULL);
+
+  /* Add SIGINT handling */
+  evsignal_assign(&ev_sigint, evbase, SIGINT, on_sigint, NULL);
+  event_add(&ev_sigint, NULL);
 
   /* Start the event loop. */
   event_base_dispatch(evbase);
 
-  /* Hopefully this is called, but probably not haha */
-  // game_state_free(billionaire_game);
+  /* Called on SIGINT, or whenever the main event loop finishes */
+  game_state_free(billionaire_game);
+
+  /* Assumes that if client queue is empty, so is client hash table */
+  if (!TAILQ_EMPTY(&client_tailq_head)) {
+    struct client* client_struct;
+    struct client* next_client_struct;
+
+    client_struct = TAILQ_FIRST(&client_tailq_head);
+
+    while (client_struct != NULL) {
+      next_client_struct = TAILQ_NEXT(client_struct, entries);
+
+      TAILQ_REMOVE(&client_tailq_head, client_struct, entries);
+      del_client(hashed_clients, client_struct);
+      free_client(client_struct);
+
+      client_struct = next_client_struct;
+    }
+  }
+
+  free_client_hash_table(hashed_clients);
+  event_base_free(evbase);
 
   return 0;
 }
