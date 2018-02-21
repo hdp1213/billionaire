@@ -52,12 +52,14 @@ card_location_from_JSON(json_object* card_loc_json)
     json_object* card_id_json = get_JSON_value(card_json, "id");
 
     if (cmd_errno != CMD_SUCCESS) {
+      free_card_location(card_loc);
       return NULL;
     }
 
     json_object* card_amt_json = get_JSON_value(card_json, "amt");
 
     if (cmd_errno != CMD_SUCCESS) {
+      free_card_location(card_loc);
       return NULL;
     }
 

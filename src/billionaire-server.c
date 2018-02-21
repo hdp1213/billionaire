@@ -168,14 +168,16 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (cmd_errno != CMD_SUCCESS) {
             enqueue_command(this_client, billionaire_error());
+            free_offer(new_offer);
             continue;
           }
 
           /* Update this_client's hand */
-          subtract_card_location(this_client->hand, card_loc);
+          subtract_card_location(this_client->hand, new_offer->cards);
 
           if (cmd_errno != CMD_SUCCESS) {
             enqueue_command(this_client, billionaire_error());
+            free_offer(new_offer);
             continue;
           }
 
@@ -190,6 +192,9 @@ buffered_on_read(struct bufferevent* bev, void* arg)
             /* Send SUCCESSFUL_TRADE commands to participants */
             json_object* this_trade = billionaire_successful_trade(traded_offer);
             json_object* other_trade = billionaire_successful_trade(new_offer);
+
+            free_offer(new_offer);
+            free_offer(traded_offer);
 
             enqueue_command(this_client, this_trade);
             enqueue_command(other_client, other_trade);
@@ -423,6 +428,8 @@ on_accept(int fd, short ev, void* arg)
       enqueue_command(client_obj, start);
       iplayer++;
     }
+
+    free(player_hands);
   }
 
   /* Flush all client command queues to the corresponding client */

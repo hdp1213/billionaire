@@ -39,5 +39,6 @@ void
 game_state_free(game_state* gs_obj)
 {
   free_card_array(gs_obj->deck);
+  free_book(gs_obj->current_trades);
   free(gs_obj);
 }
