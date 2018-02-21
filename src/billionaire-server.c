@@ -498,7 +498,6 @@ main(int argc, char** argv)
   int listen_fd;
   struct sockaddr_in listen_addr;
   struct event ev_accept;
-  int reuseaddr_on;
 
   /* Parse external options */
   parse_command_line_options(argc, argv,
@@ -525,6 +524,10 @@ main(int argc, char** argv)
   listen_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (listen_fd < 0)
     err(1, "listen failed");
+
+  /* Allow socket address to be reused in case of crash/hard exit */
+  setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
+
   memset(&listen_addr, 0, sizeof(listen_addr));
   listen_addr.sin_family = AF_INET;
   listen_addr.sin_addr.s_addr = INADDR_ANY;
@@ -538,10 +541,6 @@ main(int argc, char** argv)
     printf("\n");
     err(1, "listen failed");
   }
-  reuseaddr_on = 1;
-  setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr_on,
-             sizeof(reuseaddr_on));
-
   /* Set the socket to non-blocking, this is essential in event
    * based programming with libevent. */
   if (setnonblock(listen_fd) < 0)
