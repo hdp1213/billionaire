@@ -23,7 +23,7 @@ LDFLAGS = -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
 # Includes and libraries
 INCLUDES = -Iinclude
 LIBS = -levent -lrt -lm -ljson-c -lxxhash
-CHECK_LIBS = -ljson-c -lcheck
+CHECK_LIBS = -ljson-c -lcheck -lxxhash
 
 # Object files to compile
 MAIN = billionaire-server.o
