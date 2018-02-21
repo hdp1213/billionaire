@@ -356,7 +356,7 @@ on_accept(int fd, short ev, void* arg)
 {
   int client_fd;
   struct sockaddr_in client_addr;
-  socklen_t client_len = sizeof(client_addr);
+  socklen_t client_len = sizeof(struct sockaddr_in);
   client* new_client;
   client* client_obj = NULL;
 
@@ -537,12 +537,12 @@ main(int argc, char** argv)
   /* Allow socket address to be reused in case of crash/hard exit */
   setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
 
-  memset(&listen_addr, 0, sizeof(listen_addr));
+  memset(&listen_addr, 0, sizeof(struct sockaddr_in));
   listen_addr.sin_family = AF_INET;
   listen_addr.sin_addr.s_addr = INADDR_ANY;
   listen_addr.sin_port = htons(SERVER_PORT);
   if (bind(listen_fd, (struct sockaddr*) &listen_addr,
-           sizeof(listen_addr)) < 0) {
+           sizeof(struct sockaddr_in)) < 0) {
     printf("\n");
     err(1, "bind failed");
   }
