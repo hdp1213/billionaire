@@ -42,11 +42,16 @@ class ClientApplication(Gtk.Window):
 
         self.offer_btn.connect('clicked', self.on_offer)
 
+        self.offer_btn.set_sensitive(False)
+
         self.wild_bil = Gtk.CheckButton(label='Billionaire')
         self.wild_tax = Gtk.CheckButton(label='Tax Collector')
 
         self.wild_bil.connect('toggled', self.on_toggle)
         self.wild_tax.connect('toggled', self.on_toggle)
+
+        self.wild_bil.set_sensitive(False)
+        # self.wild_tax.set_sensitive(False)
 
         self.hand_grid.attach(self.hand_tab, 1, 1, 1, 3)
         self.hand_grid.attach(self.wild_bil, 2, 1, 1, 1)
@@ -55,7 +60,13 @@ class ClientApplication(Gtk.Window):
         self.hand_grid.attach(self.offer_btn, 3, 3, 1, 1)
 
         self.hand_grid.set_column_spacing(15)
-        self.hand_grid.set_row_spacing(4)
+        self.hand_grid.set_row_spacing(5)
+
+        self.hand_grid.set_margin_start(5)
+        self.hand_grid.set_margin_end(5)
+        self.hand_grid.set_margin_top(5)
+        self.hand_grid.set_margin_bottom(5)
+        self.hand_grid.set_name('hand-grid')
 
         self.add(self.hand_grid)
 
@@ -69,9 +80,11 @@ class ClientApplication(Gtk.Window):
         print(f'Activated {self.selected_card}')
         if self.selected_card == CardID.INVALID:
             self.card_amt.set_range(DEFAULT_OFFER_AMT, DEFAULT_OFFER_AMT)
+            self.offer_btn.set_sensitive(False)
         else:
             self.card_amt.set_range(MIN_OFFER_AMT,
                                     self.hand.get_amount(self.selected_card))
+            self.offer_btn.set_sensitive(True)
 
     def on_offer(self, widget):
         card_amt = self.card_amt.get_value_as_int()
