@@ -8,6 +8,7 @@
 # To enable this hook, rename this file to "pre-commit".
 
 PYSTYLE_IGNORE=""
+PYSTYLE_ERRORS="E402"
 
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
@@ -93,7 +94,7 @@ if [ -n "$staged_py_files" ]; then
 	echo "Running pycodestyle on committed python files..."
 	for py_file in $staged_py_files; do
 		if [ -e $py_file ]; then
-			/usr/bin/env pycodestyle --exclude="$PYSTYLE_IGNORE" $py_file || exit $?
+			/usr/bin/env pycodestyle --exclude="$PYSTYLE_IGNORE" --ignore="$PYSTYLE_ERRORS" $py_file || exit $?
 		fi
 	done
 else
