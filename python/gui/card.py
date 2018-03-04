@@ -31,14 +31,15 @@ class CardData():
         self._cards = Counter()
 
     def __len__(self):
-        return len(self._cards)
+        """Return the total number of cards contained in CardData"""
+        return sum(self._cards.values())
 
     def get_amount(self, card_id):
         """Return the number of cards matching card_id"""
         return self._cards[card_id]
 
     def add_cards(self, card_id, add_amt):
-        """Add a number of cards to the CommodityData"""
+        """Add a number of cards to the CardData"""
         assert add_amt > 0
 
         if not self.is_valid_add(card_id, add_amt):
