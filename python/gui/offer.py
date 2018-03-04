@@ -92,11 +92,25 @@ class OfferDisplay(Gtk.Frame):
         self.offer_data = OfferData()
         self.offer_tab = OfferTable(self.offer_data)
 
+        self.is_comm_selected = False
+        self.is_offer_selected = False
+
+        self.offer_tab.connect('cursor-changed', self.on_selection)
         self.offer_tab.connect('row-activated', self.on_quick_trade)
+
+        self.match_btn = Gtk.Button(label='Match')
+        self.cancel_btn = Gtk.Button(label='Cancel')
+
+        self.match_btn.connect('clicked', self.on_match)
+
+        self.match_btn.set_sensitive(False)
+        self.cancel_btn.set_sensitive(False)
 
         self.grid = Gtk.Grid()
 
-        self.grid.attach(self.offer_tab, 1, 1, 1, 1)
+        self.grid.attach(self.offer_tab, 1, 1, 1, 2)
+        self.grid.attach(self.match_btn, 2, 1, 1, 1)
+        self.grid.attach(self.cancel_btn, 2, 2, 1, 1)
 
         self.grid.set_column_spacing(15)
         self.grid.set_row_spacing(5)
@@ -114,9 +128,25 @@ class OfferDisplay(Gtk.Frame):
         self.add(self.grid)
         self.set_name('offer-display')
 
+    def update_ui(self):
+        self.match_btn.set_sensitive(self.is_comm_selected and
+                                     self.is_offer_selected)
+
+        self.cancel_btn.set_sensitive(self.is_offer_selected)
+
+    def on_selection(self, widget):
+        self.is_offer_selected = True
+        self.update_ui()
+
     def on_quick_trade(self, widget, path, column):
-        """Emit a quick_trade signal containing offer amount"""
+        """Emit a quick-trade signal containing offer amount"""
         offer_iter = self.offer_data.get_iter(path)
         trade_amt = self.offer_data.get_offer_amount(offer_iter)
+
+        self.emit('quick-trade', trade_amt)
+
+    def on_match(self, button):
+        """Emit a quick-trade signal containing offer amount"""
+        trade_amt = self.offer_tab.get_selected_offer()
 
         self.emit('quick-trade', trade_amt)

@@ -23,7 +23,8 @@ class HandDisplay(Gtk.Frame):
 
         self.selected_comm = CardID.INVALID
 
-        offers.connect('quick-trade', self.on_quick_trade)
+        self.offers = offers
+        self.offers.connect('quick-trade', self.on_quick_trade)
 
         self.comm_data = CommodityData()
         self.comm_tab = CommodityTable(self.comm_data)
@@ -112,8 +113,10 @@ class HandDisplay(Gtk.Frame):
     def on_selection(self, widget):
         """Update UI elements each time a commodity is selected"""
         self.selected_comm = self.comm_tab.get_selected_card()
+        self.offers.is_comm_selected = (self.selected_comm != CardID.INVALID)
 
         self.update_offer_ui()
+        self.offers.update_ui()
 
     def on_offer(self, widget):
         """Update UI and emit a new-order signal"""
