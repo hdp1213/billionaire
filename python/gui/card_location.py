@@ -17,6 +17,9 @@ class CardLocation(CardData, JSONInterface):
     def __repr__(self):
         return f'<CardLocation: {{{self.pretty_list()}}}>'
 
+    def __iter__(self):
+        return iter(self._cards.items())
+
     def unique_card_list(self):
         return ', '.join([f'{card_id}' for card_id in self._cards])
 
