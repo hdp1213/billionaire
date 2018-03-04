@@ -37,6 +37,11 @@ class OfferData(Gtk.ListStore):
         del self._iters[offer_amt]
         del self._offers[offer_amt]
 
+    def clear_all(self):
+        self.clear()
+        self._iters = {}
+        self._offers = {}
+
     def get_offer_amount(self, tree_iter):
         """Return the offer amount corresponding to a Gtk.TreeIter object
 
@@ -90,14 +95,14 @@ class OfferDisplay(Gtk.Frame):
     def __init__(self):
         Gtk.Frame.__init__(self, label='Offers')
 
-        self.offer_data = OfferData()
-        self.offer_tab = OfferTable(self.offer_data)
+        self.data = OfferData()
+        self.table = OfferTable(self.data)
 
         self.is_comm_selected = False
         self.is_offer_selected = False
 
-        self.offer_tab.connect('cursor-changed', self.on_selection)
-        self.offer_tab.connect('row-activated', self.on_quick_trade)
+        self.table.connect('cursor-changed', self.on_selection)
+        self.table.connect('row-activated', self.on_quick_trade)
 
         self.match_btn = Gtk.Button(label='Match')
         self.cancel_btn = Gtk.Button(label='Cancel')
@@ -110,7 +115,7 @@ class OfferDisplay(Gtk.Frame):
 
         self.grid = Gtk.Grid()
 
-        self.grid.attach(self.offer_tab, 1, 1, 1, 2)
+        self.grid.attach(self.table, 1, 1, 1, 2)
         self.grid.attach(self.match_btn, 2, 1, 1, 1)
         self.grid.attach(self.cancel_btn, 2, 2, 1, 1)
 
@@ -136,24 +141,31 @@ class OfferDisplay(Gtk.Frame):
 
         self.cancel_btn.set_sensitive(self.is_offer_selected)
 
+    def clear_all(self):
+        self.is_comm_selected = False
+        self.is_offer_selected = False
+
+        self.data.clear_all()
+        self.update_ui()
+
     def on_selection(self, widget):
         self.is_offer_selected = True
         self.update_ui()
 
     def on_quick_trade(self, widget, path, column):
         """Emit a quick-trade signal containing offer amount"""
-        offer_iter = self.offer_data.get_iter(path)
-        trade_amt = self.offer_data.get_offer_amount(offer_iter)
+        offer_iter = self.data.get_iter(path)
+        trade_amt = self.data.get_offer_amount(offer_iter)
 
         self.emit('quick-trade', trade_amt)
 
     def on_match(self, button):
         """Emit a quick-trade signal containing offer amount"""
-        trade_amt = self.offer_tab.get_selected_offer()
+        trade_amt = self.table.get_selected_offer()
 
         self.emit('quick-trade', trade_amt)
 
     def on_cancel(self, button):
-        offer_amt = self.offer_tab.get_selected_offer()
+        offer_amt = self.table.get_selected_offer()
 
         self.emit('cancel-offer', offer_amt)
