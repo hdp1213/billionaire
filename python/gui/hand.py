@@ -106,6 +106,13 @@ class HandDisplay(Gtk.Frame):
             self.offer_amt.set_value(HandDisplay.DEFAULT_OFFER_AMT)
             self.offer_btn.set_sensitive(False)
 
+    def clear_all(self):
+        self.wild.clear_all()
+        self.comm_data.clear_all()
+
+        # Update UI
+        self.update_ui(valid=False)
+
     def on_toggle(self, widget):
         """Update UI elements each time a wildcard button is toggled"""
         self.update_ui()

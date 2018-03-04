@@ -47,6 +47,13 @@ class Wildcards(Gtk.Grid, CardData):
             btn.set_active(False)
             btn.set_sensitive(False)
 
+    def clear_all(self):
+        self.clear_cards()
+
+        for btn in self.check_buttons.values():
+            btn.set_active(False)
+            btn.set_sensitive(False)
+
     def on_add_new_cards(self, card_id, add_amt):
         self.add_wildcard(card_id)
 

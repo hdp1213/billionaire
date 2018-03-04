@@ -87,6 +87,9 @@ class CardData():
     def take_card(self, card_id):
         self.take_cards(card_id, 1)
 
+    def clear_cards(self):
+        self._cards.clear()
+
     def on_add_new_cards(self, card_id, add_amt):
         """Called when a new card_id not in the object is added"""
         raise NotImplementedError

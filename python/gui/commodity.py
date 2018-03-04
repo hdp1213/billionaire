@@ -42,6 +42,12 @@ class CommodityData(Gtk.ListStore, CardData):
         new_amt = self.get_amount(card_id) - take_amt
         self.set_value(self._iters[card_id], CommodityField.AMOUNT, new_amt)
 
+    def clear_all(self):
+        self.clear_cards()
+
+        self.clear()
+        self._iters = {}
+
     def get_card_id(self, tree_iter):
         """Return the CardID corresponding to a Gtk.TreeIter object
 
