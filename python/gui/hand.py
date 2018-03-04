@@ -1,9 +1,10 @@
 import gi
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 from card import CardID
+from card_location import CardLocation
 from commodity import CommodityData, CommodityTable
 from wildcard import Wildcards
 
@@ -12,6 +13,10 @@ class HandDisplay(Gtk.Frame):
     """Object displaying hand information and offer selection"""
     DEFAULT_OFFER_AMT = 0
     MIN_OFFER_AMT = 2
+
+    @GObject.Signal
+    def new_offer(self, offer_obj: object):
+        pass
 
     def __init__(self):
         super(HandDisplay, self).__init__(label='Hand')
@@ -99,45 +104,50 @@ class HandDisplay(Gtk.Frame):
             self.offer_btn.set_sensitive(False)
 
     def on_toggle(self, widget):
+        """Update UI elements each time a wildcard button is toggled"""
         self.update_offer_ui()
 
     def on_selection(self, widget):
+        """Update UI elements each time a commodity is selected"""
         self.selected_comm = self.comm_tab.get_selected_card()
 
-        print(f'SELECTED \'{self.selected_comm}\'')
         self.update_offer_ui()
 
     def on_offer(self, widget):
+        """Update UI and emit a new_order signal"""
         offer_size = self.offer_amt.get_value_as_int()
         comm_amt = offer_size - len(self.wild)
 
-        # take_cards() triggers on_selection when all cards of a type are
-        # removed. This updates selected_comm, so save current card to
-        # prevent this
+        new_offer = CardLocation()
+
+        # take_cards() triggers on_selection when all cards of a type
+        # are removed. This updates selected_comm, so save current card
+        # to prevent this
         offered_card = self.selected_comm
 
-        try:
-            self.comm.take_cards(offered_card, comm_amt)
-        except ValueError as e:
-            return
-
-        offer = [offered_card, *self.wild.active_wildcards]
+        self.comm.take_cards(offered_card, comm_amt)
+        new_offer.add_cards(offered_card, comm_amt)
 
         for wild_card in self.wild.active_wildcards:
             self.wild.take_card(wild_card)
-
-        print(f'Sent offer of size {offer_size}',
-              f'containing {", ".join([str(o) for o in offer])}')
+            new_offer.add_card(wild_card)
 
         self.update_offer_ui()
+        self.emit('new_offer', new_offer)
 
     def on_quick_offer(self, widget, path, column):
-        comm_amt = self.comm.get_amount(self.selected_comm)
+        """Update UI and emit a new_order signal"""
+        offered_card = self.selected_comm
+
+        comm_amt = self.comm.get_amount(offered_card)
 
         if comm_amt < HandDisplay.MIN_OFFER_AMT:
             return
 
-        print(f'Sent offer of size {comm_amt}',
-              f'containing {self.selected_comm!s}')
+        new_offer = CardLocation()
 
-        self.comm.take_cards(self.selected_comm, comm_amt)
+        self.comm.take_cards(offered_card, comm_amt)
+        new_offer.add_cards(offered_card, comm_amt)
+
+        self.update_offer_ui()
+        self.emit('new_offer', new_offer)
