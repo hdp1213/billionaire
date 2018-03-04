@@ -31,7 +31,7 @@ class ClientApplication(Gtk.Window):
         self.add(self.grid)
 
         css_provider = Gtk.CssProvider()
-        # css_provider.load_from_path('style/main.css')
+        css_provider.load_from_path('style/main.css')
 
         context = Gtk.StyleContext()
         context.add_provider_for_screen(Gdk.Screen.get_default(),
