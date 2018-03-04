@@ -82,6 +82,10 @@ class OfferTable(Gtk.TreeView):
 
 class OfferDisplay(Gtk.Frame):
     """Display container for an OfferTable object"""
+    @GObject.Signal
+    def quick_trade(self, trade_amt: int):
+        pass
+
     def __init__(self):
         Gtk.Frame.__init__(self, label='Offers')
 
@@ -111,4 +115,8 @@ class OfferDisplay(Gtk.Frame):
         self.set_name('offer-display')
 
     def on_quick_trade(self, widget, path, column):
-        pass
+        """Emit a quick_trade signal containing offer amount"""
+        offer_iter = self.offer_data.get_iter(path)
+        trade_amt = self.offer_data.get_offer_amount(offer_iter)
+
+        self.emit('quick-trade', trade_amt)
