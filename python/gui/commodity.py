@@ -67,7 +67,7 @@ class CommodityData(Gtk.ListStore, CardData):
 class CommodityTable(Gtk.TreeView):
     """Object used to display CommodityData as a sortable table"""
     def __init__(self, comm_data):
-        super(CommodityTable, self).__init__(comm_data)
+        Gtk.TreeView.__init__(self, comm_data)
 
         self.column_names = [str(field) for field in CommodityField]
         self.columns = [None] * len(self.column_names)

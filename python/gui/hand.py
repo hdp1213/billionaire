@@ -19,7 +19,7 @@ class HandDisplay(Gtk.Frame):
         pass
 
     def __init__(self):
-        super(HandDisplay, self).__init__(label='Hand')
+        Gtk.Frame.__init__(self, label='Hand')
 
         self.selected_comm = CardID.INVALID
 

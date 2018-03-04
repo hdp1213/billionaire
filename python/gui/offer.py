@@ -55,7 +55,7 @@ class OfferData(Gtk.ListStore):
 class OfferTable(Gtk.TreeView):
     """Object used to display OfferData as a sortable table"""
     def __init__(self, offer_data):
-        super(OfferTable, self).__init__(offer_data)
+        Gtk.TreeView.__init__(self, offer_data)
 
         self.column_names = [str(field) for field in OfferField]
         self.columns = [None] * len(self.column_names)
