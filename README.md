@@ -19,6 +19,9 @@ run:
 - [json-c](https://github.com/json-c/json-c/)
 - [xxHash](https://github.com/Cyan4973/xxHash)
 
+The separate client GUI requires Python 3.6+ and the
+[PyGObject](https://pygobject.readthedocs.io/en/latest/) library.
+
 ## Getting Started
 
 `billionaire` can be cloned and compiled by simply running
@@ -38,6 +41,15 @@ $ ./python/client.py
 ```
 when a `billionaire-server` is already running. The client will simply
 offer cards until it no longer has any valid offers to give.
+
+### Client GUI
+
+A client GUI is provided as a more user-friendly way of interacting with
+the server. This can be run using
+```bash
+$ python python/gui/main.py
+```
+where we assume `python` points to a version of Python >= 3.6.
 
 ## Contributing
 
