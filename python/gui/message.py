@@ -96,14 +96,39 @@ class MessagePasser(GObject.Object):
             trade_cmd = self.received_cmds[Command.SUCCESSFUL_TRADE]
 
             trade = CardLocation.from_json(trade_cmd.cards)
+
+            self.offers.data.remove_offer(len(trade))
             self.add_cards_to_gui(trade)
 
+        if Command.CANCELLED_OFFER in self.received_cmds:
+            cancelled_cmd = self.received_cmds[Command.CANCELLED_OFFER]
+
+            offer = CardLocation.from_json(cancelled_cmd.cards)
+            self.add_cards_to_gui(offer)
+
         if Command.BOOK_EVENT in self.received_cmds:
-            pass
+            book_cmd = self.received_cmds[Command.BOOK_EVENT]
+
+            if book_cmd.event == Command.NEW_OFFER:
+                owner_id = book_cmd.participants[0]
+                self.offers.data.add_offer(book_cmd.card_amt, owner_id)
+
+            # Either CANCEL_OFFER or SUCCESSFUL_TRADE
+            else:
+                self.offers.data.remove_offer(book_cmd.card_amt)
 
         if Command.FINISH in self.received_cmds:
             print('Stopping game...')
             self.hand.clear_all()
+            self.offers.clear_all()
+
+        if Command.BILLIONAIRE in self.received_cmds:
+            billionaire_cmd = self.received_cmds[Command.BILLIONAIRE]
+
+            if billionaire_cmd.winner_id == self.id:
+                print('A winner is you!')
+            else:
+                print(f'Bad luck, {billionaire_cmd.winner_id} won.')
 
         if Command.ERROR in self.received_cmds:
             pass
@@ -118,6 +143,8 @@ class MessagePasser(GObject.Object):
 
         new_offer_command = Command(Command.NEW_OFFER, cards=offer.to_dict())
 
+        self.offers.data.add_offer(len(offer), self.id)
+
         self.send_command(new_offer_command)
 
     def on_cancel_offer(self, widget, offer_amt):
@@ -125,5 +152,7 @@ class MessagePasser(GObject.Object):
 
         cancel_offer_command = Command(Command.CANCEL_OFFER,
                                        card_amt=offer_amt)
+
+        self.offers.data.remove_offer(offer_amt)
 
         self.send_command(cancel_offer_command)
