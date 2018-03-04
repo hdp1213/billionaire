@@ -20,11 +20,12 @@ class ClientApplication(Gtk.Window):
 
         self.grid = Gtk.Grid()
 
-        self.hand = HandDisplay()
-        self.grid.attach(self.hand, 1, 1, 1, 1)
+        self.offers = OfferDisplay()
 
-        self.offer = OfferDisplay()
-        self.grid.attach(self.offer, 1, 2, 1, 1)
+        self.hand = HandDisplay(self.offers)
+
+        self.grid.attach(self.hand, 1, 1, 1, 1)
+        self.grid.attach(self.offers, 1, 2, 1, 1)
 
         self.parser = MessagePasser(self.hand)
 

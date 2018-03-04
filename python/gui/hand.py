@@ -18,10 +18,12 @@ class HandDisplay(Gtk.Frame):
     def new_offer(self, offer_obj: object):
         pass
 
-    def __init__(self):
+    def __init__(self, offers):
         Gtk.Frame.__init__(self, label='Hand')
 
         self.selected_comm = CardID.INVALID
+
+        offers.connect('quick-trade', self.on_quick_trade)
 
         self.comm_data = CommodityData()
         self.comm_tab = CommodityTable(self.comm_data)
@@ -114,7 +116,7 @@ class HandDisplay(Gtk.Frame):
         self.update_offer_ui()
 
     def on_offer(self, widget):
-        """Update UI and emit a new_order signal"""
+        """Update UI and emit a new-order signal"""
         offer_size = self.offer_amt.get_value_as_int()
         comm_amt = offer_size - len(self.wild)
 
@@ -133,10 +135,10 @@ class HandDisplay(Gtk.Frame):
             new_offer.add_card(wild_card)
 
         self.update_offer_ui()
-        self.emit('new_offer', new_offer)
+        self.emit('new-offer', new_offer)
 
     def on_quick_offer(self, widget, path, column):
-        """Update UI and emit a new_order signal"""
+        """Update UI and emit a new-order signal"""
         offered_card = self.selected_comm
 
         comm_amt = self.comm_data.get_amount(offered_card)
@@ -150,4 +152,36 @@ class HandDisplay(Gtk.Frame):
         new_offer.add_cards(offered_card, comm_amt)
 
         self.update_offer_ui()
-        self.emit('new_offer', new_offer)
+        self.emit('new-offer', new_offer)
+
+    def on_quick_trade(self, widget, trade_amt):
+        """Update UI and emit a new-order signal
+
+        A quick trade occurs when the user double-clicks an active
+        offer. This method should also check to see if the offer does
+        not already belong to the player, as this is also how orders can
+        be cancelled!
+        """
+        offered_card = self.selected_comm
+
+        # Total number of potentially tradable cards
+        offer_pool = self.comm_data.get_amount(offered_card) + len(self.wild)
+
+        if trade_amt > offer_pool:
+            return
+
+        # Only trade the bare minimum amount of commodities: if
+        # wildcards are specified, these _must_ be traded
+        comm_amt = trade_amt - len(self.wild)
+
+        new_offer = CardLocation()
+
+        self.comm_data.take_cards(offered_card, comm_amt)
+        new_offer.add_cards(offered_card, comm_amt)
+
+        for wild_card in self.wild.active_wildcards:
+            self.wild.take_card(wild_card)
+            new_offer.add_card(wild_card)
+
+        self.update_offer_ui()
+        self.emit('new-offer', new_offer)
