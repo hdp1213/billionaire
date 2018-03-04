@@ -104,7 +104,7 @@ class HandDisplay(Gtk.Frame):
     def on_selection(self, widget):
         self.selected_comm = self.comm_tab.get_selected_card()
 
-        print(f'SELECTED {self.selected_comm.name.title()!r}')
+        print(f'SELECTED \'{self.selected_comm}\'')
         self.update_offer_ui()
 
     def on_offer(self, widget):
