@@ -30,6 +30,12 @@ class CardData():
     def __init__(self):
         self._cards = Counter()
 
+    @classmethod
+    def from_dict(cls, dict_data):
+        card_data = cls()
+        card_data._cards = Counter(dict_data)
+        return card_data
+
     def __len__(self):
         """Return the total number of cards contained in CardData"""
         return sum(self._cards.values())
