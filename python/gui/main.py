@@ -4,7 +4,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk, GObject
 
 from card import CardID
-from hand import Hand, HandTable
+from commodity import CommodityData, CommodityTable
+from wildcard import Wildcards
 
 DEFAULT_OFFER_AMT = 0
 MIN_OFFER_AMT = 2
@@ -23,11 +24,11 @@ class ClientApplication(Gtk.Window):
 
         self.hand_grid = Gtk.Grid()
 
-        self.hand = Hand()
+        self.comm_data = CommodityData()
 
-        self.hand_tab = HandTable(self.hand)
-        self.hand_tab.connect('cursor-changed', self.on_selection)
-        self.hand_tab.connect('row-activated', self.on_quick_offer)
+        self.comm_tab = CommodityTable(self.comm_data)
+        self.comm_tab.connect('cursor-changed', self.on_selection)
+        self.comm_tab.connect('row-activated', self.on_quick_offer)
 
         card_adj = Gtk.Adjustment(value=DEFAULT_OFFER_AMT,
                                   lower=DEFAULT_OFFER_AMT,
@@ -35,27 +36,16 @@ class ClientApplication(Gtk.Window):
                                   step_increment=1)
         self.card_amt = Gtk.SpinButton(adjustment=card_adj)
         self.card_amt.set_numeric(True)
-
         self.card_amt.connect('activate', self.on_offer)
 
+        self.wilds = Wildcards()
+
         self.offer_btn = Gtk.Button(label='Offer')
-
         self.offer_btn.connect('clicked', self.on_offer)
-
         self.offer_btn.set_sensitive(False)
 
-        self.wild_bil = Gtk.CheckButton(label='Billionaire')
-        self.wild_tax = Gtk.CheckButton(label='Tax Collector')
-
-        self.wild_bil.connect('toggled', self.on_toggle)
-        self.wild_tax.connect('toggled', self.on_toggle)
-
-        self.wild_bil.set_sensitive(False)
-        # self.wild_tax.set_sensitive(False)
-
-        self.hand_grid.attach(self.hand_tab, 1, 1, 1, 3)
-        self.hand_grid.attach(self.wild_bil, 2, 1, 1, 1)
-        self.hand_grid.attach(self.wild_tax, 2, 2, 1, 1)
+        self.hand_grid.attach(self.comm_tab, 1, 1, 1, 3)
+        self.hand_grid.attach(self.wilds, 2, 1, 1, 2)
         self.hand_grid.attach(self.card_amt, 2, 3, 1, 1)
         self.hand_grid.attach(self.offer_btn, 3, 3, 1, 1)
 
@@ -72,34 +62,46 @@ class ClientApplication(Gtk.Window):
 
         self.show_all()
 
+    def invalid_selection(self):
+        self.card_amt.set_range(DEFAULT_OFFER_AMT, DEFAULT_OFFER_AMT)
+        self.offer_btn.set_sensitive(False)
+
+    def valid_selection(self):
+        self.card_amt.set_range(MIN_OFFER_AMT,
+                                self.comm_data.get_amount(self.selected_card))
+        self.offer_btn.set_sensitive(True)
+
     # EVENT HANDLERS
 
     def on_selection(self, widget):
-        self.selected_card = self.hand_tab.get_selected_card()
+        self.selected_card = self.comm_tab.get_selected_card()
 
         print(f'Activated {self.selected_card}')
         if self.selected_card == CardID.INVALID:
-            self.card_amt.set_range(DEFAULT_OFFER_AMT, DEFAULT_OFFER_AMT)
-            self.offer_btn.set_sensitive(False)
+            self.invalid_selection()
         else:
-            self.card_amt.set_range(MIN_OFFER_AMT,
-                                    self.hand.get_amount(self.selected_card))
-            self.offer_btn.set_sensitive(True)
+            self.valid_selection()
 
     def on_offer(self, widget):
         card_amt = self.card_amt.get_value_as_int()
-        print(f'Sent offer of {card_amt}x {self.selected_card}')
+        offered_card = self.selected_card
 
-        self.hand.take_cards(self.selected_card, card_amt)
+        try:
+            self.comm_data.take_cards(offered_card, card_amt)
+        except ValueError as e:
+            return
+        else:
+            print(f'Sent offer of {card_amt}x {offered_card}')
 
     def on_quick_offer(self, widget, row, dof):
-        card_amt = self.hand.get_amount(self.selected_card)
+        card_amt = self.comm_data.get_amount(self.selected_card)
+
+        if card_amt < MIN_OFFER_AMT:
+            return
+
         print(f'Sent offer of {card_amt}x {self.selected_card}...')
 
-        self.hand.take_cards(self.selected_card, card_amt)
-
-    def on_toggle(self, check_button):
-        print(f'{check_button.get_label()}: {check_button.get_active()}')
+        self.comm_data.take_cards(self.selected_card, card_amt)
 
 
 if __name__ == '__main__':
