@@ -1,4 +1,4 @@
-from card import CardData
+from card import CardData, CardID
 from utils import JSONInterface
 
 
@@ -27,6 +27,14 @@ class CardLocation(CardData, JSONInterface):
     def to_dict(self):
         return [{"id": card_id.value, "amt": card_amt}
                 for card_id, card_amt in self._cards.items()]
+
+    @classmethod
+    def from_json(cls, data):
+        """Return a CardLocation object from a JSON CardLocation object"""
+        data_dict = {CardID(card.get('id', CardID.INVALID)): card.get('amt', 0)
+                     for card in data}
+
+        return cls.from_dict(data_dict)
 
     def on_add_new_cards(self, card_id, add_amt):
         pass
