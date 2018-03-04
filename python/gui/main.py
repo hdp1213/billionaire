@@ -4,6 +4,8 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gdk, Gtk, GObject
 
+import threading
+
 from hand import HandDisplay
 from message import MessagePasser
 from offer import OfferDisplay
@@ -27,7 +29,9 @@ class ClientApplication(Gtk.Window):
         self.grid.attach(self.hand, 1, 1, 1, 1)
         self.grid.attach(self.offers, 1, 2, 1, 1)
 
-        self.parser = MessagePasser(self.hand, self.offers)
+        self.passer = MessagePasser()
+
+        self.passer.connect_objects(self.hand, self.offers)
 
         self.add(self.grid)
 
@@ -40,6 +44,10 @@ class ClientApplication(Gtk.Window):
                                         Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
         self.show_all()
+
+        thread = threading.Thread(target=self.passer.run)
+        thread.daemon = True
+        thread.start()
 
 
 if __name__ == '__main__':
