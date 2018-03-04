@@ -96,7 +96,8 @@ class CardData():
         """Called when a number of card_id is taken
 
         The amount taken will always be less than the amount contained
-        in the object. If the amount taken is the same
+        in the object. If the amount taken is the same, then
+        on_remove_cards() is called instead.
         """
         raise NotImplementedError
 
