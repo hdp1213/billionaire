@@ -19,6 +19,9 @@ class CardID(enum.Enum):
     TAX_COLLECTOR = 9
 
     def __str__(self):
+        return f'{self.name.replace("_", " ").title()}'
+
+    def __repr__(self):
         return f'{type(self).__name__}.{self.name}'
 
 
@@ -29,9 +32,6 @@ class CardData():
 
     def __len__(self):
         return len(self._cards)
-
-    def __contains__(self, card):
-        return card in self._cards
 
     def get_amount(self, card_id):
         """Return the number of cards matching card_id"""
@@ -55,7 +55,7 @@ class CardData():
         """Take a number of cards from the CardData object
 
         Amount taken cannot exceed amount of cards present."""
-        if card_id not in self:
+        if card_id not in self._cards:
             return
 
         assert take_amt > 0

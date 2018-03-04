@@ -41,12 +41,14 @@ class Wildcards(Gtk.Grid, CardData):
         btn = self.check_buttons.get(card_id)
 
         if btn is not None:
+            btn.set_active(False)
             btn.set_sensitive(True)
 
     def take_wildcard(self, card_id):
         btn = self.check_buttons.get(card_id)
 
         if btn is not None:
+            btn.set_active(False)
             btn.set_sensitive(False)
 
     def on_add_new_cards(self, card_id, add_amt):
@@ -63,7 +65,10 @@ class Wildcards(Gtk.Grid, CardData):
 
     def on_toggle(self, check_btn):
         print(f'TOGGLE {check_btn.get_label()!r}: {check_btn.get_active()}')
-        print(self.active_wildcards)
+
+    def connect_check_buttons(self, func):
+        for btn in self.check_buttons.values():
+            btn.connect('toggled', func)
 
     @property
     def has_taxcollector(self):
