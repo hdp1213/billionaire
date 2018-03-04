@@ -44,7 +44,7 @@ class CardData():
         if not self.is_valid_add(card_id, add_amt):
             return
 
-        if card_id not in self:
+        if card_id not in self._cards:
             self.on_add_new_cards(card_id, add_amt)
         else:
             self.on_add_present_cards(card_id, add_amt)
