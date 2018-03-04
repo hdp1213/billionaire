@@ -1,0 +1,19 @@
+button {
+  background-color: shade(white, 0.95);
+  background-image: -gtk-gradient (radial, 0.5 0.5, 0.1,
+    0.5 0.5, 1.2,
+    from (@bg_color),
+    to (mix(white, black, 0.1)));
+}
+
+button:hover {
+  background-color: white;
+}
+
+button:active {
+  background-color: @bg_color;
+}
+
+frame {
+  background-color: red;
+}
