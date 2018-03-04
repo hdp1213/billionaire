@@ -14,7 +14,7 @@ class CommodityField(enum.IntEnum):
     POINTS = 2
 
     def __str__(self):
-        return f'{type(self).__name__}.{self.name}'
+        return f'{self.name.replace("_", " ").title()}'
 
 
 class CommodityData(Gtk.ListStore, CardData):
@@ -69,7 +69,7 @@ class CommodityTable(Gtk.TreeView):
     def __init__(self, comm_data):
         super(CommodityTable, self).__init__(comm_data)
 
-        self.column_names = [field.name.title() for field in CommodityField]
+        self.column_names = [str(field) for field in CommodityField]
         self.columns = [None] * len(self.column_names)
 
         def init_column(col, field, cell_renderer=Gtk.CellRendererText):
