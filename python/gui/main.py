@@ -27,7 +27,7 @@ class ClientApplication(Gtk.Window):
         self.grid.attach(self.hand, 1, 1, 1, 1)
         self.grid.attach(self.offers, 1, 2, 1, 1)
 
-        self.parser = MessagePasser(self.hand)
+        self.parser = MessagePasser(self.hand, self.offers)
 
         self.add(self.grid)
 

@@ -86,6 +86,10 @@ class OfferDisplay(Gtk.Frame):
     def quick_trade(self, trade_amt: int):
         pass
 
+    @GObject.Signal
+    def cancel_offer(self, offer_amt: int):
+        pass
+
     def __init__(self):
         Gtk.Frame.__init__(self, label='Offers')
 
@@ -102,6 +106,7 @@ class OfferDisplay(Gtk.Frame):
         self.cancel_btn = Gtk.Button(label='Cancel')
 
         self.match_btn.connect('clicked', self.on_match)
+        self.cancel_btn.connect('clicked', self.on_cancel)
 
         self.match_btn.set_sensitive(False)
         self.cancel_btn.set_sensitive(False)
@@ -150,3 +155,8 @@ class OfferDisplay(Gtk.Frame):
         trade_amt = self.offer_tab.get_selected_offer()
 
         self.emit('quick-trade', trade_amt)
+
+    def on_cancel(self, button):
+        offer_amt = self.offer_tab.get_selected_offer()
+
+        self.emit('cancel-offer', offer_amt)
