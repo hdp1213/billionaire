@@ -24,9 +24,10 @@ class OfferData(Gtk.ListStore):
         self._offers = {}
 
     def add_offer(self, offer_amt, owner_id):
-        # if the offer already exists, something has gone wrong
+        # If the offer already exists, the offer is about to be traded
+        # out anyway, so ignore
         if offer_amt in self._offers:
-            raise ValueError('NEW_OFFERs cannot overlap in this way')
+            return
 
         offer_row = [offer_amt, owner_id]
         self._iters[offer_amt] = self.append(offer_row)
