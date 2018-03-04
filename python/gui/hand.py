@@ -23,8 +23,8 @@ class HandDisplay(Gtk.Frame):
 
         self.selected_comm = CardID.INVALID
 
-        self.comm = CommodityData()
-        self.comm_tab = CommodityTable(self.comm)
+        self.comm_data = CommodityData()
+        self.comm_tab = CommodityTable(self.comm_data)
         self.comm_tab.connect('cursor-changed', self.on_selection)
         self.comm_tab.connect('row-activated', self.on_quick_offer)
 
@@ -76,10 +76,10 @@ class HandDisplay(Gtk.Frame):
 
     def get_max_offer(self):
         """Return the maximum offer amount for the given selection"""
-        return self.comm.get_amount(self.selected_comm) + len(self.wild)
+        return self.comm_data.get_amount(self.selected_comm) + len(self.wild)
 
     def valid_selection(self):
-        comm_amt = self.comm.get_amount(self.selected_comm)
+        comm_amt = self.comm_data.get_amount(self.selected_comm)
         return (self.selected_comm != CardID.INVALID and
                 (comm_amt + len(self.wild)) >= HandDisplay.MIN_OFFER_AMT)
 
@@ -125,7 +125,7 @@ class HandDisplay(Gtk.Frame):
         # to prevent this
         offered_card = self.selected_comm
 
-        self.comm.take_cards(offered_card, comm_amt)
+        self.comm_data.take_cards(offered_card, comm_amt)
         new_offer.add_cards(offered_card, comm_amt)
 
         for wild_card in self.wild.active_wildcards:
@@ -139,14 +139,14 @@ class HandDisplay(Gtk.Frame):
         """Update UI and emit a new_order signal"""
         offered_card = self.selected_comm
 
-        comm_amt = self.comm.get_amount(offered_card)
+        comm_amt = self.comm_data.get_amount(offered_card)
 
         if comm_amt < HandDisplay.MIN_OFFER_AMT:
             return
 
         new_offer = CardLocation()
 
-        self.comm.take_cards(offered_card, comm_amt)
+        self.comm_data.take_cards(offered_card, comm_amt)
         new_offer.add_cards(offered_card, comm_amt)
 
         self.update_offer_ui()

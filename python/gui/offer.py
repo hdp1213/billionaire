@@ -85,8 +85,8 @@ class OfferDisplay(Gtk.Frame):
     def __init__(self):
         Gtk.Frame.__init__(self, label='Offers')
 
-        self.offer = OfferData()
-        self.offer_tab = OfferTable(self.offer)
+        self.offer_data = OfferData()
+        self.offer_tab = OfferTable(self.offer_data)
 
         self.offer_tab.connect('row-activated', self.on_quick_trade)
 
