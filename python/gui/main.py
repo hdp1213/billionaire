@@ -5,6 +5,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk, Gtk, GObject
 
 from hand import HandDisplay
+from message import MessagePasser
 from offer import OfferDisplay
 
 
@@ -24,6 +25,8 @@ class ClientApplication(Gtk.Window):
 
         self.offer = OfferDisplay()
         self.grid.attach(self.offer, 1, 2, 1, 1)
+
+        self.parser = MessagePasser(self.hand)
 
         self.add(self.grid)
 
