@@ -10,4 +10,4 @@ class JSONInterface(metaclass=abc.ABCMeta):
         return NotImplemented
 
     def to_json(self):
-        return json.dumps(self.to_dict, separators=(',', ':'))
+        return json.dumps(self.to_dict(), separators=(',', ':'))
