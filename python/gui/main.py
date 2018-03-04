@@ -4,6 +4,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk, GObject
 
 from hand import HandDisplay
+from offer import OfferDisplay
 
 
 class ClientApplication(Gtk.Window):
@@ -18,8 +19,10 @@ class ClientApplication(Gtk.Window):
         self.grid = Gtk.Grid()
 
         self.hand = HandDisplay()
-
         self.grid.attach(self.hand, 1, 1, 1, 1)
+
+        self.offer = OfferDisplay()
+        self.grid.attach(self.offer, 1, 2, 1, 1)
 
         self.add(self.grid)
 
