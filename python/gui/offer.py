@@ -23,9 +23,6 @@ class OfferData(Gtk.ListStore):
         self._iters = {}
         self._offers = {}
 
-        self.add_offer(3, 'Rachel')
-        self.add_offer(5, 'Johnny')
-
     def add_offer(self, offer_amt, owner_id):
         # if the offer already exists, something has gone wrong
         if offer_amt in self._offers:

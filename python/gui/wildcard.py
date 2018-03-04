@@ -33,9 +33,6 @@ class Wildcards(Gtk.Grid, CardData):
         self.set_row_spacing(5)
         self.set_name('wildcards')
 
-        self.add_card(CardID.BILLIONAIRE)
-        self.add_card(CardID.TAX_COLLECTOR)
-
     def add_wildcard(self, card_id):
         btn = self.check_buttons.get(card_id)
 

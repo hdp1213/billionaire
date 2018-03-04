@@ -26,9 +26,6 @@ class CommodityData(Gtk.ListStore, CardData):
         CardData.__init__(self)
         self._iters = {}
 
-        self.add_cards(CardID.DIAMONDS, 5)
-        self.add_cards(CardID.GOLD, 2)
-
     def on_add_new_cards(self, card_id, add_amt):
         card_row = [str(card_id), add_amt, CommodityData.POINTS]
         self._iters[card_id] = self.append(card_row)
