@@ -41,7 +41,7 @@ class HandDisplay(Gtk.Frame):
 
         self.offer_btn = Gtk.Button(label='Offer')
         self.offer_btn.connect('clicked', self.on_offer)
-        self.update_offer_ui(valid=False)
+        self.update_ui(valid=False)
 
         self.grid = Gtk.Grid()
 
@@ -86,7 +86,7 @@ class HandDisplay(Gtk.Frame):
         return (self.selected_comm != CardID.INVALID and
                 (comm_amt + len(self.wild)) >= HandDisplay.MIN_OFFER_AMT)
 
-    def update_offer_ui(self, valid=None):
+    def update_ui(self, valid=None):
         """Updates commodity amount ranges and offer button
 
         The validation check can be overloaded by setting valid to a
@@ -108,14 +108,14 @@ class HandDisplay(Gtk.Frame):
 
     def on_toggle(self, widget):
         """Update UI elements each time a wildcard button is toggled"""
-        self.update_offer_ui()
+        self.update_ui()
 
     def on_selection(self, widget):
         """Update UI elements each time a commodity is selected"""
         self.selected_comm = self.comm_tab.get_selected_card()
         self.offers.is_comm_selected = (self.selected_comm != CardID.INVALID)
 
-        self.update_offer_ui()
+        self.update_ui()
         self.offers.update_ui()
 
     def on_offer(self, widget):
@@ -137,7 +137,7 @@ class HandDisplay(Gtk.Frame):
             self.wild.take_card(wild_card)
             new_offer.add_card(wild_card)
 
-        self.update_offer_ui()
+        self.update_ui()
         self.emit('new-offer', new_offer)
 
     def on_quick_offer(self, widget, path, column):
@@ -154,7 +154,7 @@ class HandDisplay(Gtk.Frame):
         self.comm_data.take_cards(offered_card, comm_amt)
         new_offer.add_cards(offered_card, comm_amt)
 
-        self.update_offer_ui()
+        self.update_ui()
         self.emit('new-offer', new_offer)
 
     def on_quick_trade(self, widget, trade_amt):
@@ -186,5 +186,5 @@ class HandDisplay(Gtk.Frame):
             self.wild.take_card(wild_card)
             new_offer.add_card(wild_card)
 
-        self.update_offer_ui()
+        self.update_ui()
         self.emit('new-offer', new_offer)
