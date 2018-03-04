@@ -27,7 +27,6 @@ class Wildcards(Gtk.Grid, CardData):
         new_wildcard_button(CardID.TAX_COLLECTOR)
 
         for row, btn in enumerate(self.check_buttons.values(), start=1):
-            btn.connect('toggled', self.on_toggle)
             btn.set_sensitive(False)
             self.attach(btn, 1, row, 1, 1)
 
@@ -62,9 +61,6 @@ class Wildcards(Gtk.Grid, CardData):
 
     def is_valid_take(self, card_id, take_amt):
         return card_id in Wildcards.SET
-
-    def on_toggle(self, check_btn):
-        print(f'TOGGLE {check_btn.get_label()!r}: {check_btn.get_active()}')
 
     def connect_check_buttons(self, func):
         for btn in self.check_buttons.values():
