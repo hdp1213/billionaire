@@ -38,6 +38,9 @@ class OfferData(Gtk.ListStore):
         del self._iters[offer_amt]
         del self._offers[offer_amt]
 
+    def owner_id_of(self, offer_amt):
+        return self._offers[offer_amt]
+
     def clear_all(self):
         self.clear()
         self._iters = {}

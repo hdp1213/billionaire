@@ -153,6 +153,7 @@ class MessagePasser(GObject.Object):
         cancel_offer_command = Command(Command.CANCEL_OFFER,
                                        card_amt=offer_amt)
 
-        self.offers.data.remove_offer(offer_amt)
+        if self.offers.data.owner_id_of(offer_amt) == self.id:
+            self.offers.data.remove_offer(offer_amt)
 
         self.send_command(cancel_offer_command)
