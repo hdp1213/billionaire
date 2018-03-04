@@ -8,13 +8,13 @@ from commodity import CommodityData, CommodityTable
 from wildcard import Wildcards
 
 
-class HandDisplay(Gtk.Grid):
+class HandDisplay(Gtk.Frame):
     """Object displaying hand information and offer selection"""
     DEFAULT_OFFER_AMT = 0
     MIN_OFFER_AMT = 2
 
     def __init__(self):
-        super(HandDisplay, self).__init__()
+        super(HandDisplay, self).__init__(label='Hand')
 
         self.selected_comm = CardID.INVALID
 
@@ -35,19 +35,29 @@ class HandDisplay(Gtk.Grid):
         self.offer_btn.connect('clicked', self.on_offer)
         self.update_offer_ui(valid=False)
 
-        self.attach(self.comm_tab, 1, 1, 1, 3)
-        self.attach(self.wild, 2, 1, 1, 2)
-        self.attach(self.offer_amt, 2, 3, 1, 1)
-        self.attach(self.offer_btn, 3, 3, 1, 1)
+        self.grid = Gtk.Grid()
 
-        self.set_column_spacing(15)
-        self.set_row_spacing(5)
+        self.grid.attach(self.comm_tab, 1, 1, 1, 3)
+        self.grid.attach(self.wild, 2, 1, 1, 2)
+        self.grid.attach(self.offer_amt, 2, 3, 1, 1)
+        self.grid.attach(self.offer_btn, 3, 3, 1, 1)
+
+        self.grid.set_column_spacing(15)
+        self.grid.set_row_spacing(5)
+
+        self.grid.set_margin_start(5)
+        self.grid.set_margin_end(5)
+        self.grid.set_margin_top(5)
+        self.grid.set_margin_bottom(5)
 
         self.set_margin_start(5)
         self.set_margin_end(5)
         self.set_margin_top(5)
         self.set_margin_bottom(5)
-        self.set_name('hand-grid')
+
+        self.add(self.grid)
+
+        self.set_name('hand-display')
 
     def get_min_offer(self):
         """Return the minimum offer for the given selection
