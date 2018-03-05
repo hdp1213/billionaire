@@ -166,6 +166,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                            new_offer);
 
           if (cmd_errno != CMD_SUCCESS) {
+            /* Send CANCELLED_OFFER back to this_client */
+            json_object* cancel = billionaire_cancelled_offer(new_offer);
+            enqueue_command(this_client, cancel);
+
+            free_offer(new_offer);
+
             enqueue_command(this_client, billionaire_error());
             continue;
           }

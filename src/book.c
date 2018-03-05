@@ -67,7 +67,6 @@ fill_offer(book* book_obj, offer* offer_obj)
 
     if (have_same_owner(return_offer, offer_obj)) {
       cmd_errno = (int) EOFFEROVER;
-      free_offer(offer_obj);
       return NULL;
     }
 
