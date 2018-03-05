@@ -208,11 +208,8 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             /* Send BOOK_EVENT to remaining players */
             const char* participants[MAX_PARTICIPANTS] = {this_client->id, other_client->id};
-            json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
-                                                             total_cards,
-                                                             participants);
 
-            /*Check for win conditions */
+            /* Check for win conditions */
             bool this_client_has_won = has_won(this_client->hand);
             bool other_client_has_won = has_won(other_client->hand);
 
@@ -230,6 +227,10 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                 continue;
               }
 
+              json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
+                                                               total_cards,
+                                                               participants);
+
               enqueue_command(client_obj, book_event);
             }
 
@@ -244,14 +245,15 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             /* Send BOOK_EVENT to remaining players */
             const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
-            json_object* book_event = billionaire_book_event(Command.NEW_OFFER,
-                                                             total_cards,
-                                                             participants);
 
             TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
               if (client_eq(client_obj, this_client)) {
                 continue;
               }
+
+              json_object* book_event = billionaire_book_event(Command.NEW_OFFER,
+                                                               total_cards,
+                                                               participants);
 
               enqueue_command(client_obj, book_event);
             }
@@ -287,14 +289,15 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           /* Send BOOK_EVENT to remaining players */
           const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
-          json_object* book_event = billionaire_book_event(Command.CANCELLED_OFFER,
-                                                           card_amt,
-                                                           participants);
 
           TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
             if (client_eq(client_obj, this_client)) {
               continue;
             }
+
+            json_object* book_event = billionaire_book_event(Command.CANCELLED_OFFER,
+                                                             card_amt,
+                                                             participants);
 
             enqueue_command(client_obj, book_event);
           }
@@ -355,9 +358,8 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     clear_book(billionaire_game->current_trades);
 
     /* Send a FINISH command to each remaining client */
-    json_object* finish = billionaire_finish();
-
     TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+      json_object* finish = billionaire_finish();
       enqueue_command(client_obj, finish);
     }
   }
