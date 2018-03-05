@@ -17,16 +17,21 @@ class Wildcards(Gtk.Grid, CardData):
         Gtk.Grid.__init__(self)
         CardData.__init__(self)
 
-        self.check_buttons = {}
+        self.radio_buttons = {}
 
         def new_wildcard_button(card_id):
             label = card_id.name.replace('_', ' ').title()
-            self.check_buttons[card_id] = Gtk.CheckButton(label=label)
+            self.radio_buttons[card_id] = Gtk.RadioButton(label=label)
 
         new_wildcard_button(CardID.BILLIONAIRE)
         new_wildcard_button(CardID.TAX_COLLECTOR)
 
-        for row, btn in enumerate(self.check_buttons.values(), start=1):
+        self.no_button = Gtk.RadioButton(label='None')
+        self.no_button.set_sensitive(False)
+        self.attach(self.no_button, 1, 1, 1, 1)
+
+        for row, btn in enumerate(self.radio_buttons.values(), start=2):
+            btn.join_group(self.no_button)
             btn.set_sensitive(False)
             self.attach(btn, 1, row, 1, 1)
 
@@ -34,24 +39,26 @@ class Wildcards(Gtk.Grid, CardData):
         self.set_name('wildcards')
 
     def add_wildcard(self, card_id):
-        btn = self.check_buttons.get(card_id)
+        btn = self.radio_buttons.get(card_id)
+        self.no_button.set_active(True)
+        self.no_button.set_sensitive(True)
 
         if btn is not None:
-            btn.set_active(False)
             btn.set_sensitive(True)
 
     def take_wildcard(self, card_id):
-        btn = self.check_buttons.get(card_id)
+        btn = self.radio_buttons.get(card_id)
+        self.no_button.set_active(True)
 
         if btn is not None:
-            btn.set_active(False)
             btn.set_sensitive(False)
 
     def clear_all(self):
         self.clear_cards()
+        self.no_button.set_active(True)
+        self.no_button.set_sensitive(False)
 
-        for btn in self.check_buttons.values():
-            btn.set_active(False)
+        for btn in self.radio_buttons.values():
             btn.set_sensitive(False)
 
     def on_add_new_cards(self, card_id, add_amt):
@@ -66,8 +73,8 @@ class Wildcards(Gtk.Grid, CardData):
     def is_valid_take(self, card_id, take_amt):
         return card_id in Wildcards.SET
 
-    def connect_check_buttons(self, func):
-        for btn in self.check_buttons.values():
+    def connect_radio_buttons(self, func):
+        for btn in self.radio_buttons.values():
             btn.connect('toggled', func)
 
     @property
@@ -80,7 +87,7 @@ class Wildcards(Gtk.Grid, CardData):
 
     @property
     def active_wildcards(self):
-        return [key for key, btn in self.check_buttons.items()
+        return [key for key, btn in self.radio_buttons.items()
                 if btn.get_active()]
 
     def __len__(self):

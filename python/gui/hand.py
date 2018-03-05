@@ -37,7 +37,7 @@ class HandDisplay(Gtk.Frame):
         self.offer_amt.connect('activate', self.on_offer)
 
         self.wild = Wildcards()
-        self.wild.connect_check_buttons(self.on_toggle)
+        self.wild.connect_radio_buttons(self.on_toggle)
 
         self.offer_btn = Gtk.Button(label='Offer')
         self.offer_btn.connect('clicked', self.on_offer)
