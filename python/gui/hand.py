@@ -98,7 +98,7 @@ class HandDisplay(Gtk.Frame):
         if valid:
             self.offer_amt.set_range(self.get_min_offer(),
                                      self.get_max_offer())
-            self.offer_amt.set_value(self.get_min_offer())
+            self.offer_amt.set_value(self.get_max_offer())
             self.offer_btn.set_sensitive(True)
         else:
             self.offer_amt.set_range(HandDisplay.DEFAULT_OFFER_AMT,
