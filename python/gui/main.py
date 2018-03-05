@@ -35,7 +35,7 @@ class ClientApplication(Gtk.Window):
 
         self.passer = MessagePasser()
 
-        self.passer.connect_objects(self.hand, self.offers)
+        self.passer.connect_objects(self.hand, self.offers, self.feed)
 
         self.add(self.grid)
 

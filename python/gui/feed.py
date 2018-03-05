@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import enum
 import gi
 gi.require_version('Gtk', '3.0')
@@ -28,7 +28,7 @@ class FeedData(Gtk.ListStore):
         timestamp = date_time.timestamp()
         time_str = FeedData.datetime_to_string(date_time)
 
-        message = [time_str, command, content]
+        message = [time_str, f'{command}:', content]
         self._iters[timestamp] = self.append(message)
         self._content[timestamp] = (command, content)
         self.last_msg = len(self._content) - 1
@@ -106,17 +106,7 @@ class FeedDisplay(Gtk.Frame):
 
         self.set_name('feed-display')
 
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-        self.add_to_feed(datetime.datetime.now(), 'NEW_COMMAND', 'hey')
-
-    def add_to_feed(self, date_time, command, content):
-        self.data.append_message(date_time, command, content)
+    def add_to_feed(self, command, content):
+        self.data.append_message(datetime.now(), command, content)
         path = Gtk.TreePath.new_from_indices([self.data.last_msg])
         self.table.view.scroll_to_cell(path, None, True, 1.0, 0.0)

@@ -28,9 +28,10 @@ class MessagePasser(GObject.Object):
         self.hand = None
         self.offers = None
 
-    def connect_objects(self, hand, offers):
+    def connect_objects(self, hand, offers, feed):
         self.hand = hand
         self.offers = offers
+        self.feed = feed
 
         self.hand.connect('new-offer', self.on_new_offer)
         self.offers.connect('cancel-offer', self.on_cancel_offer)
@@ -86,9 +87,17 @@ class MessagePasser(GObject.Object):
 
         print(f'RECEIVED {self.received_cmds!r}')
 
+        # Always parse errors first!
+        if Command.ERROR in self.received_cmds:
+            error_cmd = self.received_cmds[Command.ERROR]
+            self.feed.add_to_feed(Command.ERROR,
+                                  error_cmd.what)
+
         if Command.JOIN in self.received_cmds:
             join_cmd = self.received_cmds[Command.JOIN]
             self.id = join_cmd.client_id
+            self.feed.add_to_feed(Command.JOIN,
+                                  f'ID set to {self.id!r}')
 
         if Command.START in self.received_cmds:
             print('Starting game...')
@@ -96,14 +105,20 @@ class MessagePasser(GObject.Object):
 
             hand = CardLocation.from_json(start_cmd.hand)
             self.add_cards_to_gui(hand)
+            self.feed.add_to_feed(Command.START,
+                                  f'Receiving hand...')
 
         if Command.SUCCESSFUL_TRADE in self.received_cmds:
             trade_cmd = self.received_cmds[Command.SUCCESSFUL_TRADE]
 
             trade = CardLocation.from_json(trade_cmd.cards)
+            partner = trade_cmd.owner_id
 
             self.offers.data.remove_offer(len(trade))
             self.add_cards_to_gui(trade)
+
+            self.feed.add_to_feed(Command.SUCCESSFUL_TRADE,
+                                  f'Traded {len(trade)} cards with {partner}')
 
         if Command.CANCELLED_OFFER in self.received_cmds:
             cancelled_cmd = self.received_cmds[Command.CANCELLED_OFFER]
@@ -115,28 +130,44 @@ class MessagePasser(GObject.Object):
             book_cmd = self.received_cmds[Command.BOOK_EVENT]
 
             if book_cmd.event == Command.NEW_OFFER:
-                owner_id = book_cmd.participants[0]
-                self.offers.data.add_offer(book_cmd.card_amt, owner_id)
+                owner = book_cmd.participants[0]
+                self.offers.data.add_offer(book_cmd.card_amt, owner)
+
+                self.feed.add_to_feed(Command.BOOK_EVENT,
+                                      f'New offer of {book_cmd.card_amt} '
+                                      f'cards from {owner}')
 
             # Either CANCEL_OFFER or SUCCESSFUL_TRADE
-            else:
+            elif book_cmd.event == Command.CANCEL_OFFER:
+                owner = book_cmd.participants[0]
                 self.offers.data.remove_offer(book_cmd.card_amt)
 
+                self.feed.add_to_feed(Command.BOOK_EVENT,
+                                      f'Offer of {book_cmd.card_amt} '
+                                      f'cancelled by {owner}')
+
+            elif book_cmd.event == Command.SUCCESSFUL_TRADE:
+                active, passive = book_cmd.participants
+                self.offers.data.remove_offer(book_cmd.card_amt)
+
+                self.feed.add_to_feed(Command.BOOK_EVENT,
+                                      f'{active} traded {passive}\'s '
+                                      f'offer of {book_cmd.card_amt} cards')
+
         if Command.FINISH in self.received_cmds:
-            print('Stopping game...')
+            self.feed.add_to_feed(Command.FINISH, 'Stopping game...')
             self.hand.clear_all()
             self.offers.clear_all()
 
         if Command.BILLIONAIRE in self.received_cmds:
             billionaire_cmd = self.received_cmds[Command.BILLIONAIRE]
+            winner = billionaire_cmd.winner_id
 
-            if billionaire_cmd.winner_id == self.id:
-                print('A winner is you!')
+            if winner == self.id:
+                self.feed.add_to_feed(Command.BILLIONAIRE, 'A winner is you!')
             else:
-                print(f'Bad luck, {billionaire_cmd.winner_id} won.')
-
-        if Command.ERROR in self.received_cmds:
-            pass
+                self.feed.add_to_feed(Command.BILLIONAIRE,
+                                      f'Bad luck, {winner} won.')
 
         # Continually add this
         source_object.read_bytes_async(MessagePasser.READ_BYTES,
@@ -153,7 +184,7 @@ class MessagePasser(GObject.Object):
         self.send_command(new_offer_command)
 
     def on_cancel_offer(self, widget, offer_amt):
-        print(f'CANCEL_OFFER {offer_amt}')
+        print(f'CANCEL_OFFER: {offer_amt}')
 
         cancel_offer_command = Command(Command.CANCEL_OFFER,
                                        card_amt=offer_amt)
