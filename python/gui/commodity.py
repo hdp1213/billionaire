@@ -31,16 +31,16 @@ class CommodityData(Gtk.ListStore, CardData):
         self._iters[card_id] = self.append(card_row)
 
     def on_add_present_cards(self, card_id, add_amt):
-        new_amt = self.get_amount(card_id) + add_amt
-        self.set_value(self._iters[card_id], CommodityField.AMOUNT, new_amt)
+        card_amt = self.get_amount(card_id)
+        self.set_value(self._iters[card_id], CommodityField.AMOUNT, card_amt)
 
     def on_remove_cards(self, card_id):
         self.remove(self._iters[card_id])
         del self._iters[card_id]
 
     def on_take_cards(self, card_id, take_amt):
-        new_amt = self.get_amount(card_id) - take_amt
-        self.set_value(self._iters[card_id], CommodityField.AMOUNT, new_amt)
+        card_amt = self.get_amount(card_id)
+        self.set_value(self._iters[card_id], CommodityField.AMOUNT, card_amt)
 
     def clear_all(self):
         self.clear_cards()

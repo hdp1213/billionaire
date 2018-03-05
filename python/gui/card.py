@@ -52,11 +52,11 @@ class CardData():
             return
 
         if card_id not in self._cards:
+            self._cards.update({card_id: add_amt})
             self.on_add_new_cards(card_id, add_amt)
         else:
+            self._cards.update({card_id: add_amt})
             self.on_add_present_cards(card_id, add_amt)
-
-        self._cards.update({card_id: add_amt})
 
     def take_cards(self, card_id, take_amt):
         """Take a number of cards from the CardData object
@@ -75,11 +75,11 @@ class CardData():
         if take_amt > card_amt:
             raise ValueError
         elif take_amt == card_amt:
-            self.on_remove_cards(card_id)
             del self._cards[card_id]
+            self.on_remove_cards(card_id)
         else:
-            self.on_take_cards(card_id, take_amt)
             self._cards.subtract({card_id: take_amt})
+            self.on_take_cards(card_id, take_amt)
 
     def add_card(self, card_id):
         self.add_cards(card_id, 1)
