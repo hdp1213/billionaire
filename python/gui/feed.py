@@ -68,6 +68,9 @@ class FeedTable(Gtk.ScrolledWindow):
 
         self.view.set_headers_visible(False)
 
+        selection = self.view.get_selection()
+        selection.set_mode(Gtk.SelectionMode.NONE)
+
         self.set_min_content_width(420)
         self.set_min_content_height(100)
 
