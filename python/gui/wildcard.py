@@ -39,17 +39,19 @@ class Wildcards(Gtk.Grid, CardData):
         self.set_name('wildcards')
 
     def add_wildcard(self, card_id):
-        btn = self.radio_buttons.get(card_id)
         self.no_button.set_active(True)
         self.no_button.set_sensitive(True)
 
+        btn = self.radio_buttons.get(card_id)
         if btn is not None:
             btn.set_sensitive(True)
 
     def take_wildcard(self, card_id):
-        btn = self.radio_buttons.get(card_id)
         self.no_button.set_active(True)
+        if not self._cards:
+            self.no_button.set_sensitive(False)
 
+        btn = self.radio_buttons.get(card_id)
         if btn is not None:
             btn.set_sensitive(False)
 
