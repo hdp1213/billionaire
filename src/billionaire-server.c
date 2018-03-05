@@ -275,6 +275,8 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           json_object* cancel = billionaire_cancelled_offer(cancelled_offer);
           enqueue_command(this_client, cancel);
 
+          merge_card_location(this_client->hand, cancelled_offer->cards);
+
           /* Send BOOK_EVENT to remaining players */
           const char* participants[MAX_PARTICIPANTS] = {this_client->id, NULL};
           json_object* book_event = billionaire_book_event(Command.CANCELLED_OFFER,
