@@ -28,6 +28,14 @@ uint32_t hash_djb2(const char* key);
 uint32_t hash_xxhash(const char* key);
 
 /**
+ * Mixes three 32-bit integers.
+ *
+ * From http://burtleburtle.net/bob/hash/doobs.html, code in public
+ * domain.
+ */
+uint32_t mix(uint32_t a, uint32_t b, uint32_t c);
+
+/**
  * Return a 8-digit hex string of a 32-bit hash based on the client
  * address.
  *

@@ -84,6 +84,7 @@ void on_sigint(int sig, short ev, void *arg);
 void parse_command_line_options(int argc, char** argv,
                                 int* player_limit,
                                 bool* has_billionaire,
-                                bool* has_taxman);
+                                bool* has_taxman,
+                                uint32_t* seed);
 
 #endif

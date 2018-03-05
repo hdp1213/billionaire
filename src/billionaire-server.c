@@ -44,6 +44,8 @@
 
 #include <getopt.h>
 #include <signal.h>
+#include <time.h> /* clock(), time() */
+#include <unistd.h> /* getpid() */
 
 #include "billionaire-server.h"
 #include "book.h"
@@ -453,18 +455,20 @@ on_sigint(int sig, short ev, void *arg)
 
 void
 parse_command_line_options(int argc, char** argv, int* player_limit,
-                           bool* has_billionaire, bool* has_taxman) {
+                           bool* has_billionaire, bool* has_taxman,
+                           uint32_t* seed) {
   while (true) {
     static struct option long_options[] = {
       {"players",        required_argument, 0, 'p'},
       {"no-billionaire", no_argument,       0, 'b'},
       {"no-taxman",      no_argument,       0, 't'},
+      {"seed",           required_argument, 0, 's'},
       {"help",           no_argument,       0, 'h'}
     };
 
     int option_index = 0;
 
-    int c = getopt_long(argc, argv, "p:bth", long_options, &option_index);
+    int c = getopt_long(argc, argv, "p:bts:h", long_options, &option_index);
 
     /* End of options has been reached */
     if (c == -1)
@@ -496,6 +500,10 @@ parse_command_line_options(int argc, char** argv, int* player_limit,
         *has_taxman = false;
         break;
 
+      case 's':
+        *seed = (uint32_t) strtol(optarg, NULL, 10);
+        break;
+
       case 'h':
         printf("billionaire-server: a low-level TCP server for the Billionaire game\n");
         printf("\n");
@@ -517,6 +525,7 @@ main(int argc, char** argv)
   /* Default parameters */
   int player_limit = 4;
   bool has_billionaire = true, has_taxman = true;
+  uint32_t seed = mix(clock(), time(NULL), getpid());
 
   int listen_fd;
   struct sockaddr_in listen_addr;
@@ -525,7 +534,10 @@ main(int argc, char** argv)
   /* Parse external options */
   parse_command_line_options(argc, argv,
                              &player_limit,
-                             &has_billionaire, &has_taxman);
+                             &has_billionaire, &has_taxman,
+                             &seed);
+
+  srand(seed);
 
   // event_enable_debug_logging(EVENT_DBG_ALL);
   printf("Initialising server... ");
