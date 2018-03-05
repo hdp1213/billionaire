@@ -14,5 +14,6 @@ const char* error_what[] = {
   "Offer does not contain enough cards",
   "Cards in offer do not exist in hand",
   "Offer contains too many unique commodities",
-  "Offer contains too many unique wildcards"
+  "Offer contains too many unique wildcards",
+  "Not enough cards to remove from card_location"
 };

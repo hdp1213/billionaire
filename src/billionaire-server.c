@@ -175,6 +175,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (cmd_errno != CMD_SUCCESS) {
             enqueue_command(this_client, billionaire_error());
+            /* TODO: send offer back? */
             free_offer(new_offer);
             continue;
           }

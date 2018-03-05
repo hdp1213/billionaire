@@ -18,7 +18,8 @@ enum errorno {
   ESMALLOFFER, /* Offer does not contain enough cards */
   EHANDSUBSET, /* Cards in offer do not exist in hand */
   EUNIQCOMMS, /* Offer contains too many unique commodities */
-  EUNIQWILDS /* Offer contains too many unique wildcards */
+  EUNIQWILDS, /* Offer contains too many unique wildcards */
+  ECARDRM /* Not enough cards to remove from card_location */
 };
 
 extern int cmd_errno;

@@ -150,6 +150,10 @@ void
 remove_card_from_location(card_location* card_loc, card_id card)
 {
   remove_cards_from_location(card_loc, card, 1);
+
+  if (cmd_errno != CMD_SUCCESS) {
+    return;
+  }
 }
 
 void
@@ -167,7 +171,8 @@ remove_cards_from_location(card_location* card_loc, card_id card, size_t amount)
     card_loc->card_counts[card] -= amount;
   }
   else {
-    /* Handle not having enough cards to remove */
+    cmd_errno = (int) ECARDRM;
+    return;
   }
 }
 
@@ -188,6 +193,10 @@ subtract_card_location(card_location* dest_loc, const card_location* src_loc)
     size_t card_amt = get_card_amount(src_loc, card);
 
     remove_cards_from_location(dest_loc, card, card_amt);
+
+    if (cmd_errno != CMD_SUCCESS) {
+      return;
+    }
   }
 }
 
@@ -303,14 +312,13 @@ clear_card_location(card_location* card_loc)
 void
 move_cards(card_location* from_loc, card_location* to_loc, card_id card, size_t amount)
 {
-  /* Only add cards to to_loc if they can be removed from from_loc */
-  if (has_enough_cards(from_loc, card, amount)) {
-    remove_cards_from_location(from_loc, card, amount);
-    add_cards_to_location(to_loc, card, amount);
+  remove_cards_from_location(from_loc, card, amount);
+
+  if (cmd_errno != CMD_SUCCESS) {
+    return;
   }
-  else {
-    /* Handle not having enough cards to remove */
-  }
+
+  add_cards_to_location(to_loc, card, amount);
 }
 
 void

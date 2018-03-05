@@ -85,6 +85,8 @@ void add_card_to_location(card_location* card_loc, card_id card);
 
 /**
  * Remove one card to a card_location struct.
+ *
+ * Sets cmd_errno to ECARDRM.
  */
 void remove_card_from_location(card_location* card_loc, card_id card);
 
@@ -95,6 +97,8 @@ void add_cards_to_location(card_location* card_loc, card_id card, size_t amount)
 
 /**
  * Remove an amount of cards from a card_location struct.
+ *
+ * Sets cmd_errno to ECARDRM.
  */
 void remove_cards_from_location(card_location* card_loc, card_id card, size_t amount);
 
@@ -111,6 +115,8 @@ void merge_card_location(card_location* dest_loc, const card_location* src_loc);
  * Here, src_loc's cards are removed from dest_loc, src_loc is unchanged.
  * This method assumes src_loc is a subset of dest_loc, and does not
  * check for any possible overflow due to src_loc containing more cards.
+ *
+ * Sets cmd_errno to ECARDRM.
  */
 void subtract_card_location(card_location* dest_loc, const card_location* src_loc);
 
@@ -150,6 +156,8 @@ void clear_card_location(card_location* card_loc);
 
 /**
  * Move an amount of a card type from source_loc to target_loc.
+ *
+ * Sets cmd_errno to ECARDRM.
  */
 void move_cards(card_location* from_loc, card_location* to_loc,
                 card_id card, size_t amount);
