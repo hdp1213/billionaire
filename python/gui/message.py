@@ -137,8 +137,7 @@ class MessagePasser(GObject.Object):
                                       f'New offer of {book_cmd.card_amt} '
                                       f'cards from {owner}')
 
-            # Either CANCEL_OFFER or SUCCESSFUL_TRADE
-            elif book_cmd.event == Command.CANCEL_OFFER:
+            elif book_cmd.event == Command.CANCELLED_OFFER:
                 owner = book_cmd.participants[0]
                 self.offers.data.remove_offer(book_cmd.card_amt)
 
