@@ -157,3 +157,13 @@ server.
 the client.
  - `EOFFEROVER`: `NEW_OFFER` object attempting to overwrite client's
 offer already in book.
+ - `ENOOFFER`: `NEW_OFFER` object does not contain any cards.
+ - `ESMALLOFFER`: `NEW_OFFER` object does not contain _enough_ cards.
+ - `EHANDSUBSET`:  `NEW_OFFER` object does not contain cards that are
+present in the client's hand, to prevent cheating ;).
+ - `EUNIQCOMMS`: `NEW_OFFER` object contains more than one unique
+commodity.
+ - `EUNIQWILDS`: `NEW_OFFER` object contains more than one unique
+wildcard.
+ - `ECARDRM`: too many cards have been requested to be removed from a
+`card_location` object.
