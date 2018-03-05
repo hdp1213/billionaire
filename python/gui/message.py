@@ -56,8 +56,13 @@ class MessagePasser(GObject.Object):
                 self.hand.comm_data.add_cards(card_id, card_amt)
 
     def on_connection(self, source_object, result, *user_data):
+        try:
+            self.conn = source_object.connect_finish(result)
+        except GLib.Error as e:
+            print(*e.args)
+            return
+
         print('Connected to server')
-        self.conn = source_object.connect_finish(result)
         self.output = self.conn.get_output_stream()
         self.input = self.conn.get_input_stream()
 
