@@ -130,7 +130,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           validate_offer(card_loc, this_client->hand);
 
           if (cmd_errno != CMD_SUCCESS) {
-            if (cmd_errno == ESMALLOFFER) {
+            if (cmd_errno != ENOOFFER) {
               /* Send CANCELLED_OFFER back to this_client */
               offer* bad_offer = offer_init(card_loc, this_client->id);
 
@@ -167,7 +167,6 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (cmd_errno != CMD_SUCCESS) {
             enqueue_command(this_client, billionaire_error());
-            free_offer(new_offer);
             continue;
           }
 

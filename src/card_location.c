@@ -206,7 +206,7 @@ validate_offer(card_location* offer, const card_location* hand)
   /* Check if enough cards were traded */
   else if (total_offer_size < OFFER_MIN_CARDS) {
     cmd_errno = (int) ESMALLOFFER;
-    /* Offer not freed as it needs to be sent back to client by server */
+    /* Offer not freed as it needs to be sent back */
     return;
   }
 
@@ -220,7 +220,7 @@ validate_offer(card_location* offer, const card_location* hand)
       /* Check offer is a subset of the hand */
       if (!has_enough_cards(hand, card, card_amt)) {
         cmd_errno = (int) EHANDSUBSET;
-        free_card_location(offer);
+        /* Offer not freed as it needs to be sent back */
         return;
       }
 
@@ -231,7 +231,7 @@ validate_offer(card_location* offer, const card_location* hand)
         /* Check offer contains <= OFFER_MAX_UNIQ_COMMS unique commodities */
         if (num_commodities > OFFER_MAX_UNIQ_COMMS) {
           cmd_errno = (int) EUNIQCOMMS;
-          free_card_location(offer);
+          /* Offer not freed as it needs to be sent back */
           return;
         }
       }
@@ -242,7 +242,7 @@ validate_offer(card_location* offer, const card_location* hand)
         /* Check offer contains <= OFFER_MAX_UNIQ_WILDS unique wildcards */
         if (num_wildcards > OFFER_MAX_UNIQ_WILDS) {
           cmd_errno = (int) EUNIQWILDS;
-          free_card_location(offer);
+          /* Offer not freed as it needs to be sent back */
           return;
         }
       }
