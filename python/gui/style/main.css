@@ -2,3 +2,7 @@ treeview {
   -GtkTreeView-horizontal-separator: 10;
   /*-GtkTreeView-even-row-color: #BDD5FF;*/
 }
+
+#feed-display treeview {
+  -GtkTreeView-horizontal-separator: 2;
+}

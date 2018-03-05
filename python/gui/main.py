@@ -6,6 +6,7 @@ from gi.repository import Gdk, Gtk, GObject
 
 import threading
 
+from feed import FeedDisplay
 from hand import HandDisplay
 from message import MessagePasser
 from offer import OfferDisplay
@@ -26,8 +27,11 @@ class ClientApplication(Gtk.Window):
 
         self.hand = HandDisplay(self.offers)
 
+        self.feed = FeedDisplay()
+
         self.grid.attach(self.hand, 1, 1, 1, 1)
         self.grid.attach(self.offers, 1, 2, 1, 1)
+        self.grid.attach(self.feed, 1, 3, 1, 1)
 
         self.passer = MessagePasser()
 
@@ -36,7 +40,7 @@ class ClientApplication(Gtk.Window):
         self.add(self.grid)
 
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_path('style/main.css')
+        css_provider.load_from_path('python/gui/style/main.css')
 
         context = Gtk.StyleContext()
         context.add_provider_for_screen(Gdk.Screen.get_default(),
