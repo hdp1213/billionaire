@@ -159,6 +159,4 @@ venv.bak/
 # Custom bits
 build/
 *.png
-/billionaire-server
-/check_*
-/mem_test
+bin/
