@@ -106,7 +106,7 @@ staged_source_files=$(git diff $against --cached --name-only | grep -Ee '\.(c|cp
 
 if [ -n "$staged_source_files" ]; then
 	echo "Running cppcheck on committed C/C++ source files..."
-	cppcheck --enable=all --error-exitcode=1 $staged_source_files -I include/ || exit $?
+	cppcheck --enable=warning,style --error-exitcode=1 -I include/ $staged_source_files || exit $?
 else
 	echo "No C/C++ source files committed. Skipping cppcheck..."
 fi
