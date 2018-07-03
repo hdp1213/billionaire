@@ -84,13 +84,6 @@ card_location* generate_deck(int num_players, bool has_billionaire,
 void add_card_to_location(card_location* card_loc, card_id card);
 
 /**
- * Remove one card to a card_location struct.
- *
- * Sets cmd_errno to ECARDRM.
- */
-void remove_card_from_location(card_location* card_loc, card_id card);
-
-/**
  * Add an amount of cards to a card_location struct.
  */
 void add_cards_to_location(card_location* card_loc, card_id card, size_t amount);
@@ -153,14 +146,6 @@ bool has_enough_cards(const card_location* card_loc, card_id card, size_t amount
  * Remove all cards within a card_location struct.
  */
 void clear_card_location(card_location* card_loc);
-
-/**
- * Move an amount of a card type from source_loc to target_loc.
- *
- * Sets cmd_errno to ECARDRM.
- */
-void move_cards(card_location* from_loc, card_location* to_loc,
-                card_id card, size_t amount);
 
 /**
  * Free a card_location struct, and all cards within it.

@@ -36,7 +36,6 @@ OBJECTS := $(SOURCES:.$(SRCEXT)=.o)
 
 CHECK_BOOK := check_book.o
 CHECK_CARD_LOCATION := check_card_location.o
-CHECK_UTILS := check_utils.o
 MEM_TEST := mem_test.o
 
 # Rules
@@ -52,13 +51,10 @@ check_book: $(CHECK_BOOK) book.o card_location.o command_error.o utils.o
 check_card_location: $(CHECK_CARD_LOCATION) card_location.o command_error.o card_array.o utils.o
 	$(CC) $(LDFLAGS) -o $(BINDIR)/$@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
 
-check_utils: $(CHECK_UTILS) command_error.o utils.o
-	$(CC) $(LDFLAGS) -o $(BINDIR)/$@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(CHECK_LIBS)
-
 mem_test: $(MEM_TEST) $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $(BINDIR)/$@ $(addprefix $(BUILDDIR)/, $(notdir $^)) $(LIBS)
 
-check: check_book check_card_location check_utils
+check: check_book check_card_location
 	$(addsuffix ;, $(addprefix ./$(BINDIR)/, $^))
 
 clean:

@@ -99,6 +99,8 @@ void free_book(book* book_obj);
 
 /**
  * Convert an offer struct to a JSON object offer.
+ *
+ * Only used in check_book.c to confirm offer JSON works.
  */
 json_object* JSON_from_offer(offer* offer_obj);
 

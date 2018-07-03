@@ -16,13 +16,6 @@
        ++i, obj = json_object_array_get_idx((json_array), i))
 
 /**
- * Hashes a string key using the DJB2 hash function.
- *
- * Taken from http://www.cse.yorku.ca/~oz/hash.html.
- */
-uint32_t hash_djb2(const char* key);
-
-/**
  * Hashes a string key using the xxHash algorithm.
  */
 uint32_t hash_xxhash(const char* key);
@@ -63,16 +56,5 @@ json_object* str_to_JSON(const char* json_str, size_t json_str_len);
  * Sets cmd_errno to EJSONVAL, on failure returns NULL.
  */
 json_object* get_JSON_value(json_object* json_obj, const char* key);
-
-/**
- * Get the next highest power of two of given 32-bit num.
- *
- * Only works for 0 <= num <= UINT_MAX/2 + 1, otherwise an overflow
- * condition is reached.
- *
- * Method taken from:
- * https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
- */
-size_t get_next_highest_power_of_two(size_t num);
 
 #endif

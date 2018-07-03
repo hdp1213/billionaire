@@ -61,40 +61,6 @@ START_TEST(test_card_location_add_unique)
 }
 END_TEST
 
-START_TEST(test_card_location_remove)
-{
-  size_t card_amt = 7;
-
-  card_location* card_loc = card_location_init(card_amt,
-                                               DIAMONDS,
-                                               DIAMONDS,
-                                               OIL,
-                                               MINING,
-                                               OIL,
-                                               OIL,
-                                               BILLIONAIRE);
-
-  remove_card_from_location(card_loc, DIAMONDS);
-
-  ck_assert_uint_eq(get_card_amount(card_loc, DIAMONDS), 1);
-  ck_assert_uint_eq(get_total_cards(card_loc), card_amt - 1);
-
-  remove_card_from_location(card_loc, OIL);
-  remove_card_from_location(card_loc, OIL);
-  remove_card_from_location(card_loc, OIL);
-
-  ck_assert_uint_eq(get_card_amount(card_loc, OIL), 0);
-  ck_assert_uint_eq(get_total_cards(card_loc), card_amt - 4);
-
-  remove_card_from_location(card_loc, BILLIONAIRE);
-
-  ck_assert_uint_eq(get_card_amount(card_loc, BILLIONAIRE), 0);
-  ck_assert_uint_eq(get_total_cards(card_loc), card_amt - 5);
-
-  free_card_location(card_loc);
-}
-END_TEST
-
 START_TEST(test_card_location_clear)
 {
   size_t card_amt = 5;
@@ -153,56 +119,6 @@ START_TEST(test_card_location_add_remove)
   ck_assert(has_enough_cards(card_loc, OIL, 5) == false);
 
   free_card_location(card_loc);
-}
-END_TEST
-
-START_TEST(test_card_location_move)
-{
-  card_location* card_loc1;
-  card_location* card_loc2;
-
-  card_loc1 = card_location_init(6,
-                                 GOLD,
-                                 GOLD,
-                                 DIAMONDS,
-                                 GOLD,
-                                 DIAMONDS,
-                                 OIL);
-
-  card_loc2 = card_location_init(6,
-                                 DIAMONDS,
-                                 OIL,
-                                 GOLD,
-                                 GOLD,
-                                 DIAMONDS,
-                                 OIL);
-
-  /* Move one DIAMONDS from card_loc1 to card_loc2 */
-  move_cards(card_loc1, card_loc2, DIAMONDS, 1);
-
-  ck_assert_uint_eq(get_card_amount(card_loc1, DIAMONDS), 1);
-  ck_assert_uint_eq(get_card_amount(card_loc2, DIAMONDS), 3);
-  ck_assert_uint_eq(card_loc1->num_cards, 5);
-  ck_assert_uint_eq(card_loc2->num_cards, 7);
-
-  /* Move all GOLD from card_loc2 to card_loc1 */
-  move_cards(card_loc2, card_loc1, GOLD, 2);
-
-  ck_assert_uint_eq(get_card_amount(card_loc1, GOLD), 5);
-  ck_assert_uint_eq(get_card_amount(card_loc2, GOLD), 0);
-  ck_assert_uint_eq(card_loc1->num_cards, 7);
-  ck_assert_uint_eq(card_loc2->num_cards, 5);
-
-  /* Fail to move three OIL from card_loc1 (only one OIL) */
-  move_cards(card_loc1, card_loc2, OIL, 3);
-
-  ck_assert_uint_eq(get_card_amount(card_loc1, OIL), 1);
-  ck_assert_uint_eq(get_card_amount(card_loc1, OIL), 1);
-  ck_assert_uint_eq(card_loc1->num_cards, 7);
-  ck_assert_uint_eq(card_loc2->num_cards, 5);
-
-  free_card_location(card_loc1);
-  free_card_location(card_loc2);
 }
 END_TEST
 
@@ -396,10 +312,8 @@ card_location_suite(void)
 
   tcase_add_test(tc_core, test_card_location_init);
   tcase_add_test(tc_core, test_card_location_add_unique);
-  tcase_add_test(tc_core, test_card_location_remove);
   tcase_add_test(tc_core, test_card_location_clear);
   tcase_add_test(tc_core, test_card_location_add_remove);
-  tcase_add_test(tc_core, test_card_location_move);
   tcase_add_loop_test(tc_core, test_card_location_generate_deck, 1, 8);
 
   tc_json = tcase_create("JSON");

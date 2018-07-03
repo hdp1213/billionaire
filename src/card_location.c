@@ -147,16 +147,6 @@ add_card_to_location(card_location* card_loc, card_id card)
 }
 
 void
-remove_card_from_location(card_location* card_loc, card_id card)
-{
-  remove_cards_from_location(card_loc, card, 1);
-
-  if (cmd_errno != CMD_SUCCESS) {
-    return;
-  }
-}
-
-void
 add_cards_to_location(card_location* card_loc, card_id card, size_t amount)
 {
   card_loc->num_cards += amount;
@@ -307,18 +297,6 @@ clear_card_location(card_location* card_loc)
   for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
     card_loc->card_counts[card] = 0;
   }
-}
-
-void
-move_cards(card_location* from_loc, card_location* to_loc, card_id card, size_t amount)
-{
-  remove_cards_from_location(from_loc, card, amount);
-
-  if (cmd_errno != CMD_SUCCESS) {
-    return;
-  }
-
-  add_cards_to_location(to_loc, card, amount);
 }
 
 void

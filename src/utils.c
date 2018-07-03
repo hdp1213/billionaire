@@ -8,21 +8,6 @@
 #include <xxhash.h>
 
 uint32_t
-hash_djb2(const char* key)
-{
-  const uint8_t* data = (const uint8_t*) key;
-
-  uint32_t hash = 5381;
-  int c;
-
-  while ((c = *data++)) {
-    hash = ((hash << 5) + hash) ^ c;
-  }
-
-  return hash;
-}
-
-uint32_t
 hash_xxhash(const char* key)
 {
   unsigned int seed = 0;
@@ -111,20 +96,4 @@ get_JSON_value(json_object* json_obj, const char* key)
   }
 
   return json_value;
-}
-
-size_t
-get_next_highest_power_of_two(size_t num)
-{
-  size_t result = num;
-
-  result--;
-  result |= result >> 1;
-  result |= result >> 2;
-  result |= result >> 4;
-  result |= result >> 8;
-  result |= result >> 16;
-  result++;
-
-  return result;
 }
