@@ -4,7 +4,7 @@ A C implementation of the [Billionaire card game](https://ourpastimes.com/billio
 
 `billionaire` is played between two or more clients connecting to a
 central server. Messages are passed between client and server as
-outlined in the [`billionaire` protocol](message_protocol.md).
+outlined in the [`billionaire` protocol](docs/message_protocol.md).
 The server is written in C, and clients may be written in any language
 provided they correctly implement the aforementioned message passing
 protocol. Some boilerplate code has been provided for a Python 3 client,
