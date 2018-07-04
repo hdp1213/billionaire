@@ -123,12 +123,12 @@ billionaire_error()
   char* what;
 
   if (cmd_errno <= EJSON) { /* The error comes from <json-c/json-c.h> */
-    what = json_tokener_error_desc(cmd_errno);
+    what = (char*) json_tokener_error_desc(cmd_errno);
     printf("External JSON error, %s\n", what);
   }
 
   else { /* The error is internal and has a specified reason */
-    what = error_what[cmd_errno - EJSON - 1];
+    what = (char*) error_what[cmd_errno - EJSON - 1];
     printf("Internal error, %d: %s\n", cmd_errno - EJSON - 1, what);
   }
 
