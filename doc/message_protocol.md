@@ -23,15 +23,15 @@ Takes the following form:
 {
   "commands":
   [
-    <cmd_1>,
-    <cmd_2>,
-    ...
+    /* <cmd_1> */,
+    /* <cmd_2> */,
+    /* ... */
   ]
 }
 ```
 
 Here,
- - `<cmd_X>`: a command object.
+ - `<cmd_X>`: a command object as outlined below.
 
 
 ## Command objects
@@ -39,16 +39,16 @@ Command objects have the generic form of
 
 ```json
 {
-  "command": <command_type>,
-  <command_attributes>,
-  ...
+  "command": /* <command_type> */,
+  /* <command_attributes> */
+  /* ... */
 }
 ```
 
 where
  - `<command_type>`: a string identifying what command the object
 corresponds to.
- - `<command_attributes>`: command-specific fields.
+ - `<command_attributes>`: command-specific key-value pairs.
 
 
 ## Command types and their attributes
@@ -121,9 +121,9 @@ Takes the simple form of
 
 ```json
 {
-  "id": <id>,
-  "amt": <amount>,
-  "val": <value>
+  "id": /* <id> */,
+  "amt": /* <amount> */,
+  "val": /* <value> */
 }
 ```
 
@@ -137,6 +137,8 @@ than zero.
 this will only ever be sent to the client for their own purposes. The
 server does not require the client to send the value back, and its
 presence does not affect trading.
+
+All fields in the cards object must be specified as integers.
 
 
 ## Error codes
