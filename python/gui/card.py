@@ -29,11 +29,13 @@ class CardData():
     """Abstract class containing card amount information"""
     def __init__(self):
         self._cards = Counter()
+        self._values = {}
 
     @classmethod
-    def from_dict(cls, dict_data):
+    def from_dict(cls, amt_data, val_data):
         card_data = cls()
-        card_data._cards = Counter(dict_data)
+        card_data._cards = Counter(amt_data)
+        card_data._values = val_data
         return card_data
 
     def __len__(self):

@@ -47,6 +47,11 @@ struct card_location {
 };
 
 /**
+ * Array storing the monetary values of all cards.
+ */
+extern const int card_values[];
+
+/**
  * Convert a card_location struct to a JSON array of cards objects.
  */
 json_object* JSON_from_card_location(card_location* card_loc);
@@ -56,6 +61,7 @@ json_object* JSON_from_card_location(card_location* card_loc);
  *
  * Sets cmd_errno to EJSONTYPE.
  * Checks cmd_errno, on failure returns NULL.
+ * Note that the card's value does not need to be sent by the client.
  */
 card_location* card_location_from_JSON(json_object* card_loc_json);
 

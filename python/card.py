@@ -25,8 +25,9 @@ class CardID(enum.Enum):
 
 class CardLocation():
     """Container class for Card objects"""
-    def __init__(self, cards=None):
+    def __init__(self, cards=None, values={}):
         self._cards = Counter() if cards is None else Counter(cards)
+        self._values = values
 
     def __repr__(self):
         return f'<CardLocation: {{{self.to_pretty_list()}}}>'
@@ -46,10 +47,11 @@ class CardLocation():
         amt_taken = take_amt if take_amt < card_amt else card_amt
 
         card_dict = {card_id: amt_taken}
+        card_value = {card_id: self._values[card_id]}
         self._cards.subtract(card_dict)
         self._clean_zeros()
 
-        return CardLocation(card_dict)
+        return CardLocation(card_dict, card_value)
 
     def most_common(self, n=None):
         """Return most common card IDs"""
@@ -59,15 +61,17 @@ class CardLocation():
     @classmethod
     def from_json(cls, data):
         """Return a CardLocation object from a JSON CardLocation object"""
-        data_dict = {CardID(card.get('id', CardID.INVALID)): card.get('amt', 0)
-                     for card in data}
-        return cls(data_dict)
+        amt_data = {CardID(card.get('id', CardID.INVALID)): card.get('amt', 0)
+                    for card in data}
+        val_data = {CardID(card.get('id', CardID.INVALID)): card.get('val', 0)
+                    for card in data}
+        return cls(amt_data, val_data)
 
     def to_json(self):
         return json.dumps(self.to_list(), separators=(',', ':'))
 
     def to_list(self):
-        return [{"id": card_id.value, "amt": card_amt}
+        return [{'id': card_id.value, 'amt': card_amt}
                 for card_id, card_amt in self._cards.items()]
 
     def to_pretty_list(self):
@@ -80,3 +84,4 @@ class CardLocation():
         for card in elems:
             if self._cards[card] < 1:
                 del self._cards[card]
+                del self._values[card]

@@ -122,7 +122,8 @@ Takes the simple form of
 ```json
 {
   "id": <id>,
-  "amt": <amount>
+  "amt": <amount>,
+  "val": <value>
 }
 ```
 
@@ -132,6 +133,10 @@ same special card) have the same card ID. A card ID is implemented as an
 integer. An invalid card will always have an ID of `-1`.
  - `<amount>`: the number of cards packed in the object. Must be greater
 than zero.
+ - `<value>`: (optional) the value in dollars of the card. Note that
+this will only ever be sent to the client for their own purposes. The
+server does not require the client to send the value back, and its
+presence does not affect trading.
 
 
 ## Error codes

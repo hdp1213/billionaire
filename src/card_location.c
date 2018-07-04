@@ -6,6 +6,18 @@
 #include "command_error.h"
 #include "utils.h"
 
+const int card_values[] = {
+  700, /* DIAMONDS */
+  500, /* GOLD */
+  800, /* OIL */
+  200, /* PROPERTY */
+  400, /* MINING */
+  300, /* SHIPPING */
+  600, /* BANKING */
+  100, /* SPORT */
+  0,   /* BILLIONAIRE */
+  -200 /* TAX_COLLECTOR */
+};
 
 json_object*
 JSON_from_card_location(card_location* card_loc)
@@ -23,9 +35,11 @@ JSON_from_card_location(card_location* card_loc)
 
     json_object* card_id_json = json_object_new_int(card);
     json_object* card_amt_json = json_object_new_int((int) card_amt);
+    json_object* card_value_json = json_object_new_int(card_values[card]);
 
     json_object_object_add(card_json, "id", card_id_json);
     json_object_object_add(card_json, "amt", card_amt_json);
+    json_object_object_add(card_json, "val", card_value_json);
 
     json_object_array_add(card_loc_json, card_json);
   }
