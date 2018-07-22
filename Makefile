@@ -18,7 +18,7 @@ vpath .base $(BUILDDIR)
 CC := gcc
 
 # Flags
-OPTFLAGS := -O2 -pipe -march=armv6zk -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
+OPTFLAGS := -O0 -pipe
 DBUG := -g -Wall -Wextra -Wcast-align# -fprofile-arcs -ftest-coverage -pg
 
 CCFLAGS := -fPIC -std=c11 $(OPTFLAGS) $(DBUG)
