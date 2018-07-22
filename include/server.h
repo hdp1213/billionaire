@@ -1,5 +1,5 @@
-#ifndef _BILLIONAIRE_SERVER_H_
-#define _BILLIONAIRE_SERVER_H_
+#ifndef _SERVER_H_
+#define _SERVER_H_
 
 /* Required by event.h. */
 #include <sys/time.h>
@@ -14,7 +14,6 @@
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 
-#include "billionaire.h"
 #include "game_state.h"
 #include "client_hash_table.h"
 

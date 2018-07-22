@@ -30,7 +30,7 @@ LIBS := -levent -lrt -lm -ljson-c -lxxhash
 CHECK_LIBS := -ljson-c -lcheck -lxxhash
 
 # Object files to compile
-MAIN := billionaire-server.o
+MAIN := server.o
 SOURCES := $(notdir $(shell find $(SRCDIR) -type f -name *.$(SRCEXT) -not -name $(MAIN:.o=.$(SRCEXT))))
 OBJECTS := $(SOURCES:.$(SRCEXT)=.o)
 

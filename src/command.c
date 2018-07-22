@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "billionaire.h"
+#include "command.h"
 #include "command_error.h"
 #include "utils.h"
 
@@ -21,7 +21,7 @@ make_command(const char* cmd_name)
 }
 
 json_object*
-billionaire_join(char* id)
+command_join(char* id)
 {
   json_object* cmd = make_command(Command.JOIN);
 
@@ -32,7 +32,7 @@ billionaire_join(char* id)
 }
 
 json_object*
-billionaire_start(card_location* player_hand)
+command_start(card_location* player_hand)
 {
   json_object* cmd = make_command(Command.START);
 
@@ -46,7 +46,7 @@ billionaire_start(card_location* player_hand)
 }
 
 json_object*
-billionaire_successful_trade(offer* traded_offer)
+command_successful_trade(offer* traded_offer)
 {
   json_object* cmd = make_command(Command.SUCCESSFUL_TRADE);
 
@@ -60,7 +60,7 @@ billionaire_successful_trade(offer* traded_offer)
 }
 
 json_object*
-billionaire_cancelled_offer(offer* cancelled_offer)
+command_cancelled_offer(offer* cancelled_offer)
 {
   json_object* cmd = make_command(Command.CANCELLED_OFFER);
 
@@ -71,7 +71,7 @@ billionaire_cancelled_offer(offer* cancelled_offer)
 }
 
 json_object*
-billionaire_book_event(const char* event, size_t card_amt,
+command_book_event(const char* event, size_t card_amt,
                        const char* participants[MAX_PARTICIPANTS])
 {
   json_object* cmd = make_command(Command.BOOK_EVENT);
@@ -99,7 +99,7 @@ billionaire_book_event(const char* event, size_t card_amt,
 }
 
 json_object*
-billionaire_billionaire(const char* winner_id)
+command_billionaire(const char* winner_id)
 {
   json_object* cmd = make_command(Command.BILLIONAIRE);
 
@@ -111,7 +111,7 @@ billionaire_billionaire(const char* winner_id)
 }
 
 json_object*
-billionaire_end_round(int score)
+command_end_round(int score)
 {
   json_object* cmd = make_command(Command.END_ROUND);
 
@@ -123,13 +123,13 @@ billionaire_end_round(int score)
 }
 
 json_object*
-billionaire_end_game()
+command_end_game()
 {
   return make_command(Command.END_GAME);
 }
 
 json_object*
-billionaire_error()
+command_error()
 {
   json_object* cmd = make_command(Command.ERROR);
 

@@ -1,5 +1,5 @@
-#ifndef _BILLIONAIRE_H_
-#define _BILLIONAIRE_H_
+#ifndef _COMMAND_H_
+#define _COMMAND_H_
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -41,23 +41,23 @@ json_object* make_command(const char* cmd);
  * Create a JOIN command (JSON object) containing an id to identify the
  * client with.
  */
-json_object* billionaire_join(char* id);
+json_object* command_join(char* id);
 
 /**
  * Create a START command containing the client's hand.
  */
-json_object* billionaire_start(card_location* player_hand);
+json_object* command_start(card_location* player_hand);
 
 /**
  * Create a SUCCESSFUL_TRADE command containing new cards and the previous
  * owner's ID.
  */
-json_object* billionaire_successful_trade(offer* traded_offer);
+json_object* command_successful_trade(offer* traded_offer);
 
 /**
  * Create a CANCELLED_OFFER command containing a cancelled offer.
  */
-json_object* billionaire_cancelled_offer(offer* cancelled_offer);
+json_object* command_cancelled_offer(offer* cancelled_offer);
 
 /**
  * Create a BOOK_EVENT command containing the book event.
@@ -66,30 +66,30 @@ json_object* billionaire_cancelled_offer(offer* cancelled_offer);
  * there is less than MAX_PARTICIPANTS participants in the event, the
  * other elements must be set to NULL.
  */
-json_object* billionaire_book_event(const char* event, size_t card_amt,
+json_object* command_book_event(const char* event, size_t card_amt,
                                     const char* participants[MAX_PARTICIPANTS]);
 
 /**
  * Create a BILLIONAIRE command containing ID of winner.
  */
-json_object* billionaire_billionaire(const char* winner_id);
+json_object* command_billionaire(const char* winner_id);
 
 /**
  * Create an END_ROUND command containing the client's update score.
  */
-json_object* billionaire_end_round(int score);
+json_object* command_end_round(int score);
 
 /**
  * Create an END_GAME command.
  */
-json_object* billionaire_end_game();
+json_object* command_end_game();
 
 /**
  * Create an ERROR command containing the latest error.
  *
  * Resets cmd_errno to CMD_SUCCESS.
  */
-json_object* billionaire_error();
+json_object* command_error();
 
 /**
  * Get the name of a command.

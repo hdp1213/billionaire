@@ -47,11 +47,12 @@
 #include <time.h> /* clock(), time() */
 #include <unistd.h> /* getpid() */
 
-#include "billionaire-server.h"
+#include "server.h"
 #include "book.h"
 #include "card_location.h"
 #include "card_array.h"
 #include "client.h"
+#include "command.h"
 #include "command_error.h"
 #include "utils.h"
 
@@ -98,7 +99,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
     json_object* cmd_array = parse_command_list_string(json_str, total_bytes);
 
     if (cmd_errno != CMD_SUCCESS) {
-      enqueue_command(this_client, billionaire_error());
+      enqueue_command(this_client, command_error());
     }
 
     else {
@@ -106,7 +107,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
         /* Check cmd_object has command field */
         if (get_JSON_value(cmd_obj, "command") == NULL) {
           cmd_errno = (int) EBADCMDOBJ;
-          enqueue_command(this_client, billionaire_error());
+          enqueue_command(this_client, command_error());
           continue;
         }
 
@@ -117,14 +118,14 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           json_object* card_array = get_JSON_value(cmd_obj, "cards");
 
           if (cmd_errno != CMD_SUCCESS) {
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
           card_location* card_loc = card_location_from_JSON(card_array);
 
           if (cmd_errno != CMD_SUCCESS) {
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
@@ -136,13 +137,13 @@ buffered_on_read(struct bufferevent* bev, void* arg)
               /* Send CANCELLED_OFFER back to this_client */
               offer* bad_offer = offer_init(card_loc, this_client->id);
 
-              json_object* cancel = billionaire_cancelled_offer(bad_offer);
+              json_object* cancel = command_cancelled_offer(bad_offer);
               enqueue_command(this_client, cancel);
 
               free_offer(bad_offer);
             }
 
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
@@ -169,12 +170,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           if (cmd_errno != CMD_SUCCESS) {
             /* Send CANCELLED_OFFER back to this_client */
-            json_object* cancel = billionaire_cancelled_offer(new_offer);
+            json_object* cancel = command_cancelled_offer(new_offer);
             enqueue_command(this_client, cancel);
 
             free_offer(new_offer);
 
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
@@ -182,7 +183,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           subtract_card_location(this_client->hand, new_offer->cards);
 
           if (cmd_errno != CMD_SUCCESS) {
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             /* TODO: send offer back? */
             free_offer(new_offer);
             continue;
@@ -197,8 +198,8 @@ buffered_on_read(struct bufferevent* bev, void* arg)
             merge_card_location(other_client->hand, new_offer->cards);
 
             /* Send SUCCESSFUL_TRADE commands to participants */
-            json_object* this_trade = billionaire_successful_trade(traded_offer);
-            json_object* other_trade = billionaire_successful_trade(new_offer);
+            json_object* this_trade = command_successful_trade(traded_offer);
+            json_object* other_trade = command_successful_trade(new_offer);
 
             free_offer(new_offer);
             free_offer(traded_offer);
@@ -215,11 +216,11 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
               if (this_client_has_won) {
-                enqueue_command(client_obj, billionaire_billionaire(this_client->id));
+                enqueue_command(client_obj, command_billionaire(this_client->id));
               }
 
               if (other_client_has_won) {
-                enqueue_command(client_obj, billionaire_billionaire(other_client->id));
+                enqueue_command(client_obj, command_billionaire(other_client->id));
               }
 
               if (client_eq(client_obj, this_client) ||
@@ -227,9 +228,9 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                 continue;
               }
 
-              json_object* book_event = billionaire_book_event(Command.SUCCESSFUL_TRADE,
-                                                               total_cards,
-                                                               participants);
+              json_object* book_event = command_book_event(Command.SUCCESSFUL_TRADE,
+                                                           total_cards,
+                                                           participants);
 
               enqueue_command(client_obj, book_event);
             }
@@ -245,7 +246,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                        client_obj->id, client_obj->score);
 #endif /* DBUG */
                 enqueue_command(client_obj,
-                                billionaire_end_round(client_obj->score));
+                                command_end_round(client_obj->score));
               }
 
               printf("Clearing book...\n");
@@ -264,9 +265,9 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                 continue;
               }
 
-              json_object* book_event = billionaire_book_event(Command.NEW_OFFER,
-                                                               total_cards,
-                                                               participants);
+              json_object* book_event = command_book_event(Command.NEW_OFFER,
+                                                           total_cards,
+                                                           participants);
 
               enqueue_command(client_obj, book_event);
             }
@@ -280,7 +281,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
           json_object* card_amt_json = get_JSON_value(cmd_obj, "card_amt");
 
           if (cmd_errno != CMD_SUCCESS) {
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
@@ -290,12 +291,12 @@ buffered_on_read(struct bufferevent* bev, void* arg)
                                                 card_amt, this_client->id);
 
           if (cmd_errno != CMD_SUCCESS) {
-            enqueue_command(this_client, billionaire_error());
+            enqueue_command(this_client, command_error());
             continue;
           }
 
           /* Offer has been successfully cancelled */
-          json_object* cancel = billionaire_cancelled_offer(cancelled_offer);
+          json_object* cancel = command_cancelled_offer(cancelled_offer);
           enqueue_command(this_client, cancel);
 
           merge_card_location(this_client->hand, cancelled_offer->cards);
@@ -308,7 +309,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
               continue;
             }
 
-            json_object* book_event = billionaire_book_event(Command.CANCELLED_OFFER,
+            json_object* book_event = command_book_event(Command.CANCELLED_OFFER,
                                                              card_amt,
                                                              participants);
 
@@ -319,7 +320,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
         else {
           /* Invalid command name */
           cmd_errno = (int) EBADCMDNAME;
-          enqueue_command(this_client, billionaire_error());
+          enqueue_command(this_client, command_error());
           continue;
         }
       }
@@ -372,7 +373,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
 
     /* Send an END_GAME command to each remaining client */
     TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
-      json_object* end_game = billionaire_end_game();
+      json_object* end_game = command_end_game();
       enqueue_command(client_obj, end_game);
     }
   }
@@ -426,7 +427,7 @@ on_accept(int fd, short ev, void* arg)
   printf("Accepted connection from %s (%s)\n", client_addr_str, new_client->id);
 
   /* Queue a JOIN command for the client. */
-  join = billionaire_join(new_client->id);
+  join = command_join(new_client->id);
   enqueue_command(new_client, join);
 
   /* Start game if max number of players has joined */
@@ -446,7 +447,7 @@ on_accept(int fd, short ev, void* arg)
     TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
       // 1) split up the deck between all players
       // 2) send each player their hand through the start command
-      json_object* start = billionaire_start(player_hands[iplayer]);
+      json_object* start = command_start(player_hands[iplayer]);
       client_obj->hand = player_hands[iplayer];
 
       enqueue_command(client_obj, start);

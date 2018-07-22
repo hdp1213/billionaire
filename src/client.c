@@ -1,5 +1,5 @@
 #include "client.h"
-#include "billionaire.h"
+#include "command.h"
 #include "utils.h"
 
 #include <err.h>
