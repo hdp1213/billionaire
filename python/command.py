@@ -9,7 +9,7 @@ class Command():
     CANCELLED_OFFER = 'CANCELLED_OFFER'
     BOOK_EVENT = 'BOOK_EVENT'
     BILLIONAIRE = 'BILLIONAIRE'
-    FINISH = 'FINISH'
+    END_GAME = 'END_GAME'
     ERROR = 'ERROR'
     NEW_OFFER = 'NEW_OFFER'
     CANCEL_OFFER = 'CANCEL_OFFER'
@@ -20,7 +20,7 @@ class Command():
                       CANCELLED_OFFER,
                       BOOK_EVENT,
                       BILLIONAIRE,
-                      FINISH,
+                      END_GAME,
                       ERROR,
                       NEW_OFFER,
                       CANCEL_OFFER}

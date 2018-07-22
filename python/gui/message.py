@@ -153,8 +153,8 @@ class MessagePasser(GObject.Object):
                                       f'{active} traded {passive}\'s '
                                       f'offer of {book_cmd.card_amt} cards')
 
-        if Command.FINISH in self.received_cmds:
-            self.feed.add_to_feed(Command.FINISH, 'Stopping game...')
+        if Command.END_GAME in self.received_cmds:
+            self.feed.add_to_feed(Command.END_GAME, 'Stopping game...')
             self.hand.clear_all()
             self.offers.clear_all()
 

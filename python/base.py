@@ -115,7 +115,8 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         """Receive commands from the server
 
         A received command must have the following field:
-            command:        JOIN/START/SUCCESSFUL_TRADE/BOOK_EVENT/FINISH/ERROR
+            command:        JOIN/START/SUCCESSFUL_TRADE/BOOK_EVENT/END_GAME/
+                            ERROR
 
         Optionally, a received command may also contain:
             bot_id:         the unique identifier given by the server
@@ -146,7 +147,7 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         if Command.BOOK_EVENT in self.received_cmds:
             pass
 
-        if Command.FINISH in self.received_cmds:
+        if Command.END_GAME in self.received_cmds:
             print('Stopping game...')
             self._on_start.clear()
 

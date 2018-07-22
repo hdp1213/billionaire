@@ -10,6 +10,7 @@
 #include "card_location.h"
 
 #define MAX_PLAYERS 8
+#define INITIAL_SCORE 0
 
 struct commands {
   const char* JOIN;
@@ -18,7 +19,7 @@ struct commands {
   const char* CANCELLED_OFFER;
   const char* BOOK_EVENT;
   const char* BILLIONAIRE;
-  const char* FINISH;
+  const char* END_GAME;
   const char* ERROR;
   const char* NEW_OFFER;
   const char* CANCEL_OFFER;
@@ -68,9 +69,9 @@ json_object* billionaire_book_event(const char* event, size_t card_amt,
 json_object* billionaire_billionaire(const char* winner_id);
 
 /**
- * Create a FINISH command.
+ * Create an END_GAME command.
  */
-json_object* billionaire_finish();
+json_object* billionaire_end_game();
 
 /**
  * Create an ERROR command containing the latest error.

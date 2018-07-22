@@ -366,10 +366,10 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     /* Clear current trade book of current trades */
     clear_book(billionaire_game->current_trades);
 
-    /* Send a FINISH command to each remaining client */
+    /* Send an END_GAME command to each remaining client */
     TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
-      json_object* finish = billionaire_finish();
-      enqueue_command(client_obj, finish);
+      json_object* end_game = billionaire_end_game();
+      enqueue_command(client_obj, end_game);
     }
   }
 
