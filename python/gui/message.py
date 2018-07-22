@@ -168,6 +168,13 @@ class MessagePasser(GObject.Object):
                 self.feed.add_to_feed(Command.BILLIONAIRE,
                                       f'Bad luck, {winner} won.')
 
+        if Command.END_ROUND in self.received_cmds:
+            end_round_cmd = self.received_cmds[Command.END_ROUND]
+            new_score = end_round_cmd.score
+
+            self.feed.add_to_feed(Command.END_ROUND,
+                                  f'Your current score is now {new_score}')
+
         # Continually add this
         source_object.read_bytes_async(MessagePasser.READ_BYTES,
                                        GLib.PRIORITY_DEFAULT, self.cancellable,

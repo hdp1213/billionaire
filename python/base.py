@@ -147,6 +147,9 @@ class BaseBillionaireBot(asyncio.Protocol, metaclass=BotMeta):
         if Command.BOOK_EVENT in self.received_cmds:
             pass
 
+        if Command.END_ROUND in self.received_cmds:
+            pass
+
         if Command.END_GAME in self.received_cmds:
             print('Stopping game...')
             self._on_start.clear()

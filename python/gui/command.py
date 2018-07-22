@@ -11,6 +11,7 @@ class Command(JSONInterface):
     CANCELLED_OFFER = 'CANCELLED_OFFER'
     BOOK_EVENT = 'BOOK_EVENT'
     BILLIONAIRE = 'BILLIONAIRE'
+    END_ROUND = 'END_ROUND'
     END_GAME = 'END_GAME'
     ERROR = 'ERROR'
     NEW_OFFER = 'NEW_OFFER'
@@ -22,6 +23,7 @@ class Command(JSONInterface):
                       CANCELLED_OFFER,
                       BOOK_EVENT,
                       BILLIONAIRE,
+                      END_ROUND,
                       END_GAME,
                       ERROR,
                       NEW_OFFER,

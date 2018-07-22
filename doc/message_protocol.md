@@ -19,13 +19,13 @@ for it to be considered correctly implemented.
 The fundamental message packet that is sent between server and client.
 Takes the following form:
 
-```json
+```
 {
   "commands":
   [
-    /* <cmd_1> */,
-    /* <cmd_2> */,
-    /* ... */
+    <cmd_1>,
+    <cmd_2>,
+    ...
   ]
 }
 ```
@@ -37,11 +37,11 @@ Here,
 ## Command objects
 Command objects have the generic form of
 
-```json
+```
 {
-  "command": /* <command_type> */,
-  /* <command_attributes> */
-  /* ... */
+  "command": <command_type>,
+  <command_attributes>
+  ...
 }
 ```
 
@@ -67,6 +67,7 @@ can communicate with the server.
 Starts the game when enough clients have joined. Contains the starting
 hands for each client.
  - `hand`: array of cards objects.
+ - `score`: the initial score.
 
 #### `SUCCESSFUL_TRADE`:
 Gives a client a set of cards corresponding to a successful trade.
@@ -86,9 +87,16 @@ that changes the group of current offers (the _book_).
  - `participants`: array of client ID(s) that featured as part of the
 event.
 
-#### `FINISH`:
-Finishes the game, either when a client disconnects or when the game is
-won.
+#### `BILLIONAIRE`:
+Annouces the round's winner to everyone.
+ - `winner_id`: ID of the winning client.
+
+#### `END_ROUND`:
+Ends the current round.
+ - `score`: the updated score.
+
+#### `END_GAME`:
+Ends the game, either when a client disconnects or when the game is won.
 
 #### `ERROR`:
 Notifies a client that an error occurred during processing of a command
@@ -119,11 +127,11 @@ Cancels the corresponding `NEW_OFFER` for the given `card_amt`.
 ### Cards object
 Takes the simple form of
 
-```json
+```
 {
-  "id": /* <id> */,
-  "amt": /* <amount> */,
-  "val": /* <value> */
+  "id": <id>,
+  "amt": <amount>,
+  "val": <value>
 }
 ```
 

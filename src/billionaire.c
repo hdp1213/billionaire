@@ -7,7 +7,7 @@
 
 const struct commands Command = {
   "JOIN", "START", "SUCCESSFUL_TRADE", "CANCELLED_OFFER", "BOOK_EVENT",
-  "BILLIONAIRE", "END_GAME", "ERROR", "NEW_OFFER", "CANCEL_OFFER"
+  "BILLIONAIRE", "END_ROUND", "END_GAME", "ERROR", "NEW_OFFER", "CANCEL_OFFER"
 };
 
 json_object*
@@ -37,9 +37,9 @@ billionaire_start(card_location* player_hand)
   json_object* cmd = make_command(Command.START);
 
   json_object* hand_json = JSON_from_card_location(player_hand);
-  json_object_object_add(cmd, "hand", hand_json);
-
   json_object* score_json = json_object_new_int(INITIAL_SCORE);
+
+  json_object_object_add(cmd, "hand", hand_json);
   json_object_object_add(cmd, "score", score_json);
 
   return cmd;
@@ -106,6 +106,18 @@ billionaire_billionaire(const char* winner_id)
   json_object* winner_json = json_object_new_string(winner_id);
 
   json_object_object_add(cmd, "winner_id", winner_json);
+
+  return cmd;
+}
+
+json_object*
+billionaire_end_round(int score)
+{
+  json_object* cmd = make_command(Command.END_ROUND);
+
+  json_object* score_json = json_object_new_int(score);
+
+  json_object_object_add(cmd, "score", score_json);
 
   return cmd;
 }

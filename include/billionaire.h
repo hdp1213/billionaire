@@ -19,11 +19,17 @@ struct commands {
   const char* CANCELLED_OFFER;
   const char* BOOK_EVENT;
   const char* BILLIONAIRE;
+  const char* END_ROUND;
   const char* END_GAME;
   const char* ERROR;
   const char* NEW_OFFER;
   const char* CANCEL_OFFER;
 };
+
+/**
+ * External command struct used for checking command types.
+ */
+extern const struct commands Command;
 
 /**
  * Basic constructor for command objects that instantiates the "command"
@@ -67,6 +73,11 @@ json_object* billionaire_book_event(const char* event, size_t card_amt,
  * Create a BILLIONAIRE command containing ID of winner.
  */
 json_object* billionaire_billionaire(const char* winner_id);
+
+/**
+ * Create an END_ROUND command containing the client's update score.
+ */
+json_object* billionaire_end_round(int score);
 
 /**
  * Create an END_GAME command.

@@ -150,7 +150,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
           printf("Offer of %zu cards\n", total_cards);
 
-  #ifdef DBUG
+#ifdef DBUG
           for (card_id card = DIAMONDS; card < TOTAL_UNIQUE_CARDS; ++card) {
             size_t card_amt = get_card_amount(card_loc, card);
 
@@ -160,7 +160,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             printf("  %zux of card %d\n", card_amt, card);
           }
-  #endif /* DBUG */
+#endif /* DBUG */
 
           /* Add offer to book */
           offer* new_offer = offer_init(card_loc, this_client->id);
@@ -234,14 +234,18 @@ buffered_on_read(struct bufferevent* bev, void* arg)
               enqueue_command(client_obj, book_event);
             }
 
-            /* TODO: Reset the game */
+            /* TODO: Reset the round */
             if (this_client_has_won || other_client_has_won) {
               /* Update each client's score */
               printf("Updating scores...\n");
               TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
                 update_score(client_obj);
+#ifdef DBUG
                 printf("%s's score is now %d\n",
                        client_obj->id, client_obj->score);
+#endif /* DBUG */
+                enqueue_command(client_obj,
+                                billionaire_end_round(client_obj->score));
               }
 
               printf("Clearing book...\n");
