@@ -72,11 +72,11 @@ void buffered_on_error(struct bufferevent* bev, short what, void* arg);
 void on_accept(int fd, short ev, void* arg);
 
 /**
- * Called by libevent when a SIGINT signal is caught.
+ * Called by libevent when a SIGINT or SIGTERM signal is caught.
  *
  * This breaks the base loop and allows cleanup code to execute.
  */
-void on_sigint(int sig, short ev, void *arg);
+void on_exit(int sig, short ev, void *arg);
 
 /**
  * Handle command line options using getopt_long.

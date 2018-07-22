@@ -448,10 +448,10 @@ on_accept(int fd, short ev, void* arg)
 }
 
 void
-on_sigint(int sig, short ev, void *arg)
+on_exit(int sig, short ev, void *arg)
 {
   printf("\n");
-  printf("SIGINT caught, exiting cleanly...\n");
+  printf("Exiting cleanly...\n");
   event_base_loopbreak(evbase);
 }
 
@@ -531,7 +531,7 @@ main(int argc, char** argv)
 
   int listen_fd;
   struct sockaddr_in listen_addr;
-  struct event ev_accept, ev_sigint;
+  struct event ev_accept, ev_sigint, ev_sigterm;
 
   /* Parse external options */
   parse_command_line_options(argc, argv,
@@ -590,14 +590,16 @@ main(int argc, char** argv)
   event_assign(&ev_accept, evbase, listen_fd, EV_READ|EV_PERSIST, on_accept, NULL);
   event_add(&ev_accept, NULL);
 
-  /* Add SIGINT handling */
-  evsignal_assign(&ev_sigint, evbase, SIGINT, on_sigint, NULL);
+  /* Add SIGINT and SIGTERM handling */
+  evsignal_assign(&ev_sigint, evbase, SIGINT, on_exit, NULL);
+  evsignal_assign(&ev_sigterm, evbase, SIGTERM, on_exit, NULL);
   event_add(&ev_sigint, NULL);
+  event_add(&ev_sigterm, NULL);
 
-  /* Start the event loop. */
+  /* Start the main event loop */
   event_base_dispatch(evbase);
 
-  /* Called on SIGINT, or whenever the main event loop finishes */
+  /* Called whenever the main event loop finishes */
   game_state_free(billionaire_game);
 
   /* Assumes that if client queue is empty, so is client hash table */
