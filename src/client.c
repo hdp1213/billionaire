@@ -23,6 +23,8 @@ client_new(struct event_base* evbase, int fd,
 
   new_client->hand = NULL;
 
+  new_client->score = 0;
+
   new_client->buf_ev = bufferevent_socket_new(evbase, new_client->fd, 0);
 
   /* Set callback functions of bufferevent */
@@ -108,6 +110,13 @@ client_eq(client* client1, client* client2)
 {
   return (strncmp(client1->id, client2->id, HASH_LENGTH) == 0) &&
          (client1->fd == client2->fd);
+}
+
+void
+update_score(client* client_obj)
+{
+  int hand_score = evaluate_hand_score(client_obj->hand);
+  client_obj->score += hand_score;
 }
 
 void

@@ -283,6 +283,36 @@ has_won(const card_location* hand)
   return false;
 }
 
+int
+evaluate_hand_score(const card_location* hand)
+{
+  int score = 0;
+  size_t num_wildcards = 0;
+  num_wildcards += get_card_amount(hand, BILLIONAIRE);
+  num_wildcards += get_card_amount(hand, TAX_COLLECTOR);
+
+  /* Subtract points if hand contains TAX_COLLECTOR */
+  if (get_card_amount(hand, TAX_COLLECTOR) > 0) {
+    score += card_values[TAX_COLLECTOR];
+  }
+
+  /* Add total for winning commodity type */
+  for (card_id comm_card = DIAMONDS; comm_card < TOTAL_COMMODITY_AMOUNT; ++comm_card) {
+    size_t comm_amt = get_card_amount(hand, comm_card);
+
+    if ((comm_amt + num_wildcards) >= (TOTAL_COMMODITY_AMOUNT + 1)) {
+      score += card_values[comm_card];
+    }
+  }
+
+  /* Double total if hand contains BILLIONAIRE */
+  if (get_card_amount(hand, BILLIONAIRE) > 0) {
+    score *= 2;
+  }
+
+  return score;
+}
+
 size_t
 get_card_amount(const card_location* card_loc, card_id card)
 {

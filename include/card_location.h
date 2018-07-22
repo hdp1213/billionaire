@@ -134,6 +134,11 @@ void validate_offer(card_location* offer, const card_location* hand);
 bool has_won(const card_location* hand);
 
 /**
+ * Returns the monetary value of the hand.
+ */
+int evaluate_hand_score(const card_location* hand);
+
+/**
  * Return the amount of cards of a specific type at a card_location.
  */
 size_t get_card_amount(const card_location* card_loc, card_id card);

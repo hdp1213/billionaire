@@ -31,6 +31,9 @@ struct client {
   /* The client's hand */
   card_location* hand;
 
+  /* The client's score */
+  int score;
+
   /* The bufferevent for this client. */
   struct bufferevent* buf_ev;
 
@@ -92,6 +95,13 @@ void send_commands_to_clients(client_head* client_head_obj);
  * the same.
  */
 bool client_eq(client* client1, client* client2);
+
+/**
+ * Update the score of a client.
+ *
+ * This happens only after a BILLIONAIRE event.
+ */
+void update_score(client* client_obj);
 
 /**
  * Free a client.

@@ -236,6 +236,15 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
             /* TODO: Reset the game */
             if (this_client_has_won || other_client_has_won) {
+              /* Update each client's score */
+              printf("Updating scores...\n");
+              TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+                update_score(client_obj);
+                printf("%s's score is now %d\n",
+                       client_obj->id, client_obj->score);
+              }
+
+              printf("Clearing book...\n");
               clear_book(billionaire_game->current_trades);
             }
           }
