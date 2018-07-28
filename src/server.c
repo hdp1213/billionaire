@@ -49,10 +49,7 @@
 #include <time.h> /* clock(), time() */
 #include <unistd.h> /* getpid() */
 
-#include "book.h"
 #include "billionaire.h"
-#include "card_location.h"
-#include "card_array.h"
 #include "client.h"
 #include "client_hash_table.h"
 #include "command.h"
@@ -112,7 +109,6 @@ void
 buffered_on_error(struct bufferevent* bev, short what, void* arg)
 {
   client* this_client = (client*) arg;
-  client* client_obj = NULL;
 
   if (what & BEV_EVENT_EOF) {
     /* Client disconnected, remove the read event and then
@@ -133,18 +129,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
   free_client(this_client);
 
   if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
-    printf("Player limit of %d no longer satisfied. Game stopping...\n",
-           billionaire_game->player_limit);
-    billionaire_game->running = false;
-
-    /* Clear current trade book of current trades */
-    clear_book(billionaire_game->current_trades);
-
-    /* Send an END_GAME command to each remaining client */
-    TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
-      json_object* end_game = command_end_game();
-      enqueue_command(client_obj, end_game);
-    }
+    stop_billionaire_game();
   }
 
   send_commands_to_clients(&client_tailq_head);
@@ -157,7 +142,6 @@ on_accept(int fd, short ev, void* arg)
   struct sockaddr_in client_addr;
   socklen_t client_len = sizeof(struct sockaddr_in);
   client* new_client;
-  client* client_obj = NULL;
 
   char client_addr_str[ADDR_STR_SIZE];
   json_object* join;
@@ -201,29 +185,7 @@ on_accept(int fd, short ev, void* arg)
 
   /* Start game if max number of players has joined */
   if (billionaire_game->num_players >= billionaire_game->player_limit) {
-    printf("Player limit of %d reached. Game starting...\n",
-           billionaire_game->player_limit);
-    billionaire_game->running = true;
-
-    card_location** player_hands;
-
-    printf("Dealing cards...\n");
-    player_hands = deal_cards(billionaire_game->num_players,
-                              billionaire_game->deck);
-
-    size_t iplayer = 0;
-
-    TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
-      // 1) split up the deck between all players
-      // 2) send each player their hand through the start command
-      json_object* start = command_start(player_hands[iplayer]);
-      client_obj->hand = player_hands[iplayer];
-
-      enqueue_command(client_obj, start);
-      iplayer++;
-    }
-
-    free(player_hands);
+    start_billionaire_game();
   }
 
   /* Flush all client command queues to the corresponding client */

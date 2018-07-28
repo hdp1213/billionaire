@@ -2,12 +2,63 @@
 
 #include <stdio.h>
 
+#include "book.h"
+#include "card_location.h"
 #include "client.h"
 #include "client_hash_table.h"
 #include "command.h"
 #include "command_error.h"
 #include "game_state.h"
 #include "utils.h"
+
+void
+start_billionaire_game()
+{
+  client* client_obj = NULL;
+
+  printf("Player limit of %d reached. Game starting...\n",
+         billionaire_game->player_limit);
+  billionaire_game->running = true;
+
+  card_location** player_hands;
+
+  printf("Dealing cards...\n");
+  player_hands = deal_cards(billionaire_game->num_players,
+                            billionaire_game->deck);
+
+  size_t iplayer = 0;
+
+  /* Split the deck between all players, and send their hands through START */
+  TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+    json_object* start = command_start(player_hands[iplayer]);
+    client_obj->hand = player_hands[iplayer];
+
+    enqueue_command(client_obj, start);
+    iplayer++;
+  }
+
+  free(player_hands);
+}
+
+void
+stop_billionaire_game()
+{
+  client* client_obj = NULL;
+
+  printf("Player limit of %d no longer satisfied. Game stopping...\n",
+         billionaire_game->player_limit);
+  billionaire_game->running = false;
+
+  /* Clear current trade book of current trades */
+  clear_book(billionaire_game->current_trades);
+
+  /* Send an END_GAME command to each remaining client */
+  TAILQ_FOREACH(client_obj, &client_tailq_head, entries) {
+    json_object* end_game = command_end_game();
+    enqueue_command(client_obj, end_game);
+  }
+
+}
 
 void
 process_client_command(client* this_client, char json_str[], size_t str_size)
