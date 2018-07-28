@@ -1,8 +1,9 @@
+#include "card_location.h"
+
 #include <err.h>
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "card_location.h"
 #include "command_error.h"
 #include "utils.h"
 

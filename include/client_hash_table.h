@@ -25,6 +25,11 @@ struct client_hash_table {
 };
 
 /**
+ * The global hash table containing all hashed clients.
+ */
+extern client_hash_table* hashed_clients;
+
+/**
  * Create an empty client hash table with defined size.
  */
 client_hash_table* client_hash_table_new(size_t size);

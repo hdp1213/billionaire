@@ -1,7 +1,8 @@
+#include "command.h"
+
 #include <stdio.h>
 #include <string.h>
 
-#include "command.h"
 #include "command_error.h"
 #include "utils.h"
 

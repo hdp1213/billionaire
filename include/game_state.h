@@ -27,6 +27,11 @@ struct game_state {
 };
 
 /**
+ * Global game state structure.
+ */
+extern game_state* billionaire_game;
+
+/**
  * Initialise and allocate memory to the game_state structure.
  */
 game_state* game_state_new(int player_limit, bool has_billionaire,

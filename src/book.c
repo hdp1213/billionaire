@@ -1,8 +1,9 @@
+#include "book.h"
+
 #include <err.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "book.h"
 #include "command_error.h"
 
 book*

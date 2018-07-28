@@ -1,9 +1,12 @@
+#include "game_state.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <err.h>
 
-#include "game_state.h"
 #include "card_location.h"
+
+game_state* billionaire_game = NULL;
 
 game_state*
 game_state_new(int player_limit, bool has_billionaire, bool has_taxman)

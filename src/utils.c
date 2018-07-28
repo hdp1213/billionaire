@@ -1,11 +1,12 @@
 #include "utils.h"
-#include "command_error.h"
 
 #include <err.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <xxhash.h>
+
+#include "command_error.h"
 
 uint32_t
 hash_xxhash(const char* key)

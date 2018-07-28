@@ -4,6 +4,7 @@
 /* Required by event.h. */
 #include <sys/time.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include <sys/queue.h>
@@ -13,9 +14,6 @@
 #include <event2/event_struct.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
-
-#include "game_state.h"
-#include "client_hash_table.h"
 
 /* Port to listen on. */
 #define SERVER_PORT 5555
@@ -30,16 +28,6 @@
  * about this for simple programs, but its used more in the libevent 2
  * API. */
 static struct event_base* evbase;
-
-/**
- * Global game state structure.
- */
-static game_state* billionaire_game;
-
-/**
- * The static hash table containing all hashed clients.
- */
-static client_hash_table* hashed_clients;
 
 /**
  * Set a socket to non-blocking mode.

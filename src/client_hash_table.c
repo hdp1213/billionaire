@@ -5,6 +5,8 @@
 
 #include "utils.h"
 
+client_hash_table* hashed_clients = NULL;
+
 client_hash_table*
 client_hash_table_new(size_t size)
 {

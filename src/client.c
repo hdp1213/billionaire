@@ -1,6 +1,4 @@
 #include "client.h"
-#include "command.h"
-#include "utils.h"
 
 #include <err.h>
 #include <stdio.h>
@@ -8,6 +6,9 @@
 
 #include <event2/event.h>
 #include <unistd.h> /* for close() */
+
+#include "command.h"
+#include "utils.h"
 
 client*
 client_new(struct event_base* evbase, int fd,

@@ -1,8 +1,8 @@
+#include "card_array.h"
+
 #include <assert.h>
 #include <err.h>
 #include <stdio.h>
-
-#include "card_array.h"
 
 card_array*
 card_array_new(size_t num_cards)
