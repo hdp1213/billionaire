@@ -295,6 +295,7 @@ parse_command_line_options(int argc, char** argv, int* player_limit,
         printf("  -p,--players N\tSet number of players (default: 4)\n");
         printf("  -b,--no-billionaire\tRemove billionaire from play\n");
         printf("  -t,--no-taxman\tRemove taxman from play\n");
+        printf("  -s,--seed N\t\tSet the random seed (default: random)\n");
         printf("  -h,--help\t\tDisplay this help and quit\n");
         exit(1);
 
