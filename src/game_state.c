@@ -38,6 +38,18 @@ game_state_new(int player_limit, bool has_billionaire, bool has_taxman)
   return new_game_state;
 }
 
+bool
+is_full(const game_state* gs_obj)
+{
+  return gs_obj->num_players == gs_obj->player_limit;
+}
+
+bool
+is_running(const game_state* gs_obj)
+{
+  return gs_obj->running;
+}
+
 void
 game_state_free(game_state* gs_obj)
 {

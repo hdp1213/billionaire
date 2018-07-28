@@ -38,6 +38,18 @@ game_state* game_state_new(int player_limit, bool has_billionaire,
                            bool has_taxman);
 
 /**
+ * Check whether a game_state has reached the player limit.
+ *
+ * This will return false if there are too many players.
+ */
+bool is_full(const game_state* gs_obj);
+
+/**
+ * Check whether a game_state is running.
+ */
+bool is_running(const game_state* gs_obj);
+
+/**
  * Generate cards for all players.
  */
 // game_start();

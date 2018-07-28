@@ -95,7 +95,7 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   snprintf(json_str, total_bytes, "%s", data);
 
   /* If the game is running, parse command list object */
-  if (billionaire_game->running) {
+  if (is_running(billionaire_game)) {
     process_client_command(this_client, json_str, total_bytes);
   }
 
@@ -128,7 +128,7 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
 
   free_client(this_client);
 
-  if (billionaire_game->running && (billionaire_game->num_players < billionaire_game->player_limit)) {
+  if (is_running(billionaire_game) && !is_full(billionaire_game)) {
     stop_billionaire_game();
   }
 
@@ -147,7 +147,7 @@ on_accept(int fd, short ev, void* arg)
   json_object* join;
 
   /* If game is running, deny connection (TODO) */
-  if (billionaire_game->running) {
+  if (is_running(billionaire_game)) {
     return;
   }
 
@@ -184,7 +184,7 @@ on_accept(int fd, short ev, void* arg)
   enqueue_command(new_client, join);
 
   /* Start game if max number of players has joined */
-  if (billionaire_game->num_players >= billionaire_game->player_limit) {
+  if (is_full(billionaire_game)) {
     start_billionaire_game();
   }
 
