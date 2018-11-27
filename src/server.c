@@ -91,13 +91,11 @@ buffered_on_read(struct bufferevent* bev, void* arg)
 
   snprintf(json_str, total_bytes, "%s", data);
 
-  /* If the game is running, parse command list object */
   if (is_running(billionaire_game)) {
     process_client_command(this_client, json_str, total_bytes);
   }
-
+  /* This can eventually be removed */
   else {
-    /* This can eventually be removed */
     printf("Received from %s: %s\n", this_client->id, json_str);
   }
 }
@@ -111,6 +109,13 @@ buffered_on_error(struct bufferevent* bev, short what, void* arg)
     /* Client disconnected, remove the read event and then
      * free the client structure. */
     printf("Client '%s' disconnected.\n", this_client->id);
+  }
+  else if (what & BEV_EVENT_TIMEOUT) {
+    printf("Client '%s' timed out.\n", this_client->id);
+  }
+  else if (what & BEV_EVENT_ERROR) {
+    printf("Client '%s' socket error '%s', disconnecting.\n", this_client->id,
+           evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
   }
   else {
     warn("Client '%s' socket error, disconnecting.\n", this_client->id);
