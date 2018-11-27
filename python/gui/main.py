@@ -8,6 +8,7 @@ import threading
 
 from feed import FeedDisplay
 from hand import HandDisplay
+from menu import BillionaireMenu
 from message import MessagePasser
 from offer import OfferDisplay
 
@@ -19,6 +20,10 @@ class ClientApplication(Gtk.Window):
                                                 default_width=200)
         self.connect('delete-event', Gtk.main_quit)
 
+        self.accel_group = Gtk.AccelGroup()
+
+        self.add_accel_group(self.accel_group)
+
         self.set_title('Billionaire')
 
         self.grid = Gtk.Grid()
@@ -29,9 +34,12 @@ class ClientApplication(Gtk.Window):
 
         self.feed = FeedDisplay()
 
-        self.grid.attach(self.hand, 1, 1, 1, 1)
-        self.grid.attach(self.offers, 1, 2, 1, 1)
-        self.grid.attach(self.feed, 1, 3, 1, 1)
+        self.menu = BillionaireMenu(self.accel_group)
+
+        self.grid.attach(self.menu, 1, 1, 1, 1)
+        self.grid.attach(self.hand, 1, 2, 1, 1)
+        self.grid.attach(self.offers, 1, 3, 1, 1)
+        self.grid.attach(self.feed, 1, 4, 1, 1)
 
         self.passer = MessagePasser()
 
