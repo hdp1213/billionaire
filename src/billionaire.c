@@ -64,6 +64,8 @@ void
 process_client_command(client* this_client, char json_str[], size_t str_size)
 {
   client* client_obj = NULL;
+  cmd_errno = CMD_SUCCESS;
+
   json_object* cmd_array = parse_command_list_string(json_str, str_size);
 
   if (cmd_errno != CMD_SUCCESS) {

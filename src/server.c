@@ -53,7 +53,6 @@
 #include "client.h"
 #include "client_hash_table.h"
 #include "command.h"
-#include "command_error.h"
 #include "game_state.h"
 #include "utils.h"
 
@@ -83,8 +82,6 @@ buffered_on_read(struct bufferevent* bev, void* arg)
   size_t n = 1;
   size_t total_bytes = 0;
   char json_str[READ_BYTES_AMOUNT];
-
-  cmd_errno = CMD_SUCCESS;
 
   /* Read 8k at a time. */
   while (n != 0) {
